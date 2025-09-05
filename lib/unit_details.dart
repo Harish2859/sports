@@ -6,6 +6,8 @@ class UnitDetailsPage extends StatefulWidget {
   final String unitDescription;
   final String sectionName;
   final int unitIndex;
+  final int sectionIndex;
+  final int totalUnitsInSection;
 
   const UnitDetailsPage({
     Key? key,
@@ -13,6 +15,8 @@ class UnitDetailsPage extends StatefulWidget {
     required this.unitDescription,
     required this.sectionName,
     required this.unitIndex,
+    required this.sectionIndex,
+    required this.totalUnitsInSection,
   }) : super(key: key);
 
   @override
@@ -407,7 +411,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         Expanded(
           child: ElevatedButton(
             onPressed: (_hasRecording && !_hasMalpractice) ? () => _goToNextUnit() : null,
-            child: Text('Go to Next Unit'),
+            child: Text(_isLastUnitInSection() ? 'Go to Next Section' : 'Go to Next Unit'),
             style: ElevatedButton.styleFrom(
               backgroundColor: (_hasRecording && !_hasMalpractice) ? Color(0xFF2563EB) : Colors.grey,
               foregroundColor: Colors.white,
@@ -466,6 +470,8 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         builder: (context) => AnalysisResultsPage(
           unitName: widget.unitName,
           unitIndex: widget.unitIndex,
+          sectionIndex: widget.sectionIndex,
+          totalUnitsInSection: widget.totalUnitsInSection,
           hasMalpractice: _hasMalpractice,
           analysisResult: _analysisResult ?? '',
         ),
@@ -476,24 +482,29 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
       _retakeRecording();
     } else if (result == 'next') {
       _goToNextUnit();
+    } else if (result == 'section_complete') {
+      Navigator.pop(context, 'section_complete');
     }
   }
 
+  bool _isLastUnitInSection() {
+    return widget.unitIndex == widget.totalUnitsInSection - 1;
+  }
+
   void _goToNextUnit() {
-    // Navigate to next unit in the same section
-    int nextUnitIndex = widget.unitIndex + 1;
+    String message = _isLastUnitInSection() 
+        ? 'Section completed! Moving to next section...'
+        : 'Unit completed! Moving to next unit...';
     
-    // For demo, just show completion message and go back
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Unit completed! Moving to next unit...'),
+        content: Text(message),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
       ),
     );
     
-    // Return true to mark current unit as completed
-    Navigator.pop(context, true);
+    Navigator.pop(context, _isLastUnitInSection() ? 'section_complete' : true);
   }
 
   void _showRecordingTips() {
