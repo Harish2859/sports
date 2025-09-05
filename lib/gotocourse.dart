@@ -690,6 +690,37 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     _unitController.forward();
   }
 
+  void _moveToNextSection() {
+    if (currentSectionIndex < sections.length - 1) {
+      setState(() {
+        currentSectionIndex++;
+        showSectionOverlay = false;
+      });
+      _unitController.reset();
+      _unitController.forward();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Section completed! Welcome to ${sections[currentSectionIndex].title}'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Congratulations! You have completed all sections! 🎉'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
   void _showActionMenu() {
     showModalBottomSheet(
       context: context,
@@ -744,11 +775,13 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
             unitDescription: unit.description,
             sectionName: sections[currentSectionIndex].title,
             unitIndex: unitIndex,
+            sectionIndex: currentSectionIndex,
+            totalUnitsInSection: sectionUnits[currentSectionIndex]?.length ?? 0,
           ),
         ),
       );
       
-      // If user completed the training unit, mark it as completed
+      // Handle different completion results
       if (result == true) {
         _completeUnit(currentSectionIndex, unitIndex);
         if (mounted) {
@@ -760,6 +793,9 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
             ),
           );
         }
+      } else if (result == 'section_complete') {
+        _completeUnit(currentSectionIndex, unitIndex);
+        _moveToNextSection();
       }
     } catch (e) {
       // Handle navigation errors silently
