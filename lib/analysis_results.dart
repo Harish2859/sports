@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class AnalysisResultsPage extends StatefulWidget {
   final String unitName;
   final int unitIndex;
+  final int sectionIndex;
+  final int totalUnitsInSection;
   final bool hasMalpractice;
   final String analysisResult;
 
@@ -10,6 +12,8 @@ class AnalysisResultsPage extends StatefulWidget {
     Key? key,
     required this.unitName,
     required this.unitIndex,
+    required this.sectionIndex,
+    required this.totalUnitsInSection,
     required this.hasMalpractice,
     required this.analysisResult,
   }) : super(key: key);
@@ -445,7 +449,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
         Expanded(
           child: ElevatedButton(
             onPressed: widget.hasMalpractice ? _retakeUnit : _goToNextUnit,
-            child: Text(widget.hasMalpractice ? 'Retake Unit' : 'Go to Next Unit'),
+            child: Text(widget.hasMalpractice ? 'Retake Unit' : (_isLastUnitInSection() ? 'Go to Next Section' : 'Go to Next Unit')),
             style: ElevatedButton.styleFrom(
               backgroundColor: widget.hasMalpractice ? Colors.red : Color(0xFF2563EB),
               foregroundColor: Colors.white,
@@ -464,7 +468,11 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
     Navigator.pop(context, 'retake');
   }
 
+  bool _isLastUnitInSection() {
+    return widget.unitIndex == widget.totalUnitsInSection - 1;
+  }
+
   void _goToNextUnit() {
-    Navigator.pop(context, 'next');
+    Navigator.pop(context, _isLastUnitInSection() ? 'section_complete' : 'next');
   }
 }
