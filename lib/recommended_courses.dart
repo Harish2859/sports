@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'course.dart';
-import 'home.dart';
+import 'main_layout.dart';
 
 class RecommendedCoursesPage extends StatelessWidget {
   final Map<String, dynamic> userPreferences;

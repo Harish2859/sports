@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_state.dart';
-import 'home.dart';
+import 'main_layout.dart';
 
 class AchievementsPage extends StatefulWidget {
   @override

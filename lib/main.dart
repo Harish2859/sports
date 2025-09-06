@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home.dart';
 import 'adminlogin.dart';
+import 'verification.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,6 +21,9 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Roboto',
       ),
       home: const LoginScreen(),
+      routes: {
+        '/home': (context) => const HomePage(),
+      },
     );
   }
 }
@@ -181,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
+                      MaterialPageRoute(builder: (context) => const VerificationPage()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

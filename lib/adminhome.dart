@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'adminprofile.dart';
 import 'adminevents.dart';
-import 'admincourse.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
@@ -15,7 +14,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   final List<Widget> _pages = [
     AdminDashboard(),
-    AdminCoursePage(),
+    // Removed AdminCoursePage
     AdminEventsPage(),
     AdminProfilePage(),
   ];
@@ -39,10 +38,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add_circle),
-            label: 'Add Course',
-          ),
+          // Removed Add Course tab
           BottomNavigationBarItem(
             icon: Icon(Icons.event),
             label: 'Add Event',

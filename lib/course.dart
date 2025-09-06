@@ -80,12 +80,7 @@ class _CoursePageState extends State<CoursePage> {
 
   final List<String> _categories = [
     'All',
-    'Strength Training',
-    'Football',
-    'Basketball',
-    'Swimming',
-    'Yoga',
-    'Running',
+    'Track & Field',
   ];
 
   @override

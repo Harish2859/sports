@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_state.dart';
 import 'course.dart';
-import 'home.dart';
+import 'main_layout.dart';
 import 'gotocourse.dart';
 import 'leaderboard.dart';
 import 'achievement.dart';

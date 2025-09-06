@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'course.dart';
 import 'app_state.dart';
-import 'home.dart';
+import 'main_layout.dart';
 import 'gotocourse.dart';
 import 'course_data_manager.dart';
 
