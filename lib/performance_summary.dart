@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_state.dart';
 
 class PerformanceSummaryPage extends StatefulWidget {
   final String unitName;
@@ -280,7 +281,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
       ),
       child: Row(
         children: [
-          Icon(Icons.target, size: 48, color: Colors.purple),
+          Icon(Icons.gps_fixed, size: 48, color: Colors.purple),
           SizedBox(width: 20),
           Expanded(
             child: Column(
@@ -419,21 +420,27 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   void _claimXP() {
+    final appState = AppState.instance;
+    appState.addXP(_xpEarned);
+    
     setState(() {
       _xpClaimed = true;
     });
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('🎉 $_xpEarned XP added to your account!'),
+        content: Text('🎉 $_xpEarned XP added to your account! Total: ${appState.totalXP} XP'),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 3),
       ),
     );
   }
 
   void _proceedToNext() {
     bool isLastUnit = widget.unitIndex == widget.totalUnitsInSection - 1;
+    
+    // Pop back to analysis results with the result
     Navigator.pop(context, isLastUnit ? 'section_complete' : 'next');
   }
 }

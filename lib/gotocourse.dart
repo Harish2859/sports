@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'trainingunits.dart';
 import 'unit_details.dart';
+import 'course_data_manager.dart';
 
 class GotoCoursePage extends StatefulWidget {
   final String courseName;
+  final String? courseId;
   
-  const GotoCoursePage({Key? key, this.courseName = "Strength"}) : super(key: key);
+  const GotoCoursePage({Key? key, this.courseName = "Strength", this.courseId}) : super(key: key);
 
   @override
   _GotoCoursePageState createState() => _GotoCoursePageState();
@@ -28,32 +30,8 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     3: {0: false, 1: false, 2: false, 3: false, 4: false}, // Section 3 units
   };
 
-  final List<CourseSection> sections = [
-    CourseSection(
-      title: "Section 1: Foundations",
-      description: "Basic strength principles and form",
-      progress: 0.0, // Will be calculated dynamically
-      color: Color(0xFF2563EB), // Primary blue theme
-    ),
-    CourseSection(
-      title: "Section 2: Progressive Loading",
-      description: "Building strength systematically",
-      progress: 0.0, // Will be calculated dynamically
-      color: Color(0xFF2563EB), // Same theme
-    ),
-    CourseSection(
-      title: "Section 3: Advanced Techniques",
-      description: "Complex movements and periodization",
-      progress: 0.0, // Will be calculated dynamically
-      color: Color(0xFF2563EB), // Same theme
-    ),
-    CourseSection(
-      title: "Section 4: Specialization",
-      description: "Sport-specific strength training",
-      progress: 0.0, // Will be calculated dynamically
-      color: Color(0xFF2563EB), // Same theme
-    ),
-  ];
+  final CourseDataManager _courseManager = CourseDataManager();
+  List<CourseSection> sections = [];
 
   final Map<int, List<Unit>> sectionUnits = {
     0: [
@@ -105,8 +83,30 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       CurvedAnimation(parent: _unitController, curve: Curves.elasticOut),
     );
 
+    _initializeSections();
     _updateSectionProgress();
     _unitController.forward();
+  }
+  
+  void _initializeSections() {
+    final courseId = widget.courseId ?? '1'; // Use provided courseId or default
+    final courseSections = _courseManager.getCourseSections(courseId);
+    sections = courseSections.map((sectionData) => CourseSection(
+      title: sectionData.title,
+      description: sectionData.description,
+      progress: 0.0,
+      color: Color(0xFF2563EB),
+    )).toList();
+    
+    // Initialize sectionUnits from course data
+    for (int i = 0; i < courseSections.length; i++) {
+      sectionUnits[i] = courseSections[i].units.map((unitData) => Unit(
+        unitData.name,
+        unitData.description,
+        UnitStatus.notStarted,
+        Icons.fitness_center,
+      )).toList();
+    }
   }
   
   // Calculate section progress based on completed units
@@ -767,16 +767,24 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
 
   void _openUnit(Unit unit, int unitIndex) async {
     try {
+      final courseId = widget.courseId ?? '1';
+      final courseSections = _courseManager.getCourseSections(courseId);
+      final currentSection = courseSections[currentSectionIndex];
+      final currentUnit = currentSection.units[unitIndex];
+      
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => UnitDetailsPage(
+          builder: (context) => EnhancedUnitDetailsPage(
             unitName: unit.title,
             unitDescription: unit.description,
             sectionName: sections[currentSectionIndex].title,
             unitIndex: unitIndex,
             sectionIndex: currentSectionIndex,
             totalUnitsInSection: sectionUnits[currentSectionIndex]?.length ?? 0,
+            objectives: currentUnit.objectives,
+            dos: currentUnit.dos,
+            donts: currentUnit.donts,
           ),
         ),
       );

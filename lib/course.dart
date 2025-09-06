@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'coursedetails.dart';
+import 'course_data_manager.dart';
 
 // Model class for Course
 class Course {
@@ -74,40 +75,17 @@ class _CoursePageState extends State<CoursePage> {
   String _selectedCategory = 'All';
   List<Course> _filteredCourses = [];
 
-  // Sample course data
-  final List<Course> _courses = [
-    Course(
-      id: '1',
-      title: 'Strength',
-      instructor: 'Dr. Sarah Johnson',
-      summary: 'Build muscle strength and power through progressive training',
-      rating: 4.8,
-      difficulty: 'Intermediate',
-      enrolledCount: 1250,
-      duration: '12 weeks',
-      category: 'Strength Training',
-      prerequisites: ['Basic fitness knowledge', 'Gym access'],
-      description: 'Comprehensive strength training course covering progressive overload, proper form, and advanced techniques. Build real strength and learn industry best practices.',
-    ),
-    Course(
-      id: '2',
-      title: 'Endurance',
-      instructor: 'Prof. Michael Chen',
-      summary: 'Master cardiovascular fitness and endurance training',
-      rating: 4.9,
-      difficulty: 'Advanced',
-      enrolledCount: 890,
-      duration: '16 weeks',
-      category: 'Endurance Training',
-      prerequisites: ['Basic cardio fitness', 'Running experience', 'Health clearance'],
-      description: 'Deep dive into endurance training using scientific methods, heart rate zones, and periodization. Learn to build stamina and optimize performance.',
-    ),
-  ];
+  final CourseDataManager _courseManager = CourseDataManager();
+  List<Course> get _courses => _courseManager.allCourses;
 
   final List<String> _categories = [
     'All',
     'Strength Training',
-    'Endurance Training',
+    'Football',
+    'Basketball',
+    'Swimming',
+    'Yoga',
+    'Running',
   ];
 
   @override

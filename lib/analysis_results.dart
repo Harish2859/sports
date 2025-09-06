@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'performance_summary.dart';
 
 class AnalysisResultsPage extends StatefulWidget {
   final String unitName;
@@ -449,7 +450,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
         Expanded(
           child: ElevatedButton(
             onPressed: widget.hasMalpractice ? _retakeUnit : _goToNextUnit,
-            child: Text(widget.hasMalpractice ? 'Retake Unit' : (_isLastUnitInSection() ? 'Go to Next Section' : 'Go to Next Unit')),
+            child: Text(widget.hasMalpractice ? 'Retake Unit' : 'Next'),
             style: ElevatedButton.styleFrom(
               backgroundColor: widget.hasMalpractice ? Colors.red : Color(0xFF2563EB),
               foregroundColor: Colors.white,
@@ -472,7 +473,23 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
     return widget.unitIndex == widget.totalUnitsInSection - 1;
   }
 
-  void _goToNextUnit() {
-    Navigator.pop(context, _isLastUnitInSection() ? 'section_complete' : 'next');
+  void _goToNextUnit() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PerformanceSummaryPage(
+          unitName: widget.unitName,
+          unitIndex: widget.unitIndex,
+          sectionIndex: widget.sectionIndex,
+          totalUnitsInSection: widget.totalUnitsInSection,
+          hasMalpractice: widget.hasMalpractice,
+        ),
+      ),
+    );
+    
+    // Pass the result back to the unit details page
+    if (result != null) {
+      Navigator.pop(context, result);
+    }
   }
 }

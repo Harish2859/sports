@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home.dart';
+import 'adminlogin.dart';
 
 void main() {
   runApp(const MyApp());
@@ -289,6 +290,23 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               
               const SizedBox(height: 40),
+              
+              // Admin Login Button
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
+                  );
+                },
+                child: const Text(
+                  'Admin Login',
+                  style: TextStyle(
+                    color: Color(0xFF6B7280),
+                    fontSize: 14,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

@@ -3,6 +3,8 @@ import 'app_state.dart';
 import 'course.dart';
 import 'home.dart';
 import 'gotocourse.dart';
+import 'leaderboard.dart';
+import 'achievement.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -14,11 +16,12 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  final AppState _appState = AppState();
-
+  final AppState _appState = AppState.instance;
+  
   @override
   void initState() {
     super.initState();
+    _appState.addListener(_onAppStateChanged);
     _animationController = AnimationController(
       duration: Duration(milliseconds: 1000),
       vsync: this,
@@ -28,9 +31,18 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
     _animationController.forward();
   }
+  
+  void _onAppStateChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+
 
   @override
   void dispose() {
+    _appState.removeListener(_onAppStateChanged);
     _animationController.dispose();
     super.dispose();
   }
@@ -48,6 +60,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               _buildProfileHeader(),
               SizedBox(height: 20),
               _buildStatsCards(),
+              SizedBox(height: 20),
+              _buildXPCard(),
               SizedBox(height: 20),
               _buildActionButtons(),
               SizedBox(height: 20),
@@ -155,6 +169,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildStatsCards() {
+    final int totalXP = _appState.totalXP;
+    final bool hasBeginnerBadge = totalXP >= 0;
+    
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -163,10 +180,184 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           SizedBox(width: 12),
           Expanded(child: _buildStatCard('Skill Rating', '8.7/10', Icons.trending_up, Colors.green)),
           SizedBox(width: 12),
-          Expanded(child: _buildStatCard('Achievements', '24', Icons.emoji_events, Colors.orange)),
+          Expanded(child: GestureDetector(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AchievementsPage())),
+            child: hasBeginnerBadge ? _buildBadgeStatCard() : _buildStatCard('Achievements', '0', Icons.emoji_events, Colors.orange),
+          )),
         ],
       ),
     );
+  }
+
+  Widget _buildXPCard() {
+    final int totalXP = _appState.totalXP;
+    final String currentLeague = _getLeague(totalXP);
+    final Map<String, dynamic> leagueInfo = _getLeagueInfo(currentLeague);
+    final int nextLeagueXP = _getNextLeagueXP(currentLeague);
+    final int currentLeagueMinXP = _getLeagueMinXP(currentLeague);
+    final double progress = nextLeagueXP > 0 ? (totalXP - currentLeagueMinXP) / (nextLeagueXP - currentLeagueMinXP) : 1.0;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: leagueInfo['colors'],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: leagueInfo['colors'][0].withOpacity(0.3),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.flash_on, color: Colors.white, size: 32),
+              SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$totalXP XP',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Total Experience Points',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(leagueInfo['icon'], color: Colors.white, size: 16),
+                    SizedBox(width: 4),
+                    Text(
+                      currentLeague,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (nextLeagueXP > 0)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 16),
+                Text(
+                  'Progress to next league',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 12,
+                  ),
+                ),
+                SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value: progress,
+                  backgroundColor: Colors.white.withOpacity(0.3),
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '${(nextLeagueXP - totalXP)} XP to next league',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  String _getLeague(int xp) {
+    if (xp >= 5000) return 'Champion';
+    if (xp >= 3000) return 'Expert';
+    if (xp >= 1500) return 'Advanced';
+    if (xp >= 500) return 'Intermediate';
+    return 'Beginner';
+  }
+
+  Map<String, dynamic> _getLeagueInfo(String league) {
+    switch (league) {
+      case 'Champion':
+        return {
+          'colors': [Color(0xFFFFD700), Color(0xFFFFA500)],
+          'icon': Icons.emoji_events,
+        };
+      case 'Expert':
+        return {
+          'colors': [Color(0xFF9C27B0), Color(0xFF673AB7)],
+          'icon': Icons.star,
+        };
+      case 'Advanced':
+        return {
+          'colors': [Color(0xFF2196F3), Color(0xFF3F51B5)],
+          'icon': Icons.trending_up,
+        };
+      case 'Intermediate':
+        return {
+          'colors': [Color(0xFF4CAF50), Color(0xFF388E3C)],
+          'icon': Icons.school,
+        };
+      default:
+        return {
+          'colors': [Color(0xFF9E9E9E), Color(0xFF616161)],
+          'icon': Icons.sports,
+        };
+    }
+  }
+
+  int _getNextLeagueXP(String currentLeague) {
+    switch (currentLeague) {
+      case 'Beginner': return 500;
+      case 'Intermediate': return 1500;
+      case 'Advanced': return 3000;
+      case 'Expert': return 5000;
+      default: return 0;
+    }
+  }
+  
+  int _getLeagueMinXP(String currentLeague) {
+    switch (currentLeague) {
+      case 'Beginner': return 0;
+      case 'Intermediate': return 500;
+      case 'Advanced': return 1500;
+      case 'Expert': return 3000;
+      case 'Champion': return 5000;
+      default: return 0;
+    }
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
@@ -197,6 +388,69 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
           Text(
             title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBadgeStatCard() {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.3),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                Icons.emoji_events,
+                color: Colors.orange,
+                size: 24,
+              ),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            '1',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          Text(
+            'Achievements',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey[600],
@@ -239,10 +493,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             children: [
               Expanded(
                 child: _buildActionButton(
-                  'Upload Video',
-                  Icons.cloud_upload_outlined,
-                  Colors.green[600]!,
-                  () => _uploadVideo(),
+                  'Leaderboard',
+                  Icons.leaderboard,
+                  Colors.orange[600]!,
+                  () => _navigateToLeaderboard(),
                 ),
               ),
               SizedBox(width: 12),
@@ -667,6 +921,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       SnackBar(content: Text('Find Friends clicked')),
     );
   }
+
+  void _navigateToLeaderboard() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => LeaderboardPage()),
+    );
+  }
 }
 
 // Enrolled courses page
@@ -675,7 +936,7 @@ class MyCoursesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppState appState = AppState();
+    final AppState appState = AppState.instance;
     
     return MainLayout(
       currentIndex: 4, // Profile tab
@@ -787,7 +1048,7 @@ class FavoritesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final AppState appState = AppState();
+    final AppState appState = AppState.instance;
     
     return MainLayout(
       currentIndex: 4, // Profile tab

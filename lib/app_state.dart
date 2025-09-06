@@ -2,15 +2,21 @@ import 'package:flutter/material.dart';
 import 'course.dart';
 
 class AppState extends ChangeNotifier {
-  static final AppState _instance = AppState._internal();
-  factory AppState() => _instance;
+  static AppState? _instance;
+  static AppState get instance {
+    _instance ??= AppState._internal();
+    return _instance!;
+  }
+  factory AppState() => instance;
   AppState._internal();
 
   final List<Course> _enrolledCourses = [];
   final List<Course> _favoriteCourses = [];
+  int _totalXP = 0; // Start with zero XP
 
   List<Course> get enrolledCourses => List.unmodifiable(_enrolledCourses);
   List<Course> get favoriteCourses => List.unmodifiable(_favoriteCourses);
+  int get totalXP => _totalXP;
 
   void enrollInCourse(Course course) {
     if (!_enrolledCourses.any((c) => c.id == course.id)) {
@@ -37,5 +43,12 @@ class AppState extends ChangeNotifier {
 
   bool isFavorite(String courseId) {
     return _favoriteCourses.any((c) => c.id == courseId);
+  }
+
+  void addXP(int xp) {
+    print('Adding $xp XP. Current: $_totalXP');
+    _totalXP += xp;
+    print('New total XP: $_totalXP');
+    notifyListeners();
   }
 }

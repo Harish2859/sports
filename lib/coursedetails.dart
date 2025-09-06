@@ -3,6 +3,7 @@ import 'course.dart';
 import 'app_state.dart';
 import 'home.dart';
 import 'gotocourse.dart';
+import 'course_data_manager.dart';
 
 // Comment Model
 class Comment {
@@ -85,13 +86,8 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     ),
   ];
 
-  final List<String> _sessionTitles = [
-    'Introduction & Setup',
-    'Core Concepts',
-    'Practical Applications',
-    'Advanced Topics',
-    'Final Project',
-  ];
+  final CourseDataManager _courseManager = CourseDataManager();
+  List<String> get _sessionTitles => _courseManager.getSessionTitles(_course.id);
 
   @override
   void initState() {
@@ -494,7 +490,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => GotoCoursePage(courseName: _course.title),
+                                  builder: (context) => GotoCoursePage(
+                                    courseName: _course.title,
+                                    courseId: _course.id,
+                                  ),
                                 ),
                               );
                             }
@@ -643,18 +642,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildFAQItem(
-                        'How long do I have access to the course?',
-                        'You have lifetime access to the course materials once enrolled.',
-                      ),
-                      _buildFAQItem(
-                        'Is there a certificate upon completion?',
-                        'Yes, you will receive a certificate of completion that you can share on your professional profiles.',
-                      ),
-                      _buildFAQItem(
-                        'Can I get a refund if I\'m not satisfied?',
-                        'We offer a 30-day money-back guarantee if you\'re not completely satisfied with the course.',
-                      ),
+                      ..._courseManager.getFAQItems(_course.id).map((faq) => _buildFAQItem(faq.question, faq.answer)),
                     ],
                   ),
                 ),
@@ -679,9 +667,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                       _buildInfoRow('Category', _course.category),
                       _buildInfoRow('Duration', _course.duration),
                       _buildInfoRow('Difficulty Level', _course.difficulty),
-                      _buildInfoRow('Language', 'English'),
-                      _buildInfoRow('Last Updated', 'December 2024'),
-                      _buildInfoRow('Release Date', 'January 2024'),
+                      ..._courseManager.getCourseMetadata(_course.id).entries.map((entry) => _buildInfoRow(entry.key, entry.value)),
                     ],
                   ),
                 ),
