@@ -54,49 +54,7 @@
             100% { stroke-opacity: 0.7; }
         }
 
-        .section-node {
-            position: absolute;
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: radial-gradient(circle, #fff 0%, #f0f0f0 100%);
-            border: 4px solid #fff;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-            color: #333;
-            z-index: 10;
-            transition: all 0.3s ease;
-            animation: float 3s ease-in-out infinite;
-        }
 
-        .section-node:nth-child(odd) {
-            animation-delay: 0s;
-        }
-
-        .section-node:nth-child(even) {
-            animation-delay: 1.5s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .section-node.completed {
-            background: radial-gradient(circle, #4CAF50 0%, #45a049 100%);
-            color: white;
-            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
-        }
-
-        .section-node.locked {
-            background: radial-gradient(circle, #666 0%, #444 100%);
-            color: #ccc;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
-        }
 
         .clouds {
             position: absolute;
@@ -260,13 +218,42 @@
         </div>
 
         <!-- Wavy path SVG -->
-        <svg class="wavy-path" viewBox="0 0 400 800" preserveAspectRatio="none">
+        <svg class="wavy-path" viewBox="0 0 400 600" preserveAspectRatio="none">
             <!-- Glow effect -->
-            <path class="path-glow" d="M80 50 Q320 100 80 200 Q320 250 80 350 Q320 400 80 500 Q320 550 80 650 Q320 700 80 750"/>
+            <path class="path-glow" d="M80 80 Q200 120 320 160 Q200 200 80 240 Q200 280 320 320 Q200 360 80 400 Q200 440 320 480"/>
             
             <!-- Main path -->
-            <path class="path-line" d="M80 50 Q320 100 80 200 Q320 250 80 350 Q320 400 80 500 Q320 550 80 650 Q320 700 80 750"/>
+            <path class="path-line" d="M80 80 Q200 120 320 160 Q200 200 80 240 Q200 280 320 320 Q200 360 80 400 Q200 440 320 480"/>
         </svg>
+
+        <!-- Section nodes positioned along the path -->
+        <div class="section-node completed" style="top: 8%; left: 18%;">
+            <span>1</span>
+        </div>
+        
+        <div class="section-node completed" style="top: 18%; right: 18%;">
+            <span>2</span>
+        </div>
+        
+        <div class="section-node locked" style="top: 28%; left: 18%;">
+            <span>3</span>
+        </div>
+        
+        <div class="section-node locked" style="top: 38%; right: 18%;">
+            <span>4</span>
+        </div>
+        
+        <div class="section-node locked" style="top: 48%; left: 18%;">
+            <span>5</span>
+        </div>
+        
+        <div class="section-node locked" style="top: 58%; right: 18%;">
+            <span>6</span>
+        </div>
+        
+        <div class="section-node locked" style="top: 68%; left: 18%;">
+            <span>7</span>
+        </div>
     </div>
 
     <script>
@@ -294,6 +281,9 @@
             
             pathLine.style.filter = `drop-shadow(${mouseX * 10}px ${mouseY * 10}px 20px rgba(255, 255, 255, 0.3))`;
         });
+
+        // Add click interactions to nodes
+        // Removed since nodes are no longer present
     </script>
 </body>
 </html>
