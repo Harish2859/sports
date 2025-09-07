@@ -569,154 +569,128 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   }
 
   Widget _buildGamifiedCourseView() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
-    return FutureBuilder<WebViewController>(
-      future: _webViewControllerFuture,
-      builder: (context, snapshot) {
-        return Scaffold(
-          body: Stack(
-            children: [
-              // HTML Background with wavy path
-              if (!kIsWeb)
-                FutureBuilder<WebViewController>(
-                  future: _webViewControllerFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return Container(
-                        color: Colors.black12,
-                        child: const Center(child: CircularProgressIndicator()),
-                      );
-                    } else if (snapshot.hasError) {
-                      return Container(
-                        color: Colors.black12,
-                        child: Center(
-                          child: Text(
-                            'Failed to load background: ${snapshot.error}',
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      );
-                    } else if (snapshot.hasData) {
-                      return SizedBox.expand(
-                        child: WebViewWidget(controller: snapshot.data!),
-                      );
-                    } else {
-                      return Container(
-                        color: Colors.black12,
-                        child: const Center(
-                          child: Text(
-                            'Unable to load background',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      );
-                    }
-                  },
+    return Stack(
+      children: [
+        // Background WebView
+        FutureBuilder<WebViewController>(
+          future: _webViewControllerFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+              return SizedBox.expand(
+                child: WebViewWidget(controller: snapshot.data!),
+              );
+            } else {
+              return Container(
+                color: Colors.black12,
+                child: const Center(
+                  child: Text(
+                    'Loading adventure...',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              
-              // Main content
-              Column(
+              );
+            }
+          },
+        ),
+        
+        // Main content
+        Column(
+          children: [
+            // Header section
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: Column(
                 children: [
-                  // Header section
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        Text(
-                          '${widget.courseName} Adventure',
-                          style: const TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                offset: Offset(2, 2),
-                                blurRadius: 4,
-                                color: Colors.black54,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Complete your journey through ${sections.length} magical sections!',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(
-                                offset: Offset(1, 1),
-                                blurRadius: 2,
-                                color: Colors.black54,
-                              ),
-                            ],
-                          ),
+                  Text(
+                    '${widget.courseName} Adventure',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(2, 2),
+                          blurRadius: 4,
+                          color: Colors.black54,
                         ),
                       ],
                     ),
                   ),
-                  
-                  // Wavy path with sections
-                  Expanded(
-                    child: Stack(
-                      children: [
-                        _buildWavyPathSections(),
-                        
-                        // Current section units (if section is unlocked)
-                        if (_isSectionUnlocked(currentSectionIndex))
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              height: 250,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.95),
-                                borderRadius: const BorderRadius.vertical(
-                                  top: Radius.circular(20),
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, -5),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    sections.isNotEmpty 
-                                        ? sections[currentSectionIndex].title 
-                                        : 'Loading...',
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Expanded(
-                                    child: _buildGamifiedUnitsRow(),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Complete your journey through ${sections.length} magical sections!',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(1, 1),
+                          blurRadius: 2,
+                          color: Colors.black54,
+                        ),
                       ],
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-        );
-      },
+            ),
+            
+            // Wavy path with sections
+            Expanded(
+              child: Stack(
+                children: [
+                  _buildWavyPathSections(),
+                  
+                  // Current section units (if section is unlocked)
+                  if (_isSectionUnlocked(currentSectionIndex))
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        height: 250,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.95),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(20),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, -5),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              sections.isNotEmpty 
+                                  ? sections[currentSectionIndex].title 
+                                  : 'Loading...',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Expanded(
+                              child: _buildGamifiedUnitsRow(),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

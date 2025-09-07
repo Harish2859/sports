@@ -8,9 +8,10 @@
         body {
             margin: 0;
             padding: 0;
-            width: 100vw;
+            width: 500vw; /* 5x viewport width for 5 sections */
             height: 100vh;
-            overflow: hidden;
+            overflow-x: auto;
+            overflow-y: hidden;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             position: relative;
         }
@@ -19,9 +20,10 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            width: 500%; /* Match body width */
             height: 100%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-size: 20% 100%; /* Repeat gradient for each section */
         }
 
         .wavy-path {
