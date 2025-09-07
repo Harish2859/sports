@@ -193,11 +193,7 @@ class _SportsEventPageState extends State<SportsEventPage>
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Theme.of(context).colorScheme.primary.withOpacity(0.1), Theme.of(context).colorScheme.surface],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
+        color: Theme.of(context).colorScheme.surface,
       ),
       child: Column(
         children: [
@@ -433,7 +429,7 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
         badgeIcon = Icons.female;
         break;
       case 'mixed':
-        badgeColor = Colors.purple;
+        badgeColor = Colors.green;
         badgeIcon = Icons.group;
         break;
       default:
