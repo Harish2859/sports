@@ -3,6 +3,7 @@ import 'course.dart';
 import 'profile.dart';
 import 'explore.dart';
 import 'main_layout.dart';
+import 'event.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,7 +19,7 @@ class _HomePageState extends State<HomePage> {
   List<Widget> get _pages => [
     const HomeContent(),
     ExplorePage(),
-    const AddPage(),
+    const SportsEventPage(),
     const CoursePage(),
     const ProfilePage(),
   ];

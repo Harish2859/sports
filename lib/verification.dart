@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'home.dart';
+import 'app_state.dart';
 
 class VerificationPage extends StatefulWidget {
   const VerificationPage({super.key});
@@ -622,6 +623,10 @@ class _VerificationPageState extends State<VerificationPage> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
+                  // Update user profile in AppState
+                  final appState = AppState.instance;
+                  appState.updateUserGender(_selectedGender);
+
                   // Navigate to dashboard
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const HomePage()),

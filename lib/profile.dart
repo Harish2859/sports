@@ -127,7 +127,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
           SizedBox(height: 16),
           Text(
-            'Alex Rodriguez',
+            _appState.userName,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -139,6 +139,21 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             style: TextStyle(
               fontSize: 16,
               color: Colors.grey[600],
+            ),
+          ),
+          SizedBox(height: 8),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.blue[100],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Gender: ${_appState.userGender}',
+              style: TextStyle(
+                color: Colors.blue[800],
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           SizedBox(height: 8),

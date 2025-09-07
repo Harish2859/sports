@@ -108,9 +108,9 @@ class _MainLayoutState extends State<MainLayout> {
               label: 'Explore',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.add_circle_outline),
-              activeIcon: Icon(Icons.add_circle),
-              label: 'Add',
+              icon: Icon(Icons.event_outlined),
+              activeIcon: Icon(Icons.event),
+              label: 'Events',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.school_outlined),

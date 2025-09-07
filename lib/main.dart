@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 import 'adminlogin.dart';
 import 'verification.dart';
+import 'event.dart';
 
 void main() {
   runApp(const MyApp());

@@ -321,116 +321,179 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   Widget _buildUserCard(Map<String, dynamic> user, int rank) {
     final league = _getLeague(user['totalXP']);
     final leagueInfo = _getLeagueInfo(league);
-    
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: user['isCurrentUser'] ? const Color(0xFF2563EB).withOpacity(0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: user['isCurrentUser'] 
-            ? Border.all(color: const Color(0xFF2563EB), width: 2)
-            : Border.all(color: Colors.grey[200]!),
-        boxShadow: [
+        color: user['isCurrentUser'] ? const Color(0xFFEEF2FF) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: user['isCurrentUser']
+              ? const Color(0xFF6366F1)
+              : const Color(0xFFE5E7EB),
+          width: user['isCurrentUser'] ? 2 : 1,
+        ),
+        boxShadow: user['isCurrentUser'] ? [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: const Color(0xFF6366F1).withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ] : [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              Stack(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: leagueInfo['colors'],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: leagueInfo['colors'][0], width: 2),
-                    ),
-                    child: Center(
-                      child: Text(
-                        user['avatar'],
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                    ),
-                  ),
-                  if (rank == 1)
-                    Positioned(
-                      top: -5,
-                      right: -5,
-                      child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFFFD700),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.emoji_events,
-                          size: 12,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                ],
+          // Rank Display
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: rank <= 3
+                  ? _getRankColor(rank)
+                  : const Color(0xFFF3F4F6),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: rank <= 3
+                    ? _getRankColor(rank).withOpacity(0.3)
+                    : const Color(0xFFE5E7EB),
+                width: 1,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  '$rank',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: rank <= 3 ? Colors.white : const Color(0xFF6B7280),
+                  ),
+                ),
+                if (rank <= 3)
+                  Icon(
+                    _getRankIcon(rank),
+                    size: 12,
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 16),
+
+          // Avatar
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFFE2E8F0),
+                width: 1,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                user['avatar'],
+                style: const TextStyle(fontSize: 28),
+              ),
+            ),
+          ),
+
+          const SizedBox(width: 16),
+
+          // User Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          user['username'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
+                    Expanded(
+                      child: Text(
+                        user['username'],
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Color(0xFF1F2937),
                         ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: leagueInfo['colors']),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(leagueInfo['icon'], size: 12, color: Colors.white),
-                              const SizedBox(width: 2),
-                              Text(
-                                league,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    const SizedBox(height: 4),
+                    if (user['isCurrentUser'])
+                      Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'You',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            leagueInfo['icon'],
+                            size: 14,
+                            color: const Color(0xFF64748B),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            league,
+                            style: const TextStyle(
+                              color: Color(0xFF475569),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.flash_on, size: 16, color: Colors.orange),
+                        const Icon(
+                          Icons.bolt,
+                          size: 16,
+                          color: Color(0xFF64748B),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           '${user['totalXP']} XP',
                           style: const TextStyle(
-                            color: Colors.grey,
+                            color: Color(0xFF64748B),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           ),
@@ -439,49 +502,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                     ),
                   ],
                 ),
-              ),
-              Column(
-                children: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    decoration: BoxDecoration(
-                      color: rank <= 3 ? leagueInfo['colors'][0] : Colors.grey[300],
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '$rank',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                          color: rank <= 3 ? Colors.white : Colors.grey[600],
-                        ),
-                      ),
-                    ),
-                  ),
-                  if (user['isCurrentUser'])
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'You',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
-
         ],
       ),
     );
@@ -914,6 +937,24 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       case 'Diamond': return 'Champion';
       case 'Champion': return 'Legend';
       default: return 'Max Level';
+    }
+  }
+
+  Color _getRankColor(int rank) {
+    switch (rank) {
+      case 1: return const Color(0xFFFFD700); // Gold
+      case 2: return const Color(0xFFC0C0C0); // Silver
+      case 3: return const Color(0xFFCD7F32); // Bronze
+      default: return const Color(0xFFF3F4F6);
+    }
+  }
+
+  IconData _getRankIcon(int rank) {
+    switch (rank) {
+      case 1: return Icons.emoji_events;
+      case 2: return Icons.military_tech;
+      case 3: return Icons.workspace_premium;
+      default: return Icons.star;
     }
   }
 }

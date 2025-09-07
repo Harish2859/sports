@@ -61,6 +61,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   
   late Course _course;
   int _enrolledCount = 0;
+  String _selectedGenderTab = 'Male'; // Track selected gender tab
   
   List<Comment> _comments = [
     Comment(
@@ -97,7 +98,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   }
 
   void _enrollInCourse() {
-    _appState.enrollInCourse(_course);
+    final userName = _appState.userName;
+    final userGender = _appState.userGender;
+
+    _appState.enrollInCourseWithGender(_course, userName, userGender);
     setState(() {
       _enrolledCount += 1;
     });
@@ -671,7 +675,31 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     ],
                   ),
                 ),
-                
+
+                // Gender Leaderboards
+                const SizedBox(height: 8),
+                Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Course Leaderboards',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1F2937),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      _buildLeaderboardTabs(),
+                      const SizedBox(height: 16),
+                      _buildSelectedLeaderboardView(),
+                    ],
+                  ),
+                ),
+
                 const SizedBox(height: 24),
               ],
             ),
@@ -842,7 +870,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
-    
+
     if (difference.inMinutes < 60) {
       return '${difference.inMinutes}m ago';
     } else if (difference.inHours < 24) {
@@ -850,6 +878,184 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     } else {
       return '${difference.inDays}d ago';
     }
+  }
+
+  Widget _buildLeaderboardTabs() {
+    final genders = ['Male', 'Female', 'Other'];
+
+    return Row(
+      children: genders.map((gender) {
+        final isSelected = _selectedGenderTab == gender;
+        return Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _selectedGenderTab = gender;
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isSelected ? const Color(0xFF2563EB) : Colors.white,
+                foregroundColor: isSelected ? Colors.white : const Color(0xFF6B7280),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(
+                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE5E7EB),
+                  ),
+                ),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: Text(
+                gender,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildSelectedLeaderboardView() {
+    final genderData = {
+      'Male': {'icon': Icons.male, 'color': Color(0xFF2563EB)},
+      'Female': {'icon': Icons.female, 'color': Color(0xFFDC2626)},
+      'Other': {'icon': Icons.transgender, 'color': Color(0xFF7C3AED)},
+    };
+
+    final data = genderData[_selectedGenderTab]!;
+    final icon = data['icon'] as IconData;
+    final color = data['color'] as Color;
+
+    return _buildGenderLeaderboard(_selectedGenderTab, icon, color);
+  }
+
+  Widget _buildGenderLeaderboard(String gender, IconData icon, Color color) {
+    // Use real data from AppState instead of dummy data
+    final enrolledUsers = _appState.getEnrolledUsersByGender(_course.id, gender);
+    final enrolledCount = enrolledUsers.length;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                '$gender Leaderboard',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '$enrolledCount enrolled',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: color.withOpacity(0.7),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (enrolledUsers.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'No $gender users enrolled yet',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: color.withOpacity(0.6),
+                  ),
+                ),
+              ),
+            )
+          else
+            SizedBox(
+              height: 120,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: enrolledUsers.length,
+                itemBuilder: (context, index) {
+                  final userName = enrolledUsers[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Container(
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: color.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            radius: 16,
+                            backgroundColor: color.withOpacity(0.2),
+                            child: Text(
+                              userName[0].toUpperCase(),
+                              style: TextStyle(
+                                color: color,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            userName,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF1F2937),
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '${index + 1}',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: color,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   @override
