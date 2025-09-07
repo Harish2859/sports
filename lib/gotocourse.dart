@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
+import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 import 'main_layout.dart';
 import 'trainingunits.dart';
 import 'unit_details.dart';
 import 'course_data_manager.dart';
 import 'app_state.dart';
 import 'theme_provider.dart';
+import 'gamified_icons.dart';
+import 'course_models.dart';
 
 class GotoCoursePage extends StatefulWidget {
   final String courseName;
@@ -24,14 +33,10 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   late AnimationController _unitController;
   late Animation<double> _overlayAnimation;
   late Animation<double> _unitAnimation;
+  late Future<WebViewController> _webViewControllerFuture;
   
   // Track completion status for each unit in each section
-  Map<int, Map<int, bool>> unitCompletionStatus = {
-    0: {0: false, 1: false, 2: false, 3: false, 4: false}, // Section 0 units
-    1: {0: false, 1: false, 2: false, 3: false, 4: false}, // Section 1 units
-    2: {0: false, 1: false, 2: false, 3: false, 4: false}, // Section 2 units
-    3: {0: false, 1: false, 2: false, 3: false, 4: false}, // Section 3 units
-  };
+  Map<int, Map<int, bool>> unitCompletionStatus = {};
 
   final CourseDataManager _courseManager = CourseDataManager();
   List<CourseSection> sections = [];
@@ -70,27 +75,59 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   @override
   void initState() {
     super.initState();
-    _overlayController = AnimationController(
-      duration: Duration(milliseconds: 300),
-      vsync: this,
-    );
-    _unitController = AnimationController(
-      duration: Duration(milliseconds: 800),
-      vsync: this,
-    );
-    
-    _overlayAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _overlayController, curve: Curves.easeOut),
-    );
-    _unitAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _unitController, curve: Curves.elasticOut),
-    );
-
     _initializeSections();
     _updateSectionProgress();
+    _overlayController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+    _unitController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 200),
+    );
+    _overlayAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _overlayController, curve: Curves.easeInOut),
+    );
+    _unitAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _unitController, curve: Curves.easeInOut),
+    );
+    _webViewControllerFuture = _initWebViewController();
     _unitController.forward();
   }
   
+  Future<WebViewController> _initWebViewController() async {
+    if (kIsWeb) throw UnsupportedError('WebView is not supported on web platform');
+    
+    final WebViewController controller = WebViewController();
+    
+    // Set up platform-specific settings
+    if (Platform.isAndroid) {
+      final AndroidWebViewController androidController = controller.platform as AndroidWebViewController;
+      await androidController.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await androidController.setMediaPlaybackRequiresUserGesture(false);
+    } else if (Platform.isIOS) {
+      final WebKitWebViewController webkitController = controller.platform as WebKitWebViewController;
+      await webkitController.setJavaScriptMode(JavaScriptMode.unrestricted);
+    }
+    
+    // Set up navigation delegate
+    controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageFinished: (String url) {
+          debugPrint('Page finished loading: $url');
+        },
+        onWebResourceError: (WebResourceError error) {
+          debugPrint('WebView error: ${error.description}');
+        },
+      ),
+    );
+    
+    // Load local HTML file
+    await controller.loadFlutterAsset('assets/gamified_background.html');
+    
+    return controller;
+  }
+
   void _initializeSections() {
     final courseId = widget.courseId ?? '1'; // Use provided courseId or default
     final courseSections = _courseManager.getCourseSections(courseId);
@@ -109,6 +146,12 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         UnitStatus.notStarted,
         Icons.fitness_center,
       )).toList();
+      
+      // Initialize completion status for each section
+      unitCompletionStatus[i] = {};
+      for (int j = 0; j < sectionUnits[i]!.length; j++) {
+        unitCompletionStatus[i]![j] = false;
+      }
     }
   }
   
@@ -185,17 +228,59 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   // Check if a section is completed
   bool _isSectionCompleted(int sectionIndex) {
     Map<int, bool>? sectionUnits = unitCompletionStatus[sectionIndex];
-    if (sectionUnits == null) return false;
+    if (sectionUnits == null || sectionUnits.isEmpty) return false;
     
-    return sectionUnits.values.every((completed) => completed);
+    // Get the actual number of units in this section
+    int totalUnits = this.sectionUnits[sectionIndex]?.length ?? 0;
+    if (totalUnits == 0) return false;
+    
+    // Check if all units are completed
+    for (int i = 0; i < totalUnits; i++) {
+      if (sectionUnits[i] != true) {
+        return false;
+      }
+    }
+    
+    print('Section $sectionIndex completed: $totalUnits units all done');
+    return true;
+  }
+  
+  // Check if a section should be unlocked
+  bool _isSectionUnlocked(int sectionIndex) {
+    // First section is always unlocked
+    if (sectionIndex == 0) return true;
+    
+    // Other sections unlock when previous section is completed
+    return _isSectionCompleted(sectionIndex - 1);
   }
   
   // Mark unit as completed and update progress
   void _completeUnit(int sectionIndex, int unitIndex) {
     if (mounted) {
       setState(() {
-        unitCompletionStatus[sectionIndex]?[unitIndex] = true;
+        // Ensure the section exists in completion status
+        if (unitCompletionStatus[sectionIndex] == null) {
+          unitCompletionStatus[sectionIndex] = {};
+        }
+        unitCompletionStatus[sectionIndex]![unitIndex] = true;
         _updateSectionProgress();
+        
+        // Debug print to check completion status
+        print('Unit completed: Section $sectionIndex, Unit $unitIndex');
+        print('Section completion status: ${unitCompletionStatus[sectionIndex]}');
+        
+        // Check if section is now completed and show message
+        if (_isSectionCompleted(sectionIndex)) {
+          print('Section $sectionIndex is now completed!');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('🎉 Section ${sectionIndex + 1} completed! Next section unlocked!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
       });
     }
   }
@@ -211,6 +296,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
 
     return MainLayout(
       currentIndex: 3, // Course tab
@@ -239,11 +325,11 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
           children: [
             Column(
               children: [
-                _buildSectionBar(),
-                Expanded(child: _buildUnitsSection()),
+                if (!isGamified) _buildSectionBar(),
+                Expanded(child: isGamified ? _buildGamifiedCourseView() : _buildUnitsSection()),
               ],
             ),
-            if (showSectionOverlay) _buildSectionOverlay(),
+            if (showSectionOverlay && !isGamified) _buildSectionOverlay(),
           ],
         ),
       ),
@@ -482,6 +568,341 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     );
   }
 
+  Widget _buildGamifiedCourseView() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
+    return FutureBuilder<WebViewController>(
+      future: _webViewControllerFuture,
+      builder: (context, snapshot) {
+        return Scaffold(
+          body: Stack(
+            children: [
+              // HTML Background with wavy path
+              if (!kIsWeb)
+                FutureBuilder<WebViewController>(
+                  future: _webViewControllerFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Container(
+                        color: Colors.black12,
+                        child: const Center(child: CircularProgressIndicator()),
+                      );
+                    } else if (snapshot.hasError) {
+                      return Container(
+                        color: Colors.black12,
+                        child: Center(
+                          child: Text(
+                            'Failed to load background: ${snapshot.error}',
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      );
+                    } else if (snapshot.hasData) {
+                      return SizedBox.expand(
+                        child: WebViewWidget(controller: snapshot.data!),
+                      );
+                    } else {
+                      return Container(
+                        color: Colors.black12,
+                        child: const Center(
+                          child: Text(
+                            'Unable to load background',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              
+              // Main content
+              Column(
+                children: [
+                  // Header section
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Text(
+                          '${widget.courseName} Adventure',
+                          style: const TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(2, 2),
+                                blurRadius: 4,
+                                color: Colors.black54,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Complete your journey through ${sections.length} magical sections!',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(1, 1),
+                                blurRadius: 2,
+                                color: Colors.black54,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Wavy path with sections
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        _buildWavyPathSections(),
+                        
+                        // Current section units (if section is unlocked)
+                        if (_isSectionUnlocked(currentSectionIndex))
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              height: 250,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.95),
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(20),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, -5),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    sections.isNotEmpty 
+                                        ? sections[currentSectionIndex].title 
+                                        : 'Loading...',
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Expanded(
+                                    child: _buildGamifiedUnitsRow(),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWavyPathSections() {
+    return Container(
+      width: double.infinity,
+      child: Stack(
+        children: _buildWavyPathNodes(),
+      ),
+    );
+  }
+
+  List<Widget> _buildWavyPathNodes() {
+    List<Widget> nodes = [];
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height - 300; // Account for header and footer
+    
+    // Wavy path coordinates that match the HTML SVG path
+    List<Map<String, double>> pathPoints = [
+      {'x': 0.2, 'y': 0.1},   // Section 1: Left side, top
+      {'x': 0.8, 'y': 0.25},  // Section 2: Right side
+      {'x': 0.2, 'y': 0.4},   // Section 3: Left side
+      {'x': 0.8, 'y': 0.55},  // Section 4: Right side
+      {'x': 0.2, 'y': 0.7},   // Section 5: Left side
+      {'x': 0.8, 'y': 0.85},  // Section 6: Right side, bottom
+    ];
+    
+    for (int i = 0; i < sections.length && i < pathPoints.length; i++) {
+      double x = screenWidth * pathPoints[i]['x']! - 40; // Center the 80px icon
+      double y = screenHeight * pathPoints[i]['y']!;
+      
+      bool isCompleted = _isSectionCompleted(i);
+      bool isUnlocked = _isSectionUnlocked(i);
+      
+      Widget icon;
+      if (isCompleted) {
+        icon = BreathingStarIcon(
+          size: 80,
+          onTap: () => _selectSection(i),
+        );
+      } else if (isUnlocked) {
+        icon = FloatingTreasureIcon(
+          size: 80,
+          onTap: () => _selectSection(i),
+        );
+      } else {
+        icon = ColorFiltered(
+          colorFilter: ColorFilter.matrix([
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0, 0, 0, 1, 0,
+          ]),
+          child: FloatingTreasureIcon(
+            size: 80,
+            onTap: () => _selectSection(i),
+          ),
+        );
+      }
+      
+      nodes.add(
+        Positioned(
+          left: x,
+          top: y,
+          child: Column(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: icon,
+              ),
+              SizedBox(height: 8),
+              Container(
+                width: 120,
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  sections[i].title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isUnlocked ? Colors.black87 : Colors.grey,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    return nodes;
+  }
+
+  Widget _buildGamifiedUnitsRow() {
+    List<Unit> currentUnits = sectionUnits[currentSectionIndex] ?? [];
+    
+    return ListView.builder(
+      scrollDirection: Axis.horizontal,
+      itemCount: currentUnits.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: EdgeInsets.only(right: 16),
+          child: _buildGamifiedUnitCard(currentUnits[index], index),
+        );
+      },
+    );
+  }
+
+  Widget _buildGamifiedUnitCard(Unit unit, int index) {
+    UnitStatus dynamicStatus = _getUnitStatus(currentSectionIndex, index);
+    bool isUnlocked = _isUnitUnlocked(currentSectionIndex, index);
+    
+    Widget icon;
+    if (dynamicStatus == UnitStatus.completed) {
+      // Use star for completed units
+      icon = BreathingStarIcon(
+        size: 60,
+        onTap: () => _openUnit(unit, index),
+      );
+    } else if (isUnlocked) {
+      // Use colorful treasure for unlocked incomplete units
+      icon = FloatingTreasureIcon(
+        size: 60,
+        onTap: () => _openUnit(unit, index),
+      );
+    } else {
+      // Use black and white treasure for locked units
+      icon = ColorFiltered(
+        colorFilter: ColorFilter.matrix([
+          0.2126, 0.7152, 0.0722, 0, 0,
+          0.2126, 0.7152, 0.0722, 0, 0,
+          0.2126, 0.7152, 0.0722, 0, 0,
+          0, 0, 0, 1, 0,
+        ]),
+        child: FloatingTreasureIcon(
+          size: 60,
+          onTap: null, // Locked units are not tappable
+        ),
+      );
+    }
+    
+    return Container(
+      width: 100,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          icon,
+          SizedBox(height: 8),
+          Text(
+            unit.title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: isUnlocked ? Colors.black87 : Colors.grey,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildUnitsSection() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
@@ -710,6 +1131,20 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
 
   void _selectSection(int index) {
     if (!mounted) return;
+    
+    // Check if section is unlocked before allowing selection
+    if (!_isSectionUnlocked(index)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Complete the previous section to unlock this one!'),
+          backgroundColor: Colors.orange,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+    
+    // Update current section and show its units
     setState(() {
       currentSectionIndex = index;
       showSectionOverlay = false;
@@ -717,6 +1152,16 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     _overlayController.reverse();
     _unitController.reset();
     _unitController.forward();
+    
+    // Show success message when opening a new section
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Opened ${sections[index].title}! Start your training.'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   void _moveToNextSection() {
@@ -839,7 +1284,15 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         }
       } else if (result == 'section_complete') {
         _completeUnit(currentSectionIndex, unitIndex);
-        _moveToNextSection();
+        
+        // In gamified mode, move to next section when "Go to Next Section" is clicked
+        final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+        if (themeProvider.isGamified) {
+          // For gamified mode, move to next section and show it's unlocked
+          _moveToNextSection();
+        } else {
+          _moveToNextSection();
+        }
       }
     } catch (e) {
       // Handle navigation errors silently
@@ -903,27 +1356,4 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
 }
 
 // Data Models
-class CourseSection {
-  final String title;
-  final String description;
-  final double progress;
-  final Color color;
-
-  CourseSection({
-    required this.title,
-    required this.description,
-    required this.progress,
-    required this.color,
-  });
-}
-
-class Unit {
-  final String title;
-  final String description;
-  final UnitStatus status;
-  final IconData icon;
-
-  Unit(this.title, this.description, this.status, this.icon);
-}
-
-enum UnitStatus { completed, inProgress, notStarted }
+// Classes moved to course_models.dart

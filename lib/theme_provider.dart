@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 
+enum AppTheme { light, dark, gamified }
+
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.light;
+  AppTheme _appTheme = AppTheme.light;
 
   ThemeMode get themeMode => _themeMode;
+  AppTheme get appTheme => _appTheme;
+  bool get isGamified => _appTheme == AppTheme.gamified;
 
   void setThemeMode(ThemeMode mode) {
     _themeMode = mode;
@@ -21,17 +26,19 @@ class ThemeProvider with ChangeNotifier {
 
   void setDayTheme() {
     _themeMode = ThemeMode.light;
+    _appTheme = AppTheme.light;
     notifyListeners();
   }
 
   void setDarkTheme() {
     _themeMode = ThemeMode.dark;
+    _appTheme = AppTheme.dark;
     notifyListeners();
   }
 
   void setGamifiedTheme() {
-    // For gamified, we can use a custom theme, but for now, keep it as light
     _themeMode = ThemeMode.light;
+    _appTheme = AppTheme.gamified;
     notifyListeners();
   }
 }

@@ -45,6 +45,12 @@ function(APPLY_STANDARD_SETTINGS TARGET)
   target_compile_definitions(${TARGET} PRIVATE "$<$<CONFIG:Debug>:_DEBUG>")
 endfunction()
 
+# List of absolute paths to all managed plugins' source files.
+set(PLUGIN_MANAGED_LIBRARIES
+  file_selector_windows
+  webview_flutter_windows
+  CACHE INTERNAL "Managed plugin list (internal)")
+
 # Flutter library and tool build rules.
 set(FLUTTER_MANAGED_DIR "${CMAKE_CURRENT_SOURCE_DIR}/flutter")
 add_subdirectory(${FLUTTER_MANAGED_DIR})
