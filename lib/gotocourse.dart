@@ -632,22 +632,26 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     
     return Stack(
       children: [
-        // Background with wavy path
+        // Background with WebView animation
         Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.blue.shade900,
-                  Colors.blue.shade800,
-                  Colors.indigo.shade900,
-                ],
+          child: WebViewWidget(
+            controller: WebViewController()
+              ..setJavaScriptMode(JavaScriptMode.unrestricted)
+              ..loadFlutterAsset('assets/gamified_background.html')
+              ..setBackgroundColor(Colors.transparent)
+              ..setNavigationDelegate(
+                NavigationDelegate(
+                  onPageFinished: (String url) {
+                    // Page finished loading
+                  },
+                ),
               ),
-            ),
-            child: _buildWavyPathSections(),
           ),
+        ),
+        
+        // Wavy path overlay
+        Positioned.fill(
+          child: _buildWavyPathSections(),
         ),
         
         // Content overlay
