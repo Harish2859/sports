@@ -341,7 +341,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       },
       child: Scaffold(
         backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-        appBar: AppBar(
+        appBar: isGamified ? null : AppBar(
           title: Text(
             '${widget.courseName} Training',
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -357,18 +357,17 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         ),
         body: Stack(
           children: [
-            Column(
-              children: [
-                if (!isGamified) _buildSectionBar(),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      isGamified ? _buildGamifiedCourseView() : _buildUnitsSection(),
-                    ],
-                  ),
+            // Show either gamified view or regular view with section bar
+            isGamified 
+              ? _buildGamifiedCourseView()
+              : Column(
+                  children: [
+                    _buildSectionBar(),
+                    Expanded(
+                      child: _buildUnitsSection(),
+                    ),
+                  ],
                 ),
-              ],
-            ),
             if (showSectionOverlay && !isGamified) _buildSectionOverlay(),
           ],
         ),
