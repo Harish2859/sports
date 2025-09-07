@@ -357,7 +357,20 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
         ),
       ),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
+        backgroundColor: Provider.of<ThemeProvider>(context).isGamified 
+            ? null 
+            : Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
+        flexibleSpace: Provider.of<ThemeProvider>(context).isGamified
+            ? Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                  ),
+                ),
+              )
+            : null,
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Column(
@@ -461,7 +474,16 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       body: widget.child,
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
+          gradient: Provider.of<ThemeProvider>(context).isGamified
+              ? const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                )
+              : null,
+          color: Provider.of<ThemeProvider>(context).isGamified 
+              ? null 
+              : Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
               color: Theme.of(context).shadowColor.withOpacity(0.1),
@@ -472,9 +494,13 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
         ),
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
-          selectedItemColor: Theme.of(context).bottomNavigationBarTheme.selectedItemColor ?? Theme.of(context).primaryColor,
-          unselectedItemColor: Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ?? Theme.of(context).textTheme.bodyMedium?.color,
+          backgroundColor: Colors.transparent,
+          selectedItemColor: Provider.of<ThemeProvider>(context).isGamified 
+              ? Colors.white 
+              : Theme.of(context).bottomNavigationBarTheme.selectedItemColor ?? Theme.of(context).primaryColor,
+          unselectedItemColor: Provider.of<ThemeProvider>(context).isGamified
+              ? Colors.white.withOpacity(0.7)
+              : Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ?? Theme.of(context).textTheme.bodyMedium?.color,
           currentIndex: _currentIndex < 0 ? 0 : _currentIndex,
           onTap: _handleTabChanged,
           items: const [

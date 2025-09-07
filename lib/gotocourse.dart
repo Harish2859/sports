@@ -656,52 +656,64 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         // Content overlay
         Positioned.fill(
           child: Container(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top - 3, left: 16, right: 16, bottom: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 20),
-                Text(
-                  '${widget.courseName} Adventure',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    shadows: [
-                      Shadow(
-                        color: Colors.black.withOpacity(0.5),
-                        offset: Offset(1, 1),
-                        blurRadius: 3,
+                // Top bar with title and button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${widget.courseName} Adventure',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  offset: Offset(1, 1),
+                                  blurRadius: 3,
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 4),
+
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Complete sections to unlock new challenges',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
-                    fontSize: 14,
-                  ),
-                ),
-                SizedBox(height: 8),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      showUnitsCard = !showUnitsCard;
-                    });
-                  },
-                  icon: Icon(showUnitsCard ? Icons.visibility_off : Icons.visibility),
-                  label: Text(showUnitsCard ? 'Hide Units' : 'Show Units'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white.withOpacity(0.1),
-                    foregroundColor: Colors.white,
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
                     ),
-                  ),
+                    SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          showUnitsCard = !showUnitsCard;
+                        });
+                      },
+                      icon: Icon(
+                        showUnitsCard ? Icons.visibility_off : Icons.visibility,
+                        size: 20,
+                      ),
+                      label: Text(showUnitsCard ? 'Hide' : 'Show'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white.withOpacity(0.1),
+                        foregroundColor: Colors.white,
+                        elevation: 4,
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                SizedBox(height: 20),
                 SizedBox(height: 12),
                 Expanded(
                   child: Stack(
@@ -773,9 +785,9 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     // Wavy path coordinates that match the HTML SVG path
     List<Map<String, double>> pathPoints = [
       {'x': 0.2, 'y': 0.1},   // Section 1: Left side, top
-      {'x': 0.8, 'y': 0.25},  // Section 2: Right side
+      {'x': 0.7, 'y': 0.25},  // Section 2: Right side
       {'x': 0.2, 'y': 0.4},   // Section 3: Left side
-      {'x': 0.8, 'y': 0.55},  // Section 4: Right side
+      {'x': 0.7, 'y': 0.55},  // Section 4: Right side
       {'x': 0.2, 'y': 0.7},   // Section 5: Left side
       {'x': 0.8, 'y': 0.85},  // Section 6: Right side, bottom
     ];
