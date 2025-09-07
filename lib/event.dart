@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_state.dart' as app_state;
 
 class Event {
   final String id;
@@ -67,63 +68,22 @@ class _SportsEventPageState extends State<SportsEventPage>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
-  final List<Event> _events = [
-    Event(
-      id: '1',
-      title: 'City Marathon Championship',
-      sport: 'Running',
-      date: '2024-10-15',
-      time: '06:00 AM',
-      location: 'Central Park',
-      gender: 'mixed',
-      image: 'assets/images/beginner.png',
-      registeredCount: 245,
-    ),
-    Event(
-      id: '2',
-      title: 'Women\'s Basketball League',
-      sport: 'Basketball',
-      date: '2024-10-18',
-      time: '07:00 PM',
-      location: 'Sports Arena',
-      gender: 'female',
-      image: 'assets/images/intermediate.png',
-      registeredCount: 16,
-    ),
-    Event(
-      id: '3',
-      title: 'Men\'s Soccer Tournament',
-      sport: 'Soccer',
-      date: '2024-10-20',
-      time: '02:00 PM',
-      location: 'Stadium Field',
-      gender: 'male',
-      image: 'assets/images/champ.png',
-      registeredCount: 32,
-    ),
-    Event(
-      id: '4',
-      title: 'Mixed Tennis Championship',
-      sport: 'Tennis',
-      date: '2024-10-25',
-      time: '10:00 AM',
-      location: 'Tennis Club',
-      gender: 'mixed',
-      image: 'assets/images/beginner.png',
-      registeredCount: 24,
-    ),
-    Event(
-      id: '5',
-      title: 'Swimming Competition',
-      sport: 'Swimming',
-      date: '2024-11-01',
-      time: '09:00 AM',
-      location: 'Aquatic Center',
-      gender: 'mixed',
-      image: 'assets/images/intermediate.png',
-      registeredCount: 45,
-    ),
-  ];
+  // Convert admin events to user event format
+  List<Event> _getEventsFromAppState(BuildContext context) {
+    return app_state.AppState.instance.events.map((adminEvent) {
+      return Event(
+        id: adminEvent.id,
+        title: adminEvent.name,
+        sport: adminEvent.sportType,
+        date: '${adminEvent.date.year}-${adminEvent.date.month.toString().padLeft(2, '0')}-${adminEvent.date.day.toString().padLeft(2, '0')}',
+        time: adminEvent.time.format(context),
+        location: adminEvent.location,
+        gender: 'mixed', // Default to mixed since admin events don't have gender
+        image: adminEvent.bannerPath ?? 'assets/images/default_event.png',
+        registeredCount: 0, // Admin events don't track registration count
+      );
+    }).toList();
+  }
 
   String _genderFilter = 'all';
   String _sportFilter = 'all';
@@ -146,17 +106,27 @@ class _SportsEventPageState extends State<SportsEventPage>
       curve: Curves.easeInOut,
     ));
     _animationController.forward();
+
+    // Listen to AppState changes to update when events are added
+    app_state.AppState.instance.addListener(_onAppStateChanged);
   }
 
   @override
   void dispose() {
+    app_state.AppState.instance.removeListener(_onAppStateChanged);
     _pageController.dispose();
     _animationController.dispose();
     super.dispose();
   }
 
-  List<Event> get _filteredEvents {
-    return _events.where((event) {
+  void _onAppStateChanged() {
+    // Rebuild the widget when events change
+    setState(() {});
+  }
+
+  List<Event> _getFilteredEvents(BuildContext context) {
+    final events = _getEventsFromAppState(context);
+    return events.where((event) {
       final genderMatch = _genderFilter == 'all' ||
           event.gender == _genderFilter ||
           event.gender == 'mixed';
@@ -165,8 +135,8 @@ class _SportsEventPageState extends State<SportsEventPage>
     }).toList();
   }
 
-  List<Event> get _displayedEvents {
-    final filtered = _filteredEvents;
+  List<Event> _getDisplayedEvents(BuildContext context) {
+    final filtered = _getFilteredEvents(context);
     if (_showAll || filtered.length <= 3) {
       return filtered;
     }
@@ -204,6 +174,7 @@ class _SportsEventPageState extends State<SportsEventPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -223,7 +194,7 @@ class _SportsEventPageState extends State<SportsEventPage>
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.blue.shade50, Colors.white],
+          colors: [Theme.of(context).colorScheme.primary.withOpacity(0.1), Theme.of(context).colorScheme.surface],
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -305,16 +276,16 @@ class _SportsEventPageState extends State<SportsEventPage>
   }
 
   Widget _buildSwipeableEventCards() {
-    final events = _displayedEvents;
+    final events = _getDisplayedEvents(context);
     if (events.isEmpty) {
-      return const Flexible(
-        child: Center(
-          child: Text(
-            'No events match your filters',
-            style: TextStyle(fontSize: 18, color: Colors.grey),
-          ),
+    return Flexible(
+      child: Center(
+        child: Text(
+          'No events match your filters',
+          style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
         ),
-      );
+      ),
+    );
     }
 
     // If showing all events, use ListView for single page display
@@ -372,7 +343,7 @@ class _SportsEventPageState extends State<SportsEventPage>
   }
 
   Widget _buildSeeAllButton() {
-    if (_filteredEvents.length <= 3) return const SizedBox.shrink();
+    if (_getFilteredEvents(context).length <= 3) return const SizedBox.shrink();
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
@@ -390,10 +361,10 @@ class _SportsEventPageState extends State<SportsEventPage>
           });
         },
         icon: Icon(_showAll ? Icons.expand_less : Icons.expand_more),
-        label: Text(_showAll ? 'Show Less' : 'See All (${_filteredEvents.length})'),
+        label: Text(_showAll ? 'Show Less' : 'See All (${_getFilteredEvents(context).length})'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
-          foregroundColor: Colors.white,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(25),
@@ -520,7 +491,7 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
                 height: 450,
                 child: Card(
                   elevation: _isHovered ? 12 : 8,
-                  shadowColor: Colors.blue.withOpacity(0.3),
+                  shadowColor: null,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -623,14 +594,14 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
   Widget _buildInfoRow(IconData icon, String text) {
     return Row(
       children: [
-        Icon(icon, size: 18.0, color: Colors.grey[600]),
+        Icon(icon, size: 18.0, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
         const SizedBox(width: 12.0),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               fontSize: 14.0,
-              color: Colors.grey[700],
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ),
@@ -647,8 +618,8 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
             icon: const Icon(Icons.how_to_reg),
             label: const Text('Register'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              foregroundColor: Theme.of(context).colorScheme.onPrimary,
               padding: const EdgeInsets.symmetric(vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25),
@@ -659,12 +630,12 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
         const SizedBox(width: 12),
         Container(
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.blue),
+            border: Border.all(color: Theme.of(context).colorScheme.primary),
             borderRadius: BorderRadius.circular(25),
           ),
           child: IconButton(
             icon: const Icon(Icons.share),
-            color: Colors.blue,
+            color: Theme.of(context).colorScheme.primary,
             onPressed: widget.onShare,
           ),
         ),
@@ -727,7 +698,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
                 widget.event.title ?? 'Event',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.grey[600],
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'course.dart';
+import 'certificate_manager.dart';
+import 'adminevents.dart' as admin;
 
 class AppState extends ChangeNotifier {
   static AppState? _instance;
@@ -93,5 +95,54 @@ class AppState extends ChangeNotifier {
   void updateUserGender(String gender) {
     _userGender = gender;
     notifyListeners();
+  }
+
+  // Course completion tracking
+  final Map<String, bool> _completedCourses = {};
+
+  bool isCourseCompleted(String courseId) {
+    return _completedCourses[courseId] ?? false;
+  }
+
+  void completeCourse(String courseId, String courseTitle) {
+    if (!_completedCourses.containsKey(courseId)) {
+      _completedCourses[courseId] = true;
+
+      // Generate certificate
+      final certificateManager = CertificateManager();
+      certificateManager.addCertificate(courseId, courseTitle, _userName);
+
+      // Add XP for completion
+      addXP(100);
+
+      notifyListeners();
+    }
+  }
+
+  // Event management
+  final List<admin.Event> _events = [];
+
+  List<admin.Event> get events => List.unmodifiable(_events);
+
+  void addEvent(admin.Event event) {
+    _events.add(event);
+    notifyListeners();
+  }
+
+  void updateEvent(admin.Event updatedEvent) {
+    final index = _events.indexWhere((e) => e.id == updatedEvent.id);
+    if (index != -1) {
+      _events[index] = updatedEvent;
+      notifyListeners();
+    }
+  }
+
+  void deleteEvent(String eventId) {
+    _events.removeWhere((e) => e.id == eventId);
+    notifyListeners();
+  }
+
+  admin.Event? getEventById(String eventId) {
+    return _events.firstWhere((e) => e.id == eventId);
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'package:provider/provider.dart';
 import 'home.dart';
 import 'app_state.dart';
+import 'theme_provider.dart';
 
 class VerificationPage extends StatefulWidget {
   const VerificationPage({super.key});
@@ -44,42 +46,83 @@ class _VerificationPageState extends State<VerificationPage> {
     super.dispose();
   }
 
-  @override
+    @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    final lightTheme = ThemeData(
+      brightness: Brightness.light,
+      primarySwatch: Colors.blue,
+      primaryColor: const Color(0xFF2563EB),
+      fontFamily: 'Roboto',
+      scaffoldBackgroundColor: Colors.white,
+      appBarTheme: const AppBarTheme(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF374151)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Verify Your Identity',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937),
-          ),
+        iconTheme: IconThemeData(color: Color(0xFF374151)),
+        titleTextStyle: TextStyle(
+          color: Color(0xFF1F2937),
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+          fontFamily: 'Roboto',
         ),
       ),
-      body: Column(
-        children: [
-          _buildProgressIndicator(),
-          Expanded(
-            child: PageView(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              children: [
-                _buildPersonalDetailsStep(),
-                _buildAadharVerificationStep(),
-                _buildOtpVerificationStep(),
-                _buildSportsIdGenerationStep(),
-              ],
+      textTheme: const TextTheme(
+        bodyLarge: TextStyle(color: Colors.black87),
+        bodyMedium: TextStyle(color: Colors.black54),
+      ),
+      dividerColor: const Color(0xFFE5E7EB),
+      inputDecorationTheme: const InputDecorationTheme(
+        filled: true,
+        fillColor: Color(0xFFF3F4F6),
+        border: OutlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFFE5E7EB)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFF2563EB)),
+        ),
+      ),
+    );
+
+    return Theme(
+      data: lightTheme,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Color(0xFF374151)),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text(
+            'Verify Your Identity',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1F2937),
             ),
           ),
-        ],
+          actions: [],
+        ),
+        body: Column(
+          children: [
+            _buildProgressIndicator(),
+            Expanded(
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                children: [
+                  _buildPersonalDetailsStep(),
+                  _buildAadharVerificationStep(),
+                  _buildOtpVerificationStep(),
+                  _buildSportsIdGenerationStep(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -623,15 +666,25 @@ class _VerificationPageState extends State<VerificationPage> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  // Update user profile in AppState
-                  final appState = AppState.instance;
-                  appState.updateUserGender(_selectedGender);
+                  try {
+                    // Update user profile in AppState
+                    final appState = AppState.instance;
+                    appState.updateUserProfile(_fullNameController.text, _selectedGender);
 
-                  // Navigate to dashboard
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const HomePage()),
-                    (Route<dynamic> route) => false,
-                  );
+                    // Navigate to dashboard
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const HomePage()),
+                      (Route<dynamic> route) => false,
+                    );
+                  } catch (e) {
+                    // Handle any navigation errors
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error navigating to dashboard: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF2563EB),
@@ -661,19 +714,9 @@ class _VerificationPageState extends State<VerificationPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: const Color(0xFF2563EB), // Solid color instead of gradient
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2563EB).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        // Removed boxShadow
       ),
       child: Column(
         children: [
@@ -890,41 +933,25 @@ class _VerificationPageState extends State<VerificationPage> {
   }
 
   void _sendOtp() {
-    // Simulate OTP sending
+    // Dummy OTP flow
     setState(() {
       _isOtpSent = true;
+      _otpCountdown = 0;
     });
-    
-    // Start countdown
-    _startOtpCountdown();
   }
 
   void _startOtpCountdown() {
-    _otpTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_otpCountdown > 0) {
-        if (!mounted) {
-          timer.cancel();
-          return;
-        }
-        setState(() {
-          _otpCountdown--;
-        });
-      } else {
-        timer.cancel();
-      }
-    });
+    // This is now a dummy method as requested
   }
 
   void _resendOtp() {
-    setState(() {
-      _otpCountdown = 60;
-    });
-    _sendOtp();
+    // Dummy OTP flow
   }
 
   void _verifyOtp() {
     // Simulate OTP verification
     if (_otpController.text == '123456' || _otpController.text.length == 6) {
+      _otpTimer?.cancel();
       _nextStep();
     } else {
       // Show error

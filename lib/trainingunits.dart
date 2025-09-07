@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
+import 'package:provider/provider.dart';
 import 'training_unit_models.dart';
+import 'theme_provider.dart';
 
 class TrainingUnitsPage extends StatefulWidget {
   final String sectionName;
@@ -29,7 +31,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
   final List<TrainingUnit> units = [
     TrainingUnit(
       name: "Warm-Up Readiness",
-      description: "Assess your body's readiness for training through dynamic movement patterns and joint mobility evaluation.",
+      description: "Assess your body\'s readiness for training through dynamic movement patterns and joint mobility evaluation.",
       dos: [
         "Perform movements smoothly and controlled",
         "Follow the demonstrated range of motion",
@@ -37,10 +39,10 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
         "Breathe naturally during assessment"
       ],
       donts: [
-        "Don't rush through the movements",
-        "Avoid forcing ranges you can't achieve",
-        "Don't hold your breath",
-        "Don't perform if experiencing pain"
+        "Don\'t rush through the movements",
+        "Avoid forcing ranges you can\'t achieve",
+        "Don\'t hold your breath",
+        "Don\'t perform if experiencing pain"
       ],
       icon: Icons.flash_on,
       color: Colors.orange,
@@ -55,10 +57,10 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
         "Keep movements symmetrical"
       ],
       donts: [
-        "Don't compensate with incorrect patterns",
+        "Don\'t compensate with incorrect patterns",
         "Avoid excessive speed or momentum",
-        "Don't ignore pain or discomfort",
-        "Don't perform with poor form"
+        "Don\'t ignore pain or discomfort",
+        "Don\'t perform with poor form"
       ],
       icon: Icons.timeline,
       color: Colors.blue,
@@ -73,10 +75,10 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
         "Focus on muscle activation cues"
       ],
       donts: [
-        "Don't sacrifice form for repetitions",
+        "Don\'t sacrifice form for repetitions",
         "Avoid bouncing or using momentum",
-        "Don't ignore fatigue-induced form breakdown",
-        "Don't continue with compromised technique"
+        "Don\'t ignore fatigue-induced form breakdown",
+        "Don\'t continue with compromised technique"
       ],
       icon: Icons.check_circle_outline,
       color: Colors.green,
@@ -87,21 +89,21 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
       dos: [
         "Start with appropriate baseline load",
         "Progress gradually as instructed",
-        "Monitor your body's response",
+        "Monitor your body\'s response",
         "Maintain technical proficiency"
       ],
       donts: [
-        "Don't jump to heavy loads immediately",
+        "Don\'t jump to heavy loads immediately",
         "Avoid ignoring warning signs",
-        "Don't progress if form deteriorates",
-        "Don't push through sharp pain"
+        "Don\'t progress if form deteriorates",
+        "Don\'t push through sharp pain"
       ],
       icon: Icons.trending_up,
       color: Colors.purple,
     ),
     TrainingUnit(
       name: "Recovery Capacity",
-      description: "Evaluate your body's ability to recover between training sessions and exercises.",
+      description: "Evaluate your body\'s ability to recover between training sessions and exercises.",
       dos: [
         "Monitor heart rate recovery",
         "Assess subjective recovery feelings",
@@ -109,10 +111,10 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
         "Track energy levels accurately"
       ],
       donts: [
-        "Don't ignore persistent fatigue",
+        "Don\'t ignore persistent fatigue",
         "Avoid training when severely fatigued",
-        "Don't rush recovery protocols",
-        "Don't neglect hydration and nutrition"
+        "Don\'t rush recovery protocols",
+        "Don\'t neglect hydration and nutrition"
       ],
       icon: Icons.bedtime,
       color: Colors.teal,
@@ -150,8 +152,11 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFE),
+      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
       appBar: AppBar(
         title: Text(
           '${widget.sectionName} Assessment',
@@ -194,6 +199,8 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
   }
 
   Widget _buildTaskOverview() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     TrainingUnit currentUnit = units[currentUnitIndex];
     
     return SingleChildScrollView(
@@ -206,7 +213,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             width: double.infinity,
             padding: EdgeInsets.all(24),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDarkMode ? Colors.grey[800] : Colors.white,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -237,7 +244,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: isDarkMode ? Colors.white : Colors.black87,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -246,7 +253,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                   currentUnit.description,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[600],
+                    color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                     height: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -262,7 +269,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             width: double.infinity,
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.green[50],
+              color: isDarkMode ? Colors.green[900] : Colors.green[50],
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.green[200]!, width: 1),
             ),
@@ -278,7 +285,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green[800],
+                        color: isDarkMode ? Colors.white : Colors.green[800],
                       ),
                     ),
                   ],
@@ -295,7 +302,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                         child: Text(
                           item,
                           style: TextStyle(
-                            color: Colors.green[800],
+                            color: isDarkMode ? Colors.white : Colors.green[800],
                             fontSize: 14,
                           ),
                         ),
@@ -314,7 +321,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             width: double.infinity,
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.red[50],
+              color: isDarkMode ? Colors.red[900] : Colors.red[50],
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.red[200]!, width: 1),
             ),
@@ -330,7 +337,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.red[800],
+                        color: isDarkMode ? Colors.white : Colors.red[800],
                       ),
                     ),
                   ],
@@ -347,7 +354,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                         child: Text(
                           item,
                           style: TextStyle(
-                            color: Colors.red[800],
+                            color: isDarkMode ? Colors.white : Colors.red[800],
                             fontSize: 14,
                           ),
                         ),
@@ -566,6 +573,9 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
   }
 
   Widget _buildAnalysisView() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       child: Column(
@@ -651,7 +661,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           
@@ -661,7 +671,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             'Our advanced AI is analyzing your movement patterns, form consistency, and performance metrics...',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               height: 1.5,
             ),
             textAlign: TextAlign.center,
@@ -684,11 +694,14 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
   }
 
   Widget _buildAnalysisStep(String title, bool isActive) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: BoxDecoration(
-        color: isActive ? units[currentUnitIndex].color.withOpacity(0.1) : Colors.grey[100],
+        color: isActive ? units[currentUnitIndex].color.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.grey[100]),
         borderRadius: BorderRadius.circular(12),
         border: isActive ? Border.all(color: units[currentUnitIndex].color, width: 1) : null,
       ),
@@ -698,7 +711,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-              color: isActive ? units[currentUnitIndex].color : Colors.grey[400],
+              color: isActive ? units[currentUnitIndex].color : (isDarkMode ? Colors.grey[600] : Colors.grey[400]),
               shape: BoxShape.circle,
             ),
             child: isActive 
@@ -716,7 +729,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
           Text(
             title,
             style: TextStyle(
-              color: isActive ? units[currentUnitIndex].color : Colors.grey[600],
+              color: isActive ? units[currentUnitIndex].color : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
               fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
             ),
           ),
@@ -726,6 +739,9 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
   }
 
   Widget _buildResultsView() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(20),
       child: Column(
@@ -736,7 +752,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
               width: double.infinity,
               padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.red[50],
+                color: isDarkMode ? Colors.red[900] : Colors.red[50],
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: Colors.red[200]!, width: 2),
               ),
@@ -749,14 +765,14 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.red[800],
+                      color: isDarkMode ? Colors.white : Colors.red[800],
                     ),
                   ),
                   SizedBox(height: 12),
                   Text(
                     'Our AI detected potential issues with your video submission. Please retake the assessment.',
                     style: TextStyle(
-                      color: Colors.red[700],
+                      color: isDarkMode ? Colors.white : Colors.red[700],
                       fontSize: 16,
                       height: 1.4,
                     ),
@@ -784,7 +800,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
               width: double.infinity,
               padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? Colors.grey[800] : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
@@ -807,14 +823,14 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: isDarkMode ? Colors.white : Colors.black87,
                     ),
                   ),
                   SizedBox(height: 12),
                   Text(
                     'Your ${units[currentUnitIndex].name.toLowerCase()} assessment has been successfully analyzed.',
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                       fontSize: 16,
                       height: 1.4,
                     ),
@@ -831,7 +847,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
               width: double.infinity,
               padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: isDarkMode ? Colors.grey[800] : Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
@@ -849,7 +865,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: isDarkMode ? Colors.white : Colors.black87,
                     ),
                   ),
                   SizedBox(height: 16),
@@ -893,7 +909,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
                   Text(
                     _getAIFeedback(),
                     style: TextStyle(
-                      color: Colors.black87,
+                      color: isDarkMode ? Colors.white : Colors.black87,
                       fontSize: 16,
                       height: 1.5,
                     ),
@@ -942,6 +958,9 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
   }
 
   Widget _buildMetricRow(String label, String value, Color color) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       margin: EdgeInsets.only(bottom: 12),
       child: Row(
@@ -950,7 +969,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
           Text(
             label,
             style: TextStyle(
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
               fontSize: 16,
             ),
           ),
@@ -974,6 +993,9 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
     );
   }
     Widget _buildCompletionView() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       child: Column(
@@ -983,7 +1005,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             width: 150,
             height: 150,
             decoration: BoxDecoration(
-              color: Colors.green[100],
+              color: isDarkMode ? Colors.green[900] : Colors.green[100],
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -1000,7 +1022,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           
@@ -1010,7 +1032,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             'Great job completing the ${units[currentUnitIndex].name} assessment!',
             style: TextStyle(
               fontSize: 18,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               height: 1.4,
             ),
             textAlign: TextAlign.center,
@@ -1086,7 +1108,7 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
               'You have completed all training units in this section.',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[700],
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
                 fontWeight: FontWeight.w500,
               ),
               textAlign: TextAlign.center,

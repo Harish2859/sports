@@ -107,12 +107,12 @@ class _CoursePageState extends State<CoursePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFFF8FAFC),
+      color: Theme.of(context).scaffoldBackgroundColor,
       child: Column(
         children: [
           // Search and Filter Section
           Container(
-            color: Colors.white,
+            color: Theme.of(context).cardColor,
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
@@ -122,15 +122,16 @@ class _CoursePageState extends State<CoursePage> {
                   onChanged: (value) => _filterCourses(),
                   decoration: InputDecoration(
                     hintText: 'Search courses, instructors, or categories...',
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFF6B7280)),
+                    prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
                     filled: true,
-                    fillColor: const Color(0xFFF3F4F6),
+                    fillColor: Theme.of(context).inputDecorationTheme.fillColor,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
+                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
                 ),
                 const SizedBox(height: 12),
                 
@@ -148,19 +149,20 @@ class _CoursePageState extends State<CoursePage> {
                         padding: const EdgeInsets.only(right: 8),
                         child: FilterChip(
                           selected: isSelected,
-                          label: Text(category),
+                          label: Text(category,
+                            style: TextStyle(
+                              color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).textTheme.bodyLarge?.color,
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                            ),
+                          ),
                           onSelected: (selected) {
                             setState(() {
                               _selectedCategory = category;
                             });
                             _filterCourses();
                           },
-                          selectedColor: const Color(0xFF2563EB).withOpacity(0.2),
-                          checkmarkColor: const Color(0xFF2563EB),
-                          labelStyle: TextStyle(
-                            color: isSelected ? const Color(0xFF2563EB) : const Color(0xFF6B7280),
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          ),
+                          selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                          checkmarkColor: Theme.of(context).colorScheme.primary,
                         ),
                       );
                     },
@@ -176,9 +178,9 @@ class _CoursePageState extends State<CoursePage> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Text(
               '${_filteredCourses.length} courses found',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF6B7280),
+                color: Theme.of(context).textTheme.bodySmall?.color,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -215,11 +217,11 @@ class _CoursePageState extends State<CoursePage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Theme.of(context).shadowColor.withOpacity(0.04),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -259,24 +261,24 @@ class _CoursePageState extends State<CoursePage> {
                       Expanded(
                         child: Text(
                           course.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1F2937),
+                            color: Theme.of(context).textTheme.headlineSmall?.color,
                           ),
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2563EB).withOpacity(0.1),
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           course.category,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
-                            color: Color(0xFF2563EB),
+                            color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -289,9 +291,9 @@ class _CoursePageState extends State<CoursePage> {
                   // Instructor
                   Text(
                     'by ${course.instructor}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF6B7280),
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -301,9 +303,9 @@ class _CoursePageState extends State<CoursePage> {
                   // Course Summary
                   Text(
                     course.summary,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: Color(0xFF4B5563),
+                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
                       height: 1.4,
                     ),
                     maxLines: 2,
@@ -326,10 +328,10 @@ class _CoursePageState extends State<CoursePage> {
                           const SizedBox(width: 4),
                           Text(
                             course.rating.toString(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF1F2937),
+                              color: Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -359,17 +361,17 @@ class _CoursePageState extends State<CoursePage> {
                       // Enrolled Count
                       Row(
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.people_outline,
                             size: 16,
-                            color: Color(0xFF6B7280),
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '${course.enrolledCount}',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
-                              color: Color(0xFF6B7280),
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                             ),
                           ),
                         ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'performance_summary.dart';
+import 'theme_provider.dart';
 
 class AnalysisResultsPage extends StatefulWidget {
   final String unitName;
@@ -75,18 +77,35 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFE),
+      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
       appBar: AppBar(
         title: Text('AI Analysis', style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF2563EB),
+        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+            },
+          ),
+        ],
       ),
       body: _showResults ? _buildResults() : _buildAnalysisAnimation(),
     );
   }
 
   Widget _buildAnalysisAnimation() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -100,7 +119,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: Color(0xFF2563EB).withOpacity(0.1),
+                    color: (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Stack(
@@ -108,12 +127,12 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                     children: [
                       CircularProgressIndicator(
                         strokeWidth: 6,
-                        color: Color(0xFF2563EB),
+                        color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
                       ),
                       Icon(
                         Icons.psychology,
                         size: 40,
-                        color: Color(0xFF2563EB),
+                        color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
                       ),
                     ],
                   ),
@@ -127,16 +146,16 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
           Text(
-            'Please wait while our AI evaluates\nyour form and technique...',
+            'Please wait while our AI evaluates\nyour form and technique...', 
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               height: 1.5,
             ),
           ),
@@ -226,11 +245,14 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildScoreCard() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     int score = widget.hasMalpractice ? 65 : 92;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -251,7 +273,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: isDarkMode ? Colors.white : Colors.black87,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -272,7 +294,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             child: CircularProgressIndicator(
               value: score / 100,
               strokeWidth: 8,
-              backgroundColor: Colors.grey[200],
+              backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
               valueColor: AlwaysStoppedAnimation<Color>(
                 widget.hasMalpractice ? Colors.red : Colors.green,
               ),
@@ -284,10 +306,13 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildDetailedAnalysis() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -305,7 +330,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -313,7 +338,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             widget.analysisResult,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[700],
+              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
               height: 1.5,
             ),
           ),
@@ -325,6 +350,9 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildAnalysisMetrics() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     List<Map<String, dynamic>> metrics = widget.hasMalpractice
         ? [
             {'label': 'Form Accuracy', 'value': 0.6, 'color': Colors.red},
@@ -347,14 +375,14 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(metric['label'], style: TextStyle(fontWeight: FontWeight.w600)),
-                  Text('${(metric['value'] * 100).toInt()}%'),
+                  Text(metric['label'], style: TextStyle(fontWeight: FontWeight.w600, color: isDarkMode ? Colors.white : Colors.black87)),
+                  Text('${(metric['value'] * 100).toInt()}%', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
                 ],
               ),
               SizedBox(height: 4),
               LinearProgressIndicator(
                 value: metric['value'],
-                backgroundColor: Colors.grey[200],
+                backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
                 valueColor: AlwaysStoppedAnimation<Color>(metric['color']),
               ),
             ],
@@ -365,6 +393,9 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildRecommendations() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     List<String> recommendations = widget.hasMalpractice
         ? [
             'Focus on maintaining proper posture throughout the movement',
@@ -380,7 +411,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -398,7 +429,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -409,7 +440,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                   children: [
                     Icon(
                       Icons.lightbulb_outline,
-                      color: Color(0xFF2563EB),
+                      color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
                       size: 20,
                     ),
                     SizedBox(width: 12),
@@ -418,7 +449,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                         rec,
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.grey[700],
+                          color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
                         ),
                       ),
                     ),
@@ -431,6 +462,9 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildNavigationButtons() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Row(
       children: [
         Expanded(
@@ -438,7 +472,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             onPressed: () => Navigator.pop(context),
             child: Text('Back to Course'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Color(0xFF2563EB),
+              foregroundColor: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
               padding: EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -452,7 +486,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             onPressed: widget.hasMalpractice ? _retakeUnit : _goToNextUnit,
             child: Text(widget.hasMalpractice ? 'Retake Unit' : 'Next'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: widget.hasMalpractice ? Colors.red : Color(0xFF2563EB),
+              backgroundColor: widget.hasMalpractice ? Colors.red : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(

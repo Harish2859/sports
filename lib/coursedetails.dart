@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'course.dart';
 import 'app_state.dart';
 import 'main_layout.dart';
 import 'gotocourse.dart';
 import 'course_data_manager.dart';
+import 'theme_provider.dart';
 
 // Comment Model
 class Comment {
@@ -157,6 +159,8 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MainLayout(
       currentIndex: 3, // Course tab
       onTabChanged: (index) {
@@ -171,12 +175,23 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
-            backgroundColor: const Color(0xFF2563EB),
+            backgroundColor: themeProvider.themeMode == ThemeMode.dark
+                ? Colors.grey[800]
+                : const Color(0xFF2563EB),
             leading: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () => Navigator.pop(context),
             ),
             actions: [
+              IconButton(
+                icon: Icon(
+                  themeProvider.themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  themeProvider.toggleTheme();
+                },
+              ),
               IconButton(
                 icon: Icon(
                   _appState.isFavorite(_course.id) ? Icons.favorite : Icons.favorite_border,
@@ -187,9 +202,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
             ],
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
+                    colors: themeProvider.themeMode == ThemeMode.dark
+                        ? [Colors.grey[800]!, Colors.grey[700]!]
+                        : [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -212,7 +229,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
               children: [
                 // Course Header
                 Container(
-                  color: Colors.white,
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[900]
+                      : Colors.white,
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,10 +239,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                       // Course Title
                       Text(
                         _course.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
                           height: 1.2,
                         ),
                       ),
@@ -251,17 +272,21 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                               children: [
                                 Text(
                                   _course.instructor,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Color(0xFF1F2937),
+                                    color: themeProvider.themeMode == ThemeMode.dark
+                                        ? Colors.white
+                                        : const Color(0xFF1F2937),
                                   ),
                                 ),
                                 Text(
                                   '${_course.duration} • ${_course.difficulty}',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF6B7280),
+                                    color: themeProvider.themeMode == ThemeMode.dark
+                                        ? Colors.grey[400]
+                                        : const Color(0xFF6B7280),
                                   ),
                                 ),
                               ],
@@ -289,10 +314,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                               const SizedBox(width: 8),
                               Text(
                                 _course.rating.toString(),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF1F2937),
+                                  color: themeProvider.themeMode == ThemeMode.dark
+                                      ? Colors.white
+                                      : const Color(0xFF1F2937),
                                 ),
                               ),
                             ],
@@ -300,17 +327,21 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                           const SizedBox(width: 24),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.people_outline,
                                 size: 20,
-                                color: Color(0xFF6B7280),
+                                color: themeProvider.themeMode == ThemeMode.dark
+                                    ? Colors.grey[400]
+                                    : const Color(0xFF6B7280),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '$_enrolledCount enrolled',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFF6B7280),
+                                  color: themeProvider.themeMode == ThemeMode.dark
+                                      ? Colors.grey[400]
+                                      : const Color(0xFF6B7280),
                                 ),
                               ),
                             ],
@@ -325,25 +356,31 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 
                 // Course Description
                 Container(
-                  color: Colors.white,
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[900]
+                      : Colors.white,
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'About this course',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 12),
                       Text(
                         _course.description,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          color: Color(0xFF4B5563),
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.grey[400]
+                              : const Color(0xFF4B5563),
                           height: 1.6,
                         ),
                       ),
@@ -356,17 +393,21 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 // Prerequisites
                 if (_course.prerequisites.isNotEmpty)
                   Container(
-                    color: Colors.white,
+                    color: themeProvider.themeMode == ThemeMode.dark
+                        ? Colors.grey[900]
+                        : Colors.white,
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Prerequisites',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1F2937),
+                            color: themeProvider.themeMode == ThemeMode.dark
+                                ? Colors.white
+                                : const Color(0xFF1F2937),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -383,9 +424,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                               Expanded(
                                 child: Text(
                                   prereq,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF4B5563),
+                                    color: themeProvider.themeMode == ThemeMode.dark
+                                        ? Colors.grey[400]
+                                        : const Color(0xFF4B5563),
                                   ),
                                 ),
                               ),
@@ -400,17 +443,21 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 
                 // Course Sessions
                 Container(
-                  color: Colors.white,
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[900]
+                      : Colors.white,
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Course Sessions',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -425,9 +472,14 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                               child: Container(
                                 width: 140,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFF3F4F6),
+                                  color: themeProvider.themeMode == ThemeMode.dark
+                                      ? Colors.grey[800]
+                                      : const Color(0xFFF3F4F6),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFE5E7EB)),
+                                  border: Border.all(
+                                      color: themeProvider.themeMode == ThemeMode.dark
+                                          ? Colors.grey[700]!
+                                          : const Color(0xFFE5E7EB)),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,9 +487,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                     Container(
                                       height: 70,
                                       width: double.infinity,
-                                      decoration: const BoxDecoration(
-                                        color: Color(0xFFE5E7EB),
-                                        borderRadius: BorderRadius.only(
+                                      decoration: BoxDecoration(
+                                        color: themeProvider.themeMode == ThemeMode.dark
+                                            ? Colors.grey[700]
+                                            : const Color(0xFFE5E7EB),
+                                        borderRadius: const BorderRadius.only(
                                           topLeft: Radius.circular(12),
                                           topRight: Radius.circular(12),
                                         ),
@@ -445,10 +499,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                       child: Center(
                                         child: Text(
                                           '${index + 1}',
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 24,
                                             fontWeight: FontWeight.bold,
-                                            color: Color(0xFF9CA3AF),
+                                            color: themeProvider.themeMode == ThemeMode.dark
+                                                ? Colors.grey[500]
+                                                : const Color(0xFF9CA3AF),
                                           ),
                                         ),
                                       ),
@@ -458,10 +514,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                         padding: const EdgeInsets.all(8),
                                         child: Text(
                                           _sessionTitles[index],
-                                          style: const TextStyle(
+                                          style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
-                                            color: Color(0xFF374151),
+                                            color: themeProvider.themeMode == ThemeMode.dark
+                                                ? Colors.white
+                                                : const Color(0xFF374151),
                                           ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
@@ -483,7 +541,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 
                 // Enroll/Join Button
                 Container(
-                  color: Colors.white,
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[900]
+                      : Colors.white,
                   padding: const EdgeInsets.all(24),
                   child: SizedBox(
                     width: double.infinity,
@@ -537,27 +597,33 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 
                 // Comments Section
                 Container(
-                  color: Colors.white,
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[900]
+                      : Colors.white,
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
-                          const Text(
+                          Text(
                             'Reviews & Comments',
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
-                              color: Color(0xFF1F2937),
+                              color: themeProvider.themeMode == ThemeMode.dark
+                                  ? Colors.white
+                                  : const Color(0xFF1F2937),
                             ),
                           ),
                           const Spacer(),
                           Text(
                             '${_comments.length} reviews',
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Color(0xFF6B7280),
+                              color: themeProvider.themeMode == ThemeMode.dark
+                                  ? Colors.grey[400]
+                                  : const Color(0xFF6B7280),
                             ),
                           ),
                         ],
@@ -584,7 +650,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                               decoration: InputDecoration(
                                 hintText: 'Add a comment...',
                                 filled: true,
-                                fillColor: const Color(0xFFF9FAFB),
+                                fillColor: themeProvider.themeMode == ThemeMode.dark
+                                    ? Colors.grey[800]
+                                    : const Color(0xFFF9FAFB),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(24),
                                   borderSide: BorderSide.none,
@@ -616,9 +684,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: _comments.length,
-                        separatorBuilder: (context, index) => const Divider(
+                        separatorBuilder: (context, index) => Divider(
                           height: 32,
-                          color: Color(0xFFF3F4F6),
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.grey[800]
+                              : const Color(0xFFF3F4F6),
                         ),
                         itemBuilder: (context, index) {
                           final comment = _comments[index];
@@ -632,17 +702,21 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 // FAQ Section
                 const SizedBox(height: 8),
                 Container(
-                  color: Colors.white,
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[900]
+                      : Colors.white,
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Frequently Asked Questions',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -654,17 +728,21 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 // Course Metadata
                 const SizedBox(height: 8),
                 Container(
-                  color: Colors.white,
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[900]
+                      : Colors.white,
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Course Information',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -679,17 +757,21 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 // Gender Leaderboards
                 const SizedBox(height: 8),
                 Container(
-                  color: Colors.white,
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[900]
+                      : Colors.white,
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Course Leaderboards',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF1F2937),
+                          color: themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -710,6 +792,8 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   }
 
   Widget _buildCommentCard(Comment comment) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -733,18 +817,22 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 children: [
                   Text(
                     comment.username,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF1F2937),
+                      color: themeProvider.themeMode == ThemeMode.dark
+                          ? Colors.white
+                          : const Color(0xFF1F2937),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     _formatTimestamp(comment.timestamp),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF9CA3AF),
+                      color: themeProvider.themeMode == ThemeMode.dark
+                          ? Colors.grey[400]
+                          : const Color(0xFF9CA3AF),
                     ),
                   ),
                 ],
@@ -752,9 +840,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
               const SizedBox(height: 4),
               Text(
                 comment.text,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
-                  color: Color(0xFF4B5563),
+                  color: themeProvider.themeMode == ThemeMode.dark
+                      ? Colors.grey[400]
+                      : const Color(0xFF4B5563),
                   height: 1.4,
                 ),
               ),
@@ -770,7 +860,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                           size: 16,
                           color: comment.isLiked 
                               ? const Color(0xFFEF4444) 
-                              : const Color(0xFF9CA3AF),
+                              : themeProvider.themeMode == ThemeMode.dark
+                                  ? Colors.grey[400]
+                                  : const Color(0xFF9CA3AF),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -779,7 +871,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                             fontSize: 12,
                             color: comment.isLiked 
                                 ? const Color(0xFFEF4444) 
-                                : const Color(0xFF9CA3AF),
+                                : themeProvider.themeMode == ThemeMode.dark
+                                    ? Colors.grey[400]
+                                    : const Color(0xFF9CA3AF),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -791,11 +885,13 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     onTap: () {
                       // Reply functionality could be added here
                     },
-                    child: const Text(
+                    child: Text(
                       'Reply',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF6B7280),
+                        color: themeProvider.themeMode == ThemeMode.dark
+                            ? Colors.grey[400]
+                            : const Color(0xFF6B7280),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -810,13 +906,17 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   }
 
   Widget _buildFAQItem(String question, String answer) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return ExpansionTile(
       title: Text(
         question,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
-          color: Color(0xFF1F2937),
+          color: themeProvider.themeMode == ThemeMode.dark
+              ? Colors.white
+              : const Color(0xFF1F2937),
         ),
       ),
       children: [
@@ -824,9 +924,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           child: Text(
             answer,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: Color(0xFF6B7280),
+              color: themeProvider.themeMode == ThemeMode.dark
+                  ? Colors.grey[400]
+                  : const Color(0xFF6B7280),
               height: 1.4,
             ),
           ),
@@ -838,6 +940,8 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   }
 
   Widget _buildInfoRow(String label, String value) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -846,19 +950,23 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: Color(0xFF6B7280),
+                color: themeProvider.themeMode == ThemeMode.dark
+                    ? Colors.grey[400]
+                    : const Color(0xFF6B7280),
               ),
             ),
           ),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Color(0xFF1F2937),
+                color: themeProvider.themeMode == ThemeMode.dark
+                    ? Colors.white
+                    : const Color(0xFF1F2937),
               ),
             ),
           ),
@@ -881,6 +989,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   }
 
   Widget _buildLeaderboardTabs() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final genders = ['Male', 'Female', 'Other'];
 
     return Row(
@@ -896,12 +1005,24 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 });
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isSelected ? const Color(0xFF2563EB) : Colors.white,
-                foregroundColor: isSelected ? Colors.white : const Color(0xFF6B7280),
+                backgroundColor: isSelected
+                    ? const Color(0xFF2563EB)
+                    : themeProvider.themeMode == ThemeMode.dark
+                        ? Colors.grey[800]
+                        : Colors.white,
+                foregroundColor: isSelected
+                    ? Colors.white
+                    : themeProvider.themeMode == ThemeMode.dark
+                        ? Colors.white
+                        : const Color(0xFF6B7280),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(
-                    color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFE5E7EB),
+                    color: isSelected
+                        ? const Color(0xFF2563EB)
+                        : themeProvider.themeMode == ThemeMode.dark
+                            ? Colors.grey[700]!
+                            : const Color(0xFFE5E7EB),
                   ),
                 ),
                 elevation: 0,
@@ -923,9 +1044,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
 
   Widget _buildSelectedLeaderboardView() {
     final genderData = {
-      'Male': {'icon': Icons.male, 'color': Color(0xFF2563EB)},
-      'Female': {'icon': Icons.female, 'color': Color(0xFFDC2626)},
-      'Other': {'icon': Icons.transgender, 'color': Color(0xFF7C3AED)},
+      'Male': {'icon': Icons.male, 'color': const Color(0xFF2563EB)},
+      'Female': {'icon': Icons.female, 'color': const Color(0xFFDC2626)},
+      'Other': {'icon': Icons.transgender, 'color': const Color(0xFF7C3AED)},
     };
 
     final data = genderData[_selectedGenderTab]!;
@@ -936,6 +1057,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   }
 
   Widget _buildGenderLeaderboard(String gender, IconData icon, Color color) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     // Use real data from AppState instead of dummy data
     final enrolledUsers = _appState.getEnrolledUsersByGender(_course.id, gender);
     final enrolledCount = enrolledUsers.length;
@@ -999,7 +1121,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     child: Container(
                       width: 80,
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: themeProvider.themeMode == ThemeMode.dark
+                            ? Colors.grey[800]
+                            : Colors.white,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: color.withOpacity(0.3)),
                       ),
@@ -1021,10 +1145,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                           const SizedBox(height: 4),
                           Text(
                             userName,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w500,
-                              color: Color(0xFF1F2937),
+                              color: themeProvider.themeMode == ThemeMode.dark
+                                  ? Colors.white
+                                  : const Color(0xFF1F2937),
                             ),
                             textAlign: TextAlign.center,
                             maxLines: 2,

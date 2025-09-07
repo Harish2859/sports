@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'analysis_results.dart';
+import 'theme_provider.dart';
 
 class EnhancedUnitDetailsPage extends StatefulWidget {
   final String unitName;
@@ -38,11 +40,14 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFE),
+      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
       appBar: AppBar(
         title: Text('Unit Details', style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF2563EB),
+        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -68,10 +73,13 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   }
 
   Widget _buildUnitHeader() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -88,7 +96,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
             'Welcome to',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
           SizedBox(height: 8),
@@ -97,7 +105,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -105,19 +113,19 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
             widget.unitDescription,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[700],
+              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
               height: 1.5,
             ),
           ),
           SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.access_time, color: Color(0xFF2563EB), size: 20),
+              Icon(Icons.access_time, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB), size: 20),
               SizedBox(width: 8),
               Text(
                 'Estimated time: 15-20 minutes',
                 style: TextStyle(
-                  color: Color(0xFF2563EB),
+                  color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -129,10 +137,13 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   }
 
   Widget _buildVideoSection() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -150,25 +161,25 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
           Container(
             height: 200,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.play_circle_outline, size: 64, color: Color(0xFF2563EB)),
+                  Icon(Icons.play_circle_outline, size: 64, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                   SizedBox(height: 8),
                   Text(
                     'Video demonstration coming soon',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
                   ),
                 ],
               ),
@@ -178,7 +189,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
           Text(
             'Watch this video for an overview and demonstration of key concepts for ${widget.unitName}.',
             style: TextStyle(
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               fontSize: 14,
             ),
           ),
@@ -188,10 +199,13 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   }
 
   Widget _buildObjectives() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -209,7 +223,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -220,18 +234,21 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   }
 
   Widget _buildObjectiveItem(String objective) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Padding(
       padding: EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(Icons.check_circle_outline, color: Color(0xFF2563EB), size: 20),
+          Icon(Icons.check_circle_outline, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB), size: 20),
           SizedBox(width: 12),
           Expanded(
             child: Text(
               objective,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[700],
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
               ),
             ),
           ),
@@ -241,13 +258,16 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   }
 
   Widget _buildDosAndDonts() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Row(
       children: [
         Expanded(
           child: Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDarkMode ? Colors.grey[800] : Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -287,7 +307,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                           item,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[700],
+                            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
                           ),
                         ),
                       ),
@@ -303,7 +323,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
           child: Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDarkMode ? Colors.grey[800] : Colors.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -343,7 +363,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                           item,
                           style: TextStyle(
                             fontSize: 14,
-                            color: Colors.grey[700],
+                            color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
                           ),
                         ),
                       ),
@@ -359,10 +379,13 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   }
 
   Widget _buildRecordingSection() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -380,25 +403,25 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
           Container(
             height: 200,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.videocam, size: 48, color: Colors.grey[500]),
+                  Icon(Icons.videocam, size: 48, color: isDarkMode ? Colors.grey[400] : Colors.grey[500]),
                   SizedBox(height: 8),
                   Text(
                     'Tap to record your performance',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
                   ),
                 ],
               ),
@@ -408,9 +431,9 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
           if (_isAnalyzing)
             Column(
               children: [
-                CircularProgressIndicator(color: Color(0xFF2563EB)),
+                CircularProgressIndicator(color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                 SizedBox(height: 12),
-                Text('AI analyzing your performance...', style: TextStyle(color: Colors.grey[600])),
+                Text('AI analyzing your performance...', style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600])),
               ],
             )
           else if (_hasRecording && !_isAnalyzing)
@@ -420,7 +443,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.red[50],
+                      color: isDarkMode ? Colors.red[900] : Colors.red[50],
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.red[200]!),
                     ),
@@ -434,7 +457,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                           ],
                         ),
                         SizedBox(height: 8),
-                        Text(_analysisResult ?? '', style: TextStyle(color: Colors.red[700])),
+                        Text(_analysisResult ?? '', style: TextStyle(color: isDarkMode ? Colors.white : Colors.red[700])),
                         SizedBox(height: 12),
                         ElevatedButton(
                           onPressed: _retakeRecording,
@@ -448,7 +471,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
+                      color: isDarkMode ? Colors.green[900] : Colors.green[50],
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.green[200]!),
                     ),
@@ -462,7 +485,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                           ],
                         ),
                         SizedBox(height: 8),
-                        Text(_analysisResult ?? '', style: TextStyle(color: Colors.green[700])),
+                        Text(_analysisResult ?? '', style: TextStyle(color: isDarkMode ? Colors.white : Colors.green[700])),
                       ],
                     ),
                   ),
@@ -471,7 +494,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                   onPressed: _submitRecording,
                   child: Text('Submit Recording'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF2563EB),
+                    backgroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
                     padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                   ),
                 ),
@@ -486,7 +509,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                   icon: Icon(_isRecording ? Icons.stop : Icons.fiber_manual_record),
                   label: Text(_isRecording ? 'Stop Recording' : 'Start Recording'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isRecording ? Colors.red : Color(0xFF2563EB),
+                    backgroundColor: _isRecording ? Colors.red : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
@@ -496,7 +519,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
                   icon: Icon(Icons.info_outline),
                   label: Text('Tips'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Color(0xFF2563EB),
+                    foregroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
@@ -508,6 +531,9 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   }
 
   Widget _buildNavigationButtons() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Row(
       children: [
         Expanded(
@@ -515,7 +541,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
             onPressed: () => Navigator.pop(context),
             child: Text('Back to Course'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Color(0xFF2563EB),
+              foregroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
               padding: EdgeInsets.symmetric(vertical: 16),
             ),
           ),
@@ -526,7 +552,7 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
             onPressed: (_hasRecording && !_hasMalpractice) ? () => _goToNextUnit() : null,
             child: Text(_isLastUnitInSection() ? 'Go to Next Section' : 'Go to Next Unit'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: (_hasRecording && !_hasMalpractice) ? Color(0xFF2563EB) : Colors.grey,
+              backgroundColor: (_hasRecording && !_hasMalpractice) ? (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)) : Colors.grey,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16),
             ),
@@ -619,25 +645,29 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   }
 
   void _showRecordingTips() {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Recording Tips'),
+        backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+        title: Text('Recording Tips', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('• Ensure good lighting'),
-            Text('• Keep camera steady'),
-            Text('• Record full movement'),
-            Text('• Focus on proper form'),
-            Text('• Record multiple angles if needed'),
+            Text('• Ensure good lighting', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            Text('• Keep camera steady', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            Text('• Record full movement', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            Text('• Focus on proper form', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            Text('• Record multiple angles if needed', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Got it'),
+            child: Text('Got it', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
           ),
         ],
       ),
@@ -686,11 +716,14 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFE),
+      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
       appBar: AppBar(
         title: Text('Unit Details', style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF2563EB),
+        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -714,10 +747,13 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   Widget _buildUnitHeader() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -734,7 +770,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             'Welcome to',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
           SizedBox(height: 8),
@@ -743,7 +779,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -751,19 +787,19 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             widget.unitDescription,
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[700],
+              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
               height: 1.5,
             ),
           ),
           SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.access_time, color: Color(0xFF2563EB), size: 20),
+              Icon(Icons.access_time, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB), size: 20),
               SizedBox(width: 8),
               Text(
                 'Estimated time: 15-20 minutes',
                 style: TextStyle(
-                  color: Color(0xFF2563EB),
+                  color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -775,10 +811,13 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   Widget _buildVideoSection() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -796,25 +835,25 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
           Container(
             height: 200,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.play_circle_outline, size: 64, color: Color(0xFF2563EB)),
+                  Icon(Icons.play_circle_outline, size: 64, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                   SizedBox(height: 8),
                   Text(
                     'Video demonstration coming soon',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
                   ),
                 ],
               ),
@@ -824,7 +863,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
           Text(
             'Watch this video for an overview and demonstration of key concepts for ${widget.unitName}.',
             style: TextStyle(
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               fontSize: 14,
             ),
           ),
@@ -834,10 +873,13 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   Widget _buildObjectives() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -855,7 +897,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -869,18 +911,21 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   Widget _buildObjectiveItem(String objective) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Padding(
       padding: EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(Icons.check_circle_outline, color: Color(0xFF2563EB), size: 20),
+          Icon(Icons.check_circle_outline, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB), size: 20),
           SizedBox(width: 12),
           Expanded(
             child: Text(
               objective,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[700],
+                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
               ),
             ),
           ),
@@ -890,10 +935,13 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   Widget _buildRecordingSection() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -911,25 +959,25 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
           Container(
             height: 200,
             decoration: BoxDecoration(
-              color: Colors.grey[200],
+              color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.videocam, size: 48, color: Colors.grey[500]),
+                  Icon(Icons.videocam, size: 48, color: isDarkMode ? Colors.grey[400] : Colors.grey[500]),
                   SizedBox(height: 8),
                   Text(
                     'Tap to record your performance',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
                   ),
                 ],
               ),
@@ -939,9 +987,9 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
           if (_isAnalyzing)
             Column(
               children: [
-                CircularProgressIndicator(color: Color(0xFF2563EB)),
+                CircularProgressIndicator(color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                 SizedBox(height: 12),
-                Text('AI analyzing your performance...', style: TextStyle(color: Colors.grey[600])),
+                Text('AI analyzing your performance...', style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600])),
               ],
             )
           else if (_hasRecording && !_isAnalyzing)
@@ -951,7 +999,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.red[50],
+                      color: isDarkMode ? Colors.red[900] : Colors.red[50],
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.red[200]!),
                     ),
@@ -965,7 +1013,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                           ],
                         ),
                         SizedBox(height: 8),
-                        Text(_analysisResult ?? '', style: TextStyle(color: Colors.red[700])),
+                        Text(_analysisResult ?? '', style: TextStyle(color: isDarkMode ? Colors.white : Colors.red[700])),
                         SizedBox(height: 12),
                         ElevatedButton(
                           onPressed: _retakeRecording,
@@ -979,7 +1027,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
+                      color: isDarkMode ? Colors.green[900] : Colors.green[50],
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: Colors.green[200]!),
                     ),
@@ -993,7 +1041,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                           ],
                         ),
                         SizedBox(height: 8),
-                        Text(_analysisResult ?? '', style: TextStyle(color: Colors.green[700])),
+                        Text(_analysisResult ?? '', style: TextStyle(color: isDarkMode ? Colors.white : Colors.green[700])),
                       ],
                     ),
                   ),
@@ -1002,7 +1050,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                   onPressed: _submitRecording,
                   child: Text('Submit Recording'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF2563EB),
+                    backgroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
                     padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
                   ),
                 ),
@@ -1017,7 +1065,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                   icon: Icon(_isRecording ? Icons.stop : Icons.fiber_manual_record),
                   label: Text(_isRecording ? 'Stop Recording' : 'Start Recording'),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _isRecording ? Colors.red : Color(0xFF2563EB),
+                    backgroundColor: _isRecording ? Colors.red : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
@@ -1027,7 +1075,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                   icon: Icon(Icons.info_outline),
                   label: Text('Tips'),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Color(0xFF2563EB),
+                    foregroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
@@ -1039,6 +1087,9 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   Widget _buildNavigationButtons() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Row(
       children: [
         Expanded(
@@ -1046,7 +1097,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             onPressed: () => Navigator.pop(context),
             child: Text('Back to Course'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Color(0xFF2563EB),
+              foregroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
               padding: EdgeInsets.symmetric(vertical: 16),
             ),
           ),
@@ -1057,7 +1108,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             onPressed: (_hasRecording && !_hasMalpractice) ? () => _goToNextUnit() : null,
             child: Text(_isLastUnitInSection() ? 'Go to Next Section' : 'Go to Next Unit'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: (_hasRecording && !_hasMalpractice) ? Color(0xFF2563EB) : Colors.grey,
+              backgroundColor: (_hasRecording && !_hasMalpractice) ? (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)) : Colors.grey,
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16),
             ),
@@ -1152,32 +1203,32 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   void _showRecordingTips() {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Recording Tips'),
+        backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+        title: Text('Recording Tips', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('• Ensure good lighting'),
-            Text('• Keep camera steady'),
-            Text('• Record full movement'),
-            Text('• Focus on proper form'),
-            Text('• Record multiple angles if needed'),
+            Text('• Ensure good lighting', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            Text('• Keep camera steady', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            Text('• Record full movement', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            Text('• Focus on proper form', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            Text('• Record multiple angles if needed', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Got it'),
+            child: Text('Got it', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
           ),
         ],
       ),
     );
   }
-
-
-
-
 }

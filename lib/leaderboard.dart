@@ -1,95 +1,173 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'main_layout.dart';
 import 'myleague.dart';
+import 'theme_provider.dart';
 
 class LeaderboardPage extends StatefulWidget {
+  const LeaderboardPage({super.key});
+
   @override
   _LeaderboardPageState createState() => _LeaderboardPageState();
 }
 
-class _LeaderboardPageState extends State<LeaderboardPage> {
+class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderStateMixin {
   String activeTab = 'global';
   String selectedLeague = 'all';
+
+  late AnimationController _rotationController;
+  late AnimationController _scaleController;
+  late AnimationController _glowController;
+  late Animation<double> _rotationAnimation;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _glowAnimation;
 
   final List<Map<String, dynamic>> users = [
     {
       'id': 1,
       'username': 'Alex Champion',
-      'avatar': '🏆',
+      'avatar': 'assets/images/champ.png',
       'totalXP': 15420,
       'strength': 95,
       'stamina': 88,
       'agility': 92,
       'skills': 90,
       'isCurrentUser': false,
+      'badgeImage': 'assets/images/champ.png',
     },
     {
       'id': 2,
       'username': 'Sarah Runner',
-      'avatar': '🏃♀️',
+      'avatar': 'assets/images/intermediate.png',
       'totalXP': 14850,
       'strength': 85,
       'stamina': 98,
       'agility': 89,
       'skills': 87,
       'isCurrentUser': false,
+      'badgeImage': 'assets/images/intermediate.png',
     },
     {
       'id': 3,
       'username': 'Mike Strong',
-      'avatar': '💪',
+      'avatar': 'assets/images/beginner.png',
       'totalXP': 14200,
       'strength': 99,
       'stamina': 82,
       'agility': 85,
       'skills': 88,
       'isCurrentUser': false,
+      'badgeImage': 'assets/images/beginner.png',
     },
     {
       'id': 4,
       'username': 'You',
-      'avatar': '👤',
+      'avatar': 'assets/images/silver.png',
       'totalXP': 8750,
       'strength': 75,
       'stamina': 80,
       'agility': 78,
       'skills': 82,
       'isCurrentUser': true,
+      'badgeImage': 'assets/images/silver.png',
     },
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _scaleController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _glowController = AnimationController(
+      duration: const Duration(seconds: 3),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _rotationAnimation = Tween<double>(begin: -0.2, end: 0.2).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
+
+    _glowAnimation = Tween<double>(begin: 0.3, end: 0.8).animate(
+      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    _scaleController.dispose();
+    _glowController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final sortedUsers = List.from(users)..sort((a, b) => b['totalXP'].compareTo(a['totalXP']));
-    final topThree = sortedUsers.take(3).toList();
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final theme = Theme.of(context);
+
+    List<Map<String, dynamic>> filteredUsers;
+    List<Map<String, dynamic>> topThreeFiltered;
+
+    if (activeTab == 'league') {
+      // Filter users to show only those in the same league as current user
+      final currentUser = users.firstWhere((user) => user['isCurrentUser']);
+      final currentUserLeague = _getLeague(currentUser['totalXP']);
+      filteredUsers = users.where((user) => _getLeague(user['totalXP']) == currentUserLeague).toList()
+        ..sort((a, b) => b['totalXP'].compareTo(a['totalXP']));
+      topThreeFiltered = filteredUsers.take(3).toList();
+    } else {
+      // Global tab - show all users
+      filteredUsers = List.from(users)..sort((a, b) => b['totalXP'].compareTo(a['totalXP']));
+      topThreeFiltered = filteredUsers.take(3).toList();
+    }
 
     return MainLayout(
       currentIndex: -1,
       onTabChanged: (index) {},
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text('Leaderboard'),
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF1F2937),
+          backgroundColor: theme.appBarTheme.backgroundColor,
+          foregroundColor: theme.appBarTheme.foregroundColor,
           elevation: 0,
+          actions: [
+            IconButton(
+              icon: Icon(
+                isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              ),
+              onPressed: () {
+                themeProvider.toggleTheme();
+              },
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           child: Column(
             children: [
               // Header with tabs
               Container(
-                color: Colors.white,
+                color: theme.colorScheme.surface,
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    const Text(
+                    Text(
+                      activeTab == 'league' ? 'My League Leaderboard' :
                       'Sports Champions Leaderboard',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
-                      ),
+                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
                     SingleChildScrollView(
@@ -97,11 +175,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _buildTabButton('global', 'Global', Icons.public),
+                          _buildTabButton('global', 'Global', Icons.public, theme),
                           const SizedBox(width: 8),
-                          _buildTabButton('league', 'My League', Icons.emoji_events),
-                          const SizedBox(width: 8),
-                          _buildTabButton('friends', 'Friends', Icons.people),
+                          _buildTabButton('league', 'My League', Icons.emoji_events, theme),
                         ],
                       ),
                     ),
@@ -111,65 +187,188 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
 
               const SizedBox(height: 24),
 
-              // Champions Podium
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text(
-                      '🏆 Champions Podium 🏆',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
+              if (activeTab == 'league') ...[
+                // League Status Card
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: theme.primaryColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: [
+                      AnimatedBuilder(
+                        animation: _scaleAnimation,
+                        builder: (context, child) {
+                          return Transform.scale(
+                            scale: _scaleAnimation.value,
+                            child: SizedBox(
+                              width: 50,
+                              height: 50,
+                              child: Image.asset(
+                                'assets/images/champ.png',
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(Icons.emoji_events, color: Colors.white, size: 50);
+                                },
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.end,
+                      const SizedBox(height: 8),
+                      Text(
+                        '${_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP'])} League',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        _getLeagueDescription(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP'])),
+                        style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          if (topThree.length > 1) _buildPodiumCard(topThree[1], 2),
-                          const SizedBox(width: 16),
-                          if (topThree.isNotEmpty) _buildPodiumCard(topThree[0], 1),
-                          const SizedBox(width: 16),
-                          if (topThree.length > 2) _buildPodiumCard(topThree[2], 3),
+                          _buildStatItem('Rank', '#4', Colors.white),
+                          _buildStatItem('XP', '${users.firstWhere((user) => user['isCurrentUser'])['totalXP']}', Colors.white),
+                          _buildStatItem('Members', '${filteredUsers.length}', Colors.white),
                         ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: 24),
+                const SizedBox(height: 24),
 
-              // Leaderboard List
-              Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Full Rankings',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1F2937),
+                // Progress Section
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Progress to ${_getNextLeague(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP']))}',
+                        style: theme.textTheme.headlineSmall,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    ...sortedUsers.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final user = entry.value;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: _buildUserCard(user, index + 1),
-                      );
-                    }).toList(),
-                  ],
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: theme.dividerColor),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('${_getLeagueMinXP(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP']))} XP',
+                                  style: theme.textTheme.bodySmall),
+                                Text('${_getNextLeagueXP(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP']))} XP',
+                                  style: theme.textTheme.bodySmall),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            LinearProgressIndicator(
+                              value: 0.75,
+                              backgroundColor: theme.dividerColor,
+                              valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
+                              minHeight: 8,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${_getNextLeagueXP(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP'])) - users.firstWhere((user) => user['isCurrentUser'])['totalXP']} XP needed to reach ${_getNextLeague(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP']))} League',
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+
+                const SizedBox(height: 24),
+
+                // League Rankings
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Text(
+                        'League Rankings',
+                        style: theme.textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 16),
+                      ...filteredUsers.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final user = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildUserCard(user, index + 1, theme),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                ),
+              ] else ...[
+                // Champions Podium
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Text(
+                        '🏆 Champions Podium 🏆',
+                        style: theme.textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 24),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            if (topThreeFiltered.length > 1) _buildPodiumCard(topThreeFiltered[1], 2, theme),
+                            const SizedBox(width: 16),
+                            if (topThreeFiltered.isNotEmpty) _buildPodiumCard(topThreeFiltered[0], 1, theme),
+                            const SizedBox(width: 16),
+                            if (topThreeFiltered.length > 2) _buildPodiumCard(topThreeFiltered[2], 3, theme),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Leaderboard List
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Full Rankings',
+                        style: theme.textTheme.headlineSmall,
+                      ),
+                      const SizedBox(height: 16),
+                      ...filteredUsers.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final user = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildUserCard(user, index + 1, theme),
+                        );
+                      }).toList(),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -177,22 +376,16 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     );
   }
 
-  Widget _buildTabButton(String tabId, String label, IconData icon) {
+  Widget _buildTabButton(String tabId, String label, IconData icon, ThemeData theme) {
     final isActive = activeTab == tabId;
     return GestureDetector(
       onTap: () {
         setState(() => activeTab = tabId);
-        if (tabId == 'league') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MyLeaguePage()),
-          );
-        }
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF2563EB) : Colors.grey[100],
+          color: isActive ? theme.primaryColor : theme.dividerColor,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -201,13 +394,13 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             Icon(
               icon,
               size: 16,
-              color: isActive ? Colors.white : Colors.grey[600],
+              color: isActive ? Colors.white : theme.textTheme.bodyLarge?.color,
             ),
             const SizedBox(width: 4),
             Text(
               label,
               style: TextStyle(
-                color: isActive ? Colors.white : Colors.grey[600],
+                color: isActive ? Colors.white : theme.textTheme.bodyLarge?.color,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -217,7 +410,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     );
   }
 
-  Widget _buildPodiumCard(Map<String, dynamic> user, int rank) {
+  Widget _buildPodiumCard(Map<String, dynamic> user, int rank, ThemeData theme) {
     final heights = {1: 120.0, 2: 100.0, 3: 80.0};
     final colors = {
       1: [const Color(0xFFFFD700), const Color(0xFFFFA500)],
@@ -230,7 +423,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: colors[rank]![0],
@@ -248,42 +441,45 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             children: [
               if (rank == 1)
                 const Icon(
-                  Icons.emoji_events,
+                  Icons.sports_kabaddi,
                   color: Color(0xFFFFD700),
                   size: 24,
                 ),
               const SizedBox(height: 8),
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: colors[rank]![0].withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: colors[rank]![0], width: 2),
-                ),
-                child: Center(
-                  child: Text(
-                    user['avatar'],
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                ),
+              AnimatedBuilder(
+                animation: _scaleAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(25),
+                      child: Image.asset(
+                        user['badgeImage'],
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.emoji_events,
+                            color: colors[rank]![0],
+                            size: 24,
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
               ),
               const SizedBox(height: 8),
               Text(
                 user['username'],
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
+                style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
               Text(
                 '${user['totalXP']} XP',
-                style: const TextStyle(
-                  fontSize: 10,
-                  color: Colors.grey,
-                ),
+                style: theme.textTheme.bodySmall,
               ),
             ],
           ),
@@ -318,31 +514,26 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     );
   }
 
-  Widget _buildUserCard(Map<String, dynamic> user, int rank) {
+  Widget _buildUserCard(Map<String, dynamic> user, int rank, ThemeData theme) {
     final league = _getLeague(user['totalXP']);
     final leagueInfo = _getLeagueInfo(league);
+    final isCurrentUser = user['isCurrentUser'] ?? false;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: user['isCurrentUser'] ? const Color(0xFFEEF2FF) : Colors.white,
+        color: isCurrentUser ? theme.primaryColor.withOpacity(0.1) : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: user['isCurrentUser']
-              ? const Color(0xFF6366F1)
-              : const Color(0xFFE5E7EB),
-          width: user['isCurrentUser'] ? 2 : 1,
+          color: isCurrentUser
+              ? theme.primaryColor
+              : theme.dividerColor,
+          width: isCurrentUser ? 2 : 1,
         ),
-        boxShadow: user['isCurrentUser'] ? [
+        boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6366F1).withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ] : [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: isCurrentUser ? theme.primaryColor.withOpacity(0.1) : Colors.black.withOpacity(0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -357,12 +548,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             decoration: BoxDecoration(
               color: rank <= 3
                   ? _getRankColor(rank)
-                  : const Color(0xFFF3F4F6),
+                  : theme.dividerColor,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: rank <= 3
                     ? _getRankColor(rank).withOpacity(0.3)
-                    : const Color(0xFFE5E7EB),
+                    : theme.dividerColor,
                 width: 1,
               ),
             ),
@@ -374,7 +565,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
-                    color: rank <= 3 ? Colors.white : const Color(0xFF6B7280),
+                    color: rank <= 3 ? Colors.white : theme.textTheme.bodyLarge?.color,
                   ),
                 ),
                 if (rank <= 3)
@@ -390,23 +581,29 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           const SizedBox(width: 16),
 
           // Avatar
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: const Color(0xFFE2E8F0),
-                width: 1,
-              ),
-            ),
-            child: Center(
-              child: Text(
-                user['avatar'],
-                style: const TextStyle(fontSize: 28),
-              ),
-            ),
+          AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _scaleAnimation.value,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    user['badgeImage'],
+                    width: 56,
+                    height: 56,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.emoji_events,
+                        color: theme.dividerColor,
+                        size: 28,
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
           ),
 
           const SizedBox(width: 16),
@@ -421,21 +618,17 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                     Expanded(
                       child: Text(
                         user['username'],
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Color(0xFF1F2937),
-                        ),
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (user['isCurrentUser'])
+                    if (isCurrentUser)
                       Container(
                         margin: const EdgeInsets.only(left: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF6366F1),
+                          color: theme.primaryColor,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Text(
@@ -457,9 +650,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF1F5F9),
+                        color: theme.dividerColor,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: theme.dividerColor),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -467,16 +660,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                           Icon(
                             leagueInfo['icon'],
                             size: 14,
-                            color: const Color(0xFF64748B),
+                            color: theme.textTheme.bodySmall?.color,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             league,
-                            style: const TextStyle(
-                              color: Color(0xFF475569),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style: theme.textTheme.bodySmall,
                           ),
                         ],
                       ),
@@ -484,19 +673,15 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.bolt,
                           size: 16,
-                          color: Color(0xFF64748B),
+                          color: theme.textTheme.bodySmall?.color,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           '${user['totalXP']} XP',
-                          style: const TextStyle(
-                            color: Color(0xFF64748B),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          style: theme.textTheme.bodyMedium,
                         ),
                       ],
                     ),
@@ -525,32 +710,32 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
     switch (league) {
       case 'Legend':
         return {
-          'colors': [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+          'colors': [const Color(0xFFFF6B6B), const Color(0xFFFF8E53)],
           'icon': Icons.auto_awesome,
         };
       case 'Champion':
         return {
-          'colors': [Color(0xFFFFD700), Color(0xFFFFA500)],
+          'colors': [const Color(0xFFFFD700), const Color(0xFFFFA500)],
           'icon': Icons.emoji_events,
         };
       case 'Diamond':
         return {
-          'colors': [Color(0xFF74B9FF), Color(0xFF0984E3)],
+          'colors': [const Color(0xFF74B9FF), const Color(0xFF0984E3)],
           'icon': Icons.diamond,
         };
       case 'Gold':
         return {
-          'colors': [Color(0xFFFDCB6E), Color(0xFFE17055)],
+          'colors': [const Color(0xFFFDCB6E), const Color(0xFFE17055)],
           'icon': Icons.star,
         };
       case 'Silver':
         return {
-          'colors': [Color(0xFFDDD6FE), Color(0xFF8B5CF6)],
+          'colors': [const Color(0xFFDDD6FE), const Color(0xFF8B5CF6)],
           'icon': Icons.trending_up,
         };
       default:
         return {
-          'colors': [Color(0xFF81C784), Color(0xFF4CAF50)],
+          'colors': [const Color(0xFF81C784), const Color(0xFF4CAF50)],
           'icon': Icons.sports,
         };
     }
@@ -583,7 +768,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: leagueInfo['colors']),
+                      gradient: LinearGradient(colors: leagueInfo['colors'] as List<Color>),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(16),
                         topRight: Radius.circular(16),
@@ -591,7 +776,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                     ),
                     child: Column(
                       children: [
-                        Icon(leagueInfo['icon'], color: Colors.white, size: 40),
+                        Icon(leagueInfo['icon'] as IconData, color: Colors.white, size: 40),
                         const SizedBox(height: 8),
                         Text(
                           '$league League',
@@ -624,7 +809,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                           Icons.person,
                           [
                             _buildStatRow('Current XP', '$currentXP', Icons.flash_on, Colors.orange),
-                            _buildStatRow('League Rank', '#$userRankInLeague', Icons.emoji_events, leagueInfo['colors'][0]),
+                            _buildStatRow('League Rank', '#$userRankInLeague', Icons.emoji_events, (leagueInfo['colors'] as List<Color>)[0]),
                             _buildStatRow('League Members', '$leagueUsers players', Icons.people, Colors.blue),
                           ],
                         ),
@@ -636,7 +821,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
                           'League Benefits',
                           Icons.card_giftcard,
                           _getLeagueBenefits(league).map((benefit) => 
-                            _buildBenefitRow(benefit['title'], benefit['description'], benefit['icon'])
+                            _buildBenefitRow(benefit['title'] as String, benefit['description'] as String, benefit['icon'] as IconData)
                           ).toList(),
                         ),
                         
@@ -761,27 +946,24 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   }
   
   Widget _buildInfoCard(String title, IconData icon, List<Widget> children) {
+    final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: theme.dividerColor.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: theme.dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: Colors.grey[700]),
+              Icon(icon, size: 20, color: theme.textTheme.bodyLarge?.color),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
-                ),
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -793,6 +975,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   }
   
   Widget _buildStatRow(String label, String value, IconData icon, Color color) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -801,19 +984,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           const SizedBox(width: 8),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
+            style: theme.textTheme.bodyMedium,
           ),
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
+            style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -821,6 +997,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   }
   
   Widget _buildBenefitRow(String title, String description, IconData icon) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -829,10 +1006,10 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withOpacity(0.1),
+              color: theme.primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(icon, size: 16, color: const Color(0xFF2563EB)),
+            child: Icon(icon, size: 16, color: theme.primaryColor),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -841,19 +1018,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
+                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: theme.textTheme.bodySmall,
                 ),
               ],
             ),
@@ -864,6 +1034,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
   }
   
   Widget _buildProgressCard(String league, int currentXP, int nextLeagueXP, Map<String, dynamic> leagueInfo) {
+    final theme = Theme.of(context);
     final nextLeague = _getNextLeague(league);
     final progress = (currentXP - _getLeagueMinXP(league)) / (nextLeagueXP - _getLeagueMinXP(league));
     final xpNeeded = nextLeagueXP - currentXP;
@@ -872,25 +1043,24 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [leagueInfo['colors'][0].withOpacity(0.1), leagueInfo['colors'][1].withOpacity(0.1)],
+          colors: [
+            (leagueInfo['colors'] as List<Color>)[0].withOpacity(0.1),
+            (leagueInfo['colors'] as List<Color>)[1].withOpacity(0.1)
+          ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: leagueInfo['colors'][0].withOpacity(0.3)),
+        border: Border.all(color: (leagueInfo['colors'] as List<Color>)[0].withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.trending_up, color: leagueInfo['colors'][0]),
+              Icon(Icons.trending_up, color: (leagueInfo['colors'] as List<Color>)[0]),
               const SizedBox(width: 8),
               Text(
                 'Progress to $nextLeague',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
-                ),
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
@@ -900,29 +1070,25 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
             children: [
               Text(
                 '${_getLeagueMinXP(league)} XP',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: theme.textTheme.bodySmall,
               ),
               Text(
                 '$nextLeagueXP XP',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                style: theme.textTheme.bodySmall,
               ),
             ],
           ),
           const SizedBox(height: 4),
           LinearProgressIndicator(
             value: progress,
-            backgroundColor: Colors.grey[300],
-            valueColor: AlwaysStoppedAnimation<Color>(leagueInfo['colors'][0]),
+            backgroundColor: theme.dividerColor,
+            valueColor: AlwaysStoppedAnimation<Color>((leagueInfo['colors'] as List<Color>)[0]),
             minHeight: 8,
           ),
           const SizedBox(height: 8),
           Text(
             '$xpNeeded XP needed to reach $nextLeague League',
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFF1F2937),
-            ),
+            style: theme.textTheme.bodyMedium,
           ),
         ],
       ),
@@ -945,7 +1111,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       case 1: return const Color(0xFFFFD700); // Gold
       case 2: return const Color(0xFFC0C0C0); // Silver
       case 3: return const Color(0xFFCD7F32); // Bronze
-      default: return const Color(0xFFF3F4F6);
+      default: return Colors.transparent;
     }
   }
 
@@ -956,5 +1122,27 @@ class _LeaderboardPageState extends State<LeaderboardPage> {
       case 3: return Icons.workspace_premium;
       default: return Icons.star;
     }
+  }
+
+  Widget _buildStatItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            color: color,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: color.withOpacity(0.8),
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
   }
 }

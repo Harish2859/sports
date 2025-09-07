@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'main_layout.dart';
 import 'home.dart';
 import 'profile.dart';
+import 'theme_provider.dart';
 
 class MyLeaguePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     return MainLayout(
       currentIndex: -1,
       onTabChanged: (index) {
@@ -17,12 +21,22 @@ class MyLeaguePage extends StatelessWidget {
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
+        backgroundColor: isDarkMode ? Colors.grey[900] : Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           title: const Text('My League'),
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF1F2937),
+          backgroundColor: isDarkMode ? Colors.grey[800] : Theme.of(context).appBarTheme.backgroundColor,
+          foregroundColor: isDarkMode ? Colors.white : Theme.of(context).appBarTheme.foregroundColor,
           elevation: 0,
+          actions: [
+            IconButton(
+              icon: Icon(
+                isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              ),
+              onPressed: () {
+                themeProvider.toggleTheme();
+              },
+            ),
+          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -33,14 +47,22 @@ class MyLeaguePage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFDCB6E), Color(0xFFE17055)],
-                  ),
+                  color: Theme.of(context).primaryColor,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   children: [
-                    const Icon(Icons.star, color: Colors.white, size: 40),
+                    Container(
+                      width: 40,
+                      height: 40,
+                      child: Image.asset(
+                        'assets/images/champ.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.emoji_events, color: Colors.white, size: 40);
+                        },
+                      ),
+                    ),
                     const SizedBox(height: 8),
                     const Text(
                       'Gold League',
@@ -66,9 +88,9 @@ class MyLeaguePage extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Progress Section
               const Text(
                 'Progress to Diamond',
@@ -82,7 +104,7 @@ class MyLeaguePage extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey[200]!),
                 ),
@@ -110,39 +132,7 @@ class MyLeaguePage extends StatelessWidget {
                   ],
                 ),
               ),
-              
-              const SizedBox(height: 24),
-              
-              // League Benefits
-              const Text(
-                'Your Benefits',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildBenefitCard('Premium Features', 'Advanced analytics & insights', Icons.insights),
-              _buildBenefitCard('Community Access', 'Join exclusive groups', Icons.group),
-              _buildBenefitCard('Nutrition Guide', 'Meal planning assistance', Icons.restaurant),
-              
-              const SizedBox(height: 24),
-              
-              // League Members
-              const Text(
-                'Top League Members',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
-                ),
-              ),
-              const SizedBox(height: 16),
-              _buildMemberCard('Alex Champion', '🏆', 1850, 1),
-              _buildMemberCard('Sarah Runner', '🏃♀️', 1720, 2),
-              _buildMemberCard('Mike Strong', '💪', 1650, 3),
-              _buildMemberCard('You', '👤', 1250, 4),
+
             ],
           ),
         ),
@@ -169,123 +159,6 @@ class MyLeaguePage extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildBenefitCard(String title, String description, IconData icon) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: const Color(0xFF2563EB), size: 20),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937),
-                  ),
-                ),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMemberCard(String name, String avatar, int xp, int rank) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: name == 'You' ? const Color(0xFF2563EB).withOpacity(0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: name == 'You' 
-            ? Border.all(color: const Color(0xFF2563EB), width: 2)
-            : Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: const Color(0xFFFDCB6E).withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFFDCB6E), width: 2),
-            ),
-            child: Center(
-              child: Text(avatar, style: const TextStyle(fontSize: 20)),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  '$xp XP',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              color: rank <= 3 ? const Color(0xFFFDCB6E) : Colors.grey[300],
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Center(
-              child: Text(
-                '$rank',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
-                  color: rank <= 3 ? Colors.white : Colors.grey[600],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

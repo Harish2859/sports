@@ -33,6 +33,19 @@ class CourseDataManager {
       prerequisites: ['Basic throwing experience', 'Good upper body strength'],
       description: 'Master the javelin throw with proper grip, approach, and release techniques. Build strength and coordination for optimal performance.',
     ),
+    Course(
+      id: '3',
+      title: 'Hurdles',
+      instructor: 'Coach Smith',
+      summary: 'Master hurdling techniques for speed and efficiency over obstacles',
+      rating: 4.6,
+      difficulty: 'Intermediate',
+      enrolledCount: 320,
+      duration: '8 weeks',
+      category: 'Track & Field',
+      prerequisites: ['Basic sprinting skills', 'Good agility'],
+      description: 'Learn proper hurdling form, rhythm, and clearance techniques. Develop the speed and coordination needed for successful hurdle races.',
+    ),
   ];
 
   final Map<String, CourseDetails> _courseDetails = {};
@@ -504,6 +517,25 @@ class CourseDataManager {
               objectives: ['Optimize performance', 'Handle variables'],
               dos: ['Stay focused', 'Trust training'],
               donts: ['Don\'t panic', 'Avoid last-minute changes'],
+            ),
+          ],
+        ),
+      ];
+    } else if (courseId == '3') {
+      // Hurdles Course Sections
+      return [
+        CourseSectionData(
+          id: '1',
+          title: 'Section 1: Hurdling Fundamentals',
+          description: 'Master the basic techniques of hurdling',
+          units: [
+            UnitData(
+              id: '1',
+              name: 'Hurdle Clearance Basics',
+              description: 'Learn the proper technique for clearing hurdles',
+              objectives: ['Maintain proper form', 'Clear hurdles efficiently'],
+              dos: ['Lead with the knee', 'Keep body upright'],
+              donts: ['Don\'t knock down hurdles', 'Avoid leaning back'],
             ),
           ],
         ),

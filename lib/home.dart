@@ -56,14 +56,14 @@ class HomeContent extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
+              gradient: LinearGradient(
+                colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: const Column(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
@@ -71,7 +71,7 @@ class HomeContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -79,7 +79,7 @@ class HomeContent extends StatelessWidget {
                   'Find the perfect talent for your needs',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.white70,
+                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
                   ),
                 ),
               ],
@@ -89,12 +89,12 @@ class HomeContent extends StatelessWidget {
           const SizedBox(height: 24),
           
           // Quick Actions Section
-          const Text(
+          Text(
             'Quick Actions',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           
@@ -104,6 +104,7 @@ class HomeContent extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildActionCard(
+                  context,
                   icon: Icons.search,
                   title: 'Find Talent',
                   subtitle: 'Search for professionals',
@@ -113,6 +114,7 @@ class HomeContent extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: _buildActionCard(
+                  context,
                   icon: Icons.work_outline,
                   title: 'Post Job',
                   subtitle: 'Create job posting',
@@ -125,34 +127,37 @@ class HomeContent extends StatelessWidget {
           const SizedBox(height: 24),
           
           // Recent Activity Section
-          const Text(
+          Text(
             'Recent Activity',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           
           const SizedBox(height: 16),
           
           _buildActivityCard(
+            context,
             'New application received',
             'John Doe applied for Frontend Developer position',
             '2 hours ago',
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           _buildActivityCard(
+            context,
             'Interview scheduled',
             'Meeting with Sarah Johnson tomorrow at 2 PM',
             '1 day ago',
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           _buildActivityCard(
+            context,
             'Profile view',
             'Your profile was viewed by 5 recruiters',
             '2 days ago',
@@ -162,7 +167,7 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildActionCard({
+  Widget _buildActionCard(BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
@@ -171,9 +176,9 @@ class HomeContent extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +186,7 @@ class HomeContent extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -193,18 +198,18 @@ class HomeContent extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             title,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF1F2937),
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             subtitle,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Color(0xFF6B7280),
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
         ],
@@ -212,13 +217,13 @@ class HomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildActivityCard(String title, String description, String time) {
+  Widget _buildActivityCard(BuildContext context, String title, String description, String time) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Row(
         children: [
@@ -226,12 +231,12 @@ class HomeContent extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withValues(alpha: 0.1),
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.notifications_outlined,
-              color: Color(0xFF2563EB),
+              color: Theme.of(context).primaryColor,
               size: 20,
             ),
           ),
@@ -242,18 +247,18 @@ class HomeContent extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF1F2937),
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF6B7280),
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
               ],
@@ -261,9 +266,9 @@ class HomeContent extends StatelessWidget {
           ),
           Text(
             time,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Color(0xFF9CA3AF),
+              color: Theme.of(context).textTheme.bodySmall?.color,
             ),
           ),
         ],

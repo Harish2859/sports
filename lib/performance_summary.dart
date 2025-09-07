@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'app_state.dart';
+import 'theme_provider.dart';
 
 class PerformanceSummaryPage extends StatefulWidget {
   final String unitName;
@@ -73,12 +75,26 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFE),
+      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
       appBar: AppBar(
         title: Text('Performance Summary', style: TextStyle(color: Colors.white)),
-        backgroundColor: Color(0xFF2563EB),
+        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+            },
+          ),
+        ],
       ),
       body: AnimatedBuilder(
         animation: _fadeAnimation,
@@ -169,11 +185,14 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   Widget _buildPerformanceCard() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     Color cardColor = _performanceLevel == 'Excellent' ? Colors.green : Colors.orange;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -192,7 +211,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 8),
@@ -209,7 +228,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             '$_performancePercentage%',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
         ],
@@ -218,10 +237,13 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   Widget _buildSpeedCard() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -233,14 +255,14 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
       ),
       child: Column(
         children: [
-          Icon(Icons.timer, size: 40, color: Color(0xFF2563EB)),
+          Icon(Icons.timer, size: 40, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
           SizedBox(height: 12),
           Text(
             'Speed',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 8),
@@ -249,7 +271,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF2563EB),
+              color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
             ),
           ),
           SizedBox(height: 4),
@@ -257,7 +279,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             'minutes',
             style: TextStyle(
               fontSize: 14,
-              color: Colors.grey[600],
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
         ],
@@ -266,10 +288,13 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   Widget _buildAccuracyCard() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -292,7 +317,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: isDarkMode ? Colors.white : Colors.black87,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -301,7 +326,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
                     Expanded(
                       child: LinearProgressIndicator(
                         value: _performancePercentage / 100,
-                        backgroundColor: Colors.grey[200],
+                        backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
                         minHeight: 8,
                       ),
@@ -383,6 +408,8 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   Widget _buildActionButtons() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     bool isLastUnit = widget.unitIndex == widget.totalUnitsInSection - 1;
     
     return Row(
@@ -392,7 +419,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             onPressed: () => Navigator.pop(context),
             child: Text('Back to Course'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Color(0xFF2563EB),
+              foregroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
               padding: EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -406,7 +433,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             onPressed: _proceedToNext,
             child: Text(isLastUnit ? 'Go to Next Section' : 'Go to Next Unit'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Color(0xFF2563EB),
+              backgroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(

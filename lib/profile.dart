@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'app_state.dart';
 import 'course.dart';
 import 'main_layout.dart';
 import 'gotocourse.dart';
 import 'leaderboard.dart';
 import 'achievement.dart';
+import 'certificate.dart';
+import 'certificate_manager.dart';
+import 'theme_provider.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -17,13 +21,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   final AppState _appState = AppState.instance;
-  
+
   @override
   void initState() {
     super.initState();
     _appState.addListener(_onAppStateChanged);
     _animationController = AnimationController(
-      duration: Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -31,14 +35,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
     _animationController.forward();
   }
-  
+
   void _onAppStateChanged() {
     if (mounted) {
       setState(() {});
     }
   }
-
-
 
   @override
   void dispose() {
@@ -49,28 +51,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.grey[50],
-      child: FadeTransition(
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: FadeTransition(
         opacity: _fadeAnimation,
         child: SingleChildScrollView(
-          physics: BouncingScrollPhysics(),
+          physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              _buildProfileHeader(),
-              SizedBox(height: 20),
-              _buildStatsCards(),
-              SizedBox(height: 20),
+              _buildProfileHeader(isDarkMode),
+              const SizedBox(height: 20),
+              _buildStatsCards(isDarkMode),
+              const SizedBox(height: 20),
               _buildXPCard(),
-              SizedBox(height: 20),
-              _buildActionButtons(),
-              SizedBox(height: 20),
-              _buildPerformanceChart(),
-              SizedBox(height: 20),
-              _buildRecentVideos(),
-              SizedBox(height: 20),
-              _buildSocialSection(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
+              _buildActionButtons(isDarkMode),
+              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -78,17 +77,17 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildProfileHeader() {
+  Widget _buildProfileHeader(bool isDarkMode) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(24),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -107,7 +106,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 child: GestureDetector(
                   onTap: _editProfile,
                   child: Container(
-                    padding: EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: Colors.blue[600],
                       shape: BoxShape.circle,
@@ -115,35 +114,35 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                         BoxShadow(
                           color: Colors.black.withOpacity(0.2),
                           blurRadius: 4,
-                          offset: Offset(0, 2),
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: Icon(Icons.edit, color: Colors.white, size: 16),
+                    child: const Icon(Icons.edit, color: Colors.white, size: 16),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             _appState.userName,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Text(
             '@alex_sports_pro',
             style: TextStyle(
               fontSize: 16,
-              color: Colors.grey[600],
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.blue[100],
               borderRadius: BorderRadius.circular(20),
@@ -156,9 +155,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.amber[100],
               borderRadius: BorderRadius.circular(20),
@@ -167,7 +166,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.star, color: Colors.amber[800], size: 16),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
                   'Pro Level',
                   style: TextStyle(
@@ -183,21 +182,21 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildStatsCards() {
+  Widget _buildStatsCards(bool isDarkMode) {
     final int totalXP = _appState.totalXP;
     final bool hasBeginnerBadge = totalXP >= 0;
-    
+
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Expanded(child: _buildStatCard('Videos Watched', '127', Icons.play_circle_outline, Colors.blue)),
-          SizedBox(width: 12),
-          Expanded(child: _buildStatCard('Skill Rating', '8.7/10', Icons.trending_up, Colors.green)),
-          SizedBox(width: 12),
+          Expanded(child: _buildStatCard('Videos Watched', '127', Icons.play_circle_outline, Colors.blue, isDarkMode)),
+          const SizedBox(width: 12),
+          Expanded(child: _buildStatCard('Skill Rating', '8.7/10', Icons.trending_up, Colors.green, isDarkMode)),
+          const SizedBox(width: 12),
           Expanded(child: GestureDetector(
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AchievementsPage())),
-            child: hasBeginnerBadge ? _buildBadgeStatCard() : _buildStatCard('Achievements', '0', Icons.emoji_events, Colors.orange),
+            child: hasBeginnerBadge ? _buildBadgeStatCard(isDarkMode) : _buildStatCard('Achievements', '0', Icons.emoji_events, Colors.orange, isDarkMode),
           )),
         ],
       ),
@@ -213,8 +212,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     final double progress = nextLeagueXP > 0 ? (totalXP - currentLeagueMinXP) / (nextLeagueXP - currentLeagueMinXP) : 1.0;
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      padding: EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: leagueInfo['colors'],
@@ -226,7 +225,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           BoxShadow(
             color: leagueInfo['colors'][0].withOpacity(0.3),
             blurRadius: 8,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -235,14 +234,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         children: [
           Row(
             children: [
-              Icon(Icons.flash_on, color: Colors.white, size: 32),
-              SizedBox(width: 12),
+              const Icon(Icons.flash_on, color: Colors.white, size: 32),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                  children: const [
                     Text(
-                      '$totalXP XP',
+                      'XP',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
@@ -260,7 +259,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(20),
@@ -269,10 +268,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(leagueInfo['icon'], color: Colors.white, size: 16),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
                       currentLeague,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
@@ -287,24 +286,24 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   'Progress to next league',
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value: progress,
                   backgroundColor: Colors.white.withOpacity(0.3),
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   '${(nextLeagueXP - totalXP)} XP to next league',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 10,
                   ),
@@ -328,27 +327,27 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     switch (league) {
       case 'Champion':
         return {
-          'colors': [Color(0xFFFFD700), Color(0xFFFFA500)],
+          'colors': [const Color(0xFFFFD700), const Color(0xFFFFA500)],
           'icon': Icons.emoji_events,
         };
       case 'Expert':
         return {
-          'colors': [Color(0xFF9C27B0), Color(0xFF673AB7)],
+          'colors': [const Color(0xFF9C27B0), const Color(0xFF673AB7)],
           'icon': Icons.star,
         };
       case 'Advanced':
         return {
-          'colors': [Color(0xFF2196F3), Color(0xFF3F51B5)],
+          'colors': [const Color(0xFF2196F3), const Color(0xFF3F51B5)],
           'icon': Icons.trending_up,
         };
       case 'Intermediate':
         return {
-          'colors': [Color(0xFF4CAF50), Color(0xFF388E3C)],
+          'colors': [const Color(0xFF4CAF50), const Color(0xFF388E3C)],
           'icon': Icons.school,
         };
       default:
         return {
-          'colors': [Color(0xFF9E9E9E), Color(0xFF616161)],
+          'colors': [const Color(0xFF9E9E9E), const Color(0xFF616161)],
           'icon': Icons.sports,
         };
     }
@@ -363,7 +362,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       default: return 0;
     }
   }
-  
+
   int _getLeagueMinXP(String currentLeague) {
     switch (currentLeague) {
       case 'Beginner': return 0;
@@ -375,37 +374,37 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     }
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(String title, String value, IconData icon, Color color, bool isDarkMode) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 8,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Column(
         children: [
           Icon(icon, color: color, size: 32),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             value,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Text(
             title,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             textAlign: TextAlign.center,
           ),
@@ -414,17 +413,17 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildBadgeStatCard() {
+  Widget _buildBadgeStatCard(bool isDarkMode) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
             color: Colors.orange.withOpacity(0.3),
             blurRadius: 12,
-            offset: Offset(0, 6),
+            offset: const Offset(0, 6),
           ),
         ],
       ),
@@ -439,7 +438,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 BoxShadow(
                   color: Colors.black.withOpacity(0.2),
                   blurRadius: 4,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
@@ -448,27 +447,27 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 color: Colors.orange.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.emoji_events,
                 color: Colors.orange,
                 size: 24,
               ),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             '1',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Text(
             'Achievements',
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[600],
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             textAlign: TextAlign.center,
           ),
@@ -477,9 +476,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(bool isDarkMode) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
           Row(
@@ -490,60 +489,65 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   Icons.school_outlined,
                   Colors.blue[600]!,
                   () => _navigateToCourses(),
+                  isDarkMode,
                 ),
               ),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: _buildActionButton(
                   'My Certificates',
                   Icons.card_membership_outlined,
                   Colors.purple[600]!,
                   () => _navigateToCertificates(),
+                  isDarkMode,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  'Leaderboard',
-                  Icons.leaderboard,
-                  Colors.orange[600]!,
-                  () => _navigateToLeaderboard(),
-                ),
+          const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                'Leaderboard',
+                Icons.leaderboard,
+                Colors.orange[600]!,
+                () => _navigateToLeaderboard(),
+                isDarkMode,
               ),
-              SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  'Favorites',
-                  Icons.favorite_outline,
-                  Colors.red[600]!,
-                  () => _navigateToFavorites(),
-                ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionButton(
+                'Favorites',
+                Icons.favorite_outline,
+                Colors.red[600]!,
+                () => _navigateToFavorites(),
+                isDarkMode,
               ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+      ],
+    ),
+  );
+}
 
-  Widget _buildActionButton(String title, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionButton(String title, IconData icon, Color color, VoidCallback onTap, bool isDarkMode) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color.withOpacity(0.1),
+          color: isDarkMode ? color.withOpacity(0.2) : color.withOpacity(0.1),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withOpacity(0.3), width: 1),
         ),
         child: Row(
           children: [
             Icon(icon, color: color, size: 24),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 title,
@@ -561,386 +565,56 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildPerformanceChart() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Performance Trends',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              PopupMenuButton<String>(
-                onSelected: (value) {},
-                itemBuilder: (context) => [
-                  PopupMenuItem(value: 'week', child: Text('This Week')),
-                  PopupMenuItem(value: 'month', child: Text('This Month')),
-                  PopupMenuItem(value: 'year', child: Text('This Year')),
-                ],
-                child: Row(
-                  children: [
-                    Text('This Month', style: TextStyle(color: Colors.grey[600])),
-                    Icon(Icons.arrow_drop_down, color: Colors.grey[600]),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.trending_up, size: 48, color: Colors.blue[600]),
-                  SizedBox(height: 8),
-                  Text(
-                    'Performance Chart',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.blue[600],
-                    ),
-                  ),
-                  Text(
-                    'Trending upward this month',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRecentVideos() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Recent Videos',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              TextButton(
-                onPressed: () => _viewAllVideos(),
-                child: Text('View All'),
-              ),
-            ],
-          ),
-          SizedBox(height: 16),
-          Column(
-            children: [
-              _buildVideoCard('Basketball Shooting Analysis', '12:34', 'AI analyzed your form', Icons.sports_basketball),
-              SizedBox(height: 12),
-              _buildVideoCard('Soccer Penalty Techniques', '8:45', 'Skill improvement tips', Icons.sports_soccer),
-              SizedBox(height: 12),
-              _buildVideoCard('Tennis Serve Mechanics', '15:20', 'Professional coaching insights', Icons.sports_tennis),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildVideoCard(String title, String duration, String description, IconData sportIcon) {
-    return Container(
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 60,
-            height: 60,
-            decoration: BoxDecoration(
-              color: Colors.blue[100],
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Stack(
-              children: [
-                Center(child: Icon(sportIcon, color: Colors.blue[600], size: 24)),
-                Positioned(
-                  bottom: 4,
-                  right: 4,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      duration,
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: Icon(Icons.play_circle_outline, color: Colors.blue[600], size: 32),
-            onPressed: () => _playVideo(title),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSocialSection() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Social & Community',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildSocialStat('Following', '245', Icons.people_outline),
-              ),
-              Container(width: 1, height: 40, color: Colors.grey[300]),
-              Expanded(
-                child: _buildSocialStat('Followers', '892', Icons.person_add_outlined),
-              ),
-              Container(width: 1, height: 40, color: Colors.grey[300]),
-              Expanded(
-                child: _buildSocialStat('Comments', '156', Icons.chat_bubble_outline),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _shareAchievements(),
-                  icon: Icon(Icons.share, size: 18),
-                  label: Text('Share Achievements'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[600],
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _findFriends(),
-                  icon: Icon(Icons.group_add, size: 18),
-                  label: Text('Find Friends'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.blue[600],
-                    side: BorderSide(color: Colors.blue[600]!),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSocialStat(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.blue[600], size: 24),
-        SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-
   // Navigation methods
   void _editProfile() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Edit Profile clicked')),
+      const SnackBar(content: Text('Edit Profile clicked')),
     );
   }
 
   void _navigateToCourses() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MyCoursesPage()),
+      MaterialPageRoute(builder: (context) => const MyCoursesPage()),
     );
   }
 
   void _navigateToCertificates() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => MyCertificatesPage()),
+      MaterialPageRoute(builder: (context) => const MyCertificatesPage()),
     );
   }
 
   void _uploadVideo() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Upload Video clicked')),
+      const SnackBar(content: Text('Upload Video clicked')),
     );
   }
 
   void _navigateToFavorites() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => FavoritesPage()),
+      MaterialPageRoute(builder: (context) => const FavoritesPage()),
     );
   }
 
   void _navigateToSettings() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Settings clicked')),
+      const SnackBar(content: Text('Settings clicked')),
     );
   }
 
   void _showNotifications() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Notifications clicked')),
-    );
-  }
-
-  void _viewAllVideos() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('View All Videos clicked')),
-    );
-  }
-
-  void _playVideo(String title) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Playing: $title')),
-    );
-  }
-
-  void _shareAchievements() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Share Achievements clicked')),
-    );
-  }
-
-  void _findFriends() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Find Friends clicked')),
+      const SnackBar(content: Text('Notifications clicked')),
     );
   }
 
   void _navigateToLeaderboard() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => LeaderboardPage()),
+      MaterialPageRoute(builder: (context) => const LeaderboardPage()),
     );
   }
 }
@@ -952,6 +626,8 @@ class MyCoursesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState appState = AppState.instance;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     
     return MainLayout(
       currentIndex: 4, // Profile tab
@@ -960,99 +636,105 @@ class MyCoursesPage extends StatelessWidget {
           Navigator.pop(context);
         }
       },
-      child: appState.enrolledCourses.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.school_outlined, size: 64, color: Colors.grey[400]),
-                  SizedBox(height: 16),
-                  Text(
-                    'No enrolled courses yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[600],
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('My Courses'),
+        ),
+        body: appState.enrolledCourses.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.school_outlined, size: 64, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No enrolled courses yet',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: EdgeInsets.all(16),
-              itemCount: appState.enrolledCourses.length,
-              itemBuilder: (context, index) {
-                final course = appState.enrolledCourses[index];
-                return Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        course.title,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  ],
+                ),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: appState.enrolledCourses.length,
+                itemBuilder: (context, index) {
+                  final course = appState.enrolledCourses[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        course.summary,
-                        style: TextStyle(color: Colors.grey[600]),
-                      ),
-                      SizedBox(height: 12),
-                      LinearProgressIndicator(
-                        value: 0.3,
-                        backgroundColor: Colors.grey[200],
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
-                      ),
-                      SizedBox(height: 12),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '30% Complete',
-                            style: TextStyle(
-                              color: Colors.blue[600],
-                              fontWeight: FontWeight.w500,
-                            ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          course.title,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => GotoCoursePage(courseName: course.title),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[600],
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          course.summary,
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+                        ),
+                        const SizedBox(height: 12),
+                        LinearProgressIndicator(
+                          value: 0.3,
+                          backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '30% Complete',
+                              style: TextStyle(
+                                color: Colors.blue[600],
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                            child: Text('Go to Course'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => GotoCoursePage(courseName: course.title),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue[600],
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: const Text('Go to Course'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      )
     );
   }
 }
@@ -1064,6 +746,8 @@ class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState appState = AppState.instance;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     
     return MainLayout(
       currentIndex: 4, // Profile tab
@@ -1072,87 +756,93 @@ class FavoritesPage extends StatelessWidget {
           Navigator.pop(context);
         }
       },
-      child: appState.favoriteCourses.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.favorite_outline, size: 64, color: Colors.grey[400]),
-                  SizedBox(height: 16),
-                  Text(
-                    'No favorite courses yet',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[600],
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Favorites'),
+        ),
+        body: appState.favoriteCourses.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.favorite_outline, size: 64, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No favorite courses yet',
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.grey[600],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: EdgeInsets.all(16),
-              itemCount: appState.favoriteCourses.length,
-              itemBuilder: (context, index) {
-                final course = appState.favoriteCourses[index];
-                return Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: Colors.blue[100],
-                          borderRadius: BorderRadius.circular(8),
+                  ],
+                ),
+              )
+            : ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: appState.favoriteCourses.length,
+                itemBuilder: (context, index) {
+                  final course = appState.favoriteCourses[index];
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
                         ),
-                        child: Icon(Icons.school, color: Colors.blue[600]),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              course.title,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.blue[100],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.school, color: Colors.blue[600]),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                course.title,
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              course.instructor,
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                course.instructor,
+                                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: Icon(Icons.favorite, color: Colors.red[600]),
-                        onPressed: () {
-                          appState.removeFromFavorites(course);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Removed from favorites')),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                        IconButton(
+                          icon: Icon(Icons.favorite, color: Colors.red[600]),
+                          onPressed: () {
+                            appState.removeFromFavorites(course);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Removed from favorites')),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      )
     );
   }
 }
@@ -1162,86 +852,98 @@ class MyCertificatesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final certificateManager = CertificateManager();
+    final certificates = certificateManager.certificates;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Certificates'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
+        title: const Text('My Certificates'),
       ),
-      body: ListView.builder(
-        padding: EdgeInsets.all(16),
-        itemCount: 3,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: EdgeInsets.only(bottom: 16),
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.purple[400]!, Colors.purple[600]!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+      body: certificates.isEmpty
+          ? Center(
+              child: Text(
+                'No certificates earned yet.',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.purple.withOpacity(0.3),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.card_membership, color: Colors.white, size: 32),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Sports Analytics Certificate ${index + 1}',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: certificates.length,
+              itemBuilder: (context, index) {
+                final cert = certificates[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Colors.purple, Colors.deepPurple],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purple.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 12),
-                Text(
-                  'Issued by Fair Play Academy',
-                  style: TextStyle(color: Colors.white70),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'December ${2023 + index}',
-                  style: TextStyle(color: Colors.white70),
-                ),
-                SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Certificate ID: FP${1000 + index}',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w500,
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.card_membership, color: Colors.white, size: 32),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              cert.courseTitle,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () {},
-                      icon: Icon(Icons.share, color: Colors.white),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Issued by Fair Play Academy',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Completed on: ${cert.completionDate.day}/${cert.completionDate.month}/${cert.completionDate.year}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Certificate ID: ${cert.id}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              // TODO: Implement share functionality
+                            },
+                            icon: const Icon(Icons.share, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

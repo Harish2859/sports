@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'app_state.dart';
 import 'main_layout.dart';
+import 'theme_provider.dart';
 
 class AchievementsPage extends StatefulWidget {
   @override
@@ -56,6 +58,8 @@ class _AchievementsPageState extends State<AchievementsPage>
   }
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     final AppState appState = AppState.instance;
     final int totalXP = appState.totalXP;
     
@@ -84,12 +88,22 @@ class _AchievementsPageState extends State<AchievementsPage>
         }
       },
       child: Scaffold(
-        backgroundColor: Color(0xFFF8FAFC),
+        backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFC),
         appBar: AppBar(
           title: Text('Achievements'),
-          backgroundColor: Colors.white,
-          foregroundColor: Color(0xFF1F2937),
+          backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+          foregroundColor: isDarkMode ? Colors.white : Color(0xFF1F2937),
           elevation: 0,
+          actions: [
+            IconButton(
+              icon: Icon(
+                isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              ),
+              onPressed: () {
+                themeProvider.toggleTheme();
+              },
+            ),
+          ],
         ),
         body: GridView.builder(
           padding: EdgeInsets.all(20),

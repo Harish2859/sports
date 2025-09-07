@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'main_layout.dart';
 import 'trainingunits.dart';
 import 'unit_details.dart';
 import 'course_data_manager.dart';
+import 'app_state.dart';
+import 'theme_provider.dart';
 
 class GotoCoursePage extends StatefulWidget {
   final String courseName;
@@ -206,6 +209,9 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return MainLayout(
       currentIndex: 3, // Course tab
       onTabChanged: (index) {
@@ -214,7 +220,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         }
       },
       child: Scaffold(
-        backgroundColor: Color(0xFFF8FAFE),
+        backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
         appBar: AppBar(
           title: Text(
             '${widget.courseName} Training',
@@ -245,6 +251,9 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   }
 
   Widget _buildSectionBar() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return Container(
       height: 80,
       decoration: BoxDecoration(
@@ -335,6 +344,9 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   }
 
   Widget _buildSectionOverlay() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     return GestureDetector(
       onTap: _toggleSectionOverlay,
       child: AnimatedBuilder(
@@ -371,6 +383,8 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   }
 
   Widget _buildSectionCard(CourseSection section, int index) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     bool isSelected = index == currentSectionIndex;
     
     return Container(
@@ -383,7 +397,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
           child: Container(
             padding: EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDarkMode ? Colors.grey[800] : Colors.white,
               borderRadius: BorderRadius.circular(16),
               border: isSelected ? Border.all(color: section.color, width: 3) : null,
               boxShadow: [
@@ -419,14 +433,14 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: isDarkMode ? Colors.white : Colors.black87,
                         ),
                       ),
                       SizedBox(height: 4),
                       Text(
                         section.description,
                         style: TextStyle(
-                          color: Colors.grey[600],
+                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                           fontSize: 14,
                         ),
                       ),
@@ -436,7 +450,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                           Expanded(
                             child: LinearProgressIndicator(
                               value: section.progress,
-                              backgroundColor: Colors.grey[200],
+                              backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
                               valueColor: AlwaysStoppedAnimation<Color>(section.color),
                             ),
                           ),
@@ -469,6 +483,8 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   }
 
   Widget _buildUnitsSection() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     List<Unit> currentUnits = sectionUnits[currentSectionIndex] ?? [];
     
     return AnimatedBuilder(
@@ -485,7 +501,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: isDarkMode ? Colors.white : Colors.black87,
                 ),
               ),
               SizedBox(height: 16),
@@ -515,8 +531,10 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   }
 
   Widget _buildUnitCard(Unit unit, int index) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     UnitStatus dynamicStatus = _getUnitStatus(currentSectionIndex, index);
-    Color cardColor = _getUnitColor(dynamicStatus);
+    Color cardColor = _getUnitColor(dynamicStatus, isDarkMode);
     IconData statusIcon = _getStatusIcon(dynamicStatus);
     Color statusColor = _getStatusColor(dynamicStatus);
     bool isUnlocked = _isUnitUnlocked(currentSectionIndex, index);
@@ -577,14 +595,14 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black87,
+                              color: isDarkMode ? Colors.white : Colors.black87,
                             ),
                           ),
                           SizedBox(height: 4),
                           Text(
                             unit.description,
                             style: TextStyle(
-                              color: Colors.grey[600],
+                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
                               fontSize: 14,
                             ),
                             maxLines: 2,
@@ -613,13 +631,13 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                   Positioned.fill(
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: isDarkMode ? Colors.black.withOpacity(0.7) : Colors.white.withOpacity(0.8),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Center(
                         child: Icon(
                           Icons.lock,
-                          color: Colors.grey[600],
+                          color: isDarkMode ? Colors.white : Colors.grey[600],
                           size: 32,
                         ),
                       ),
@@ -633,14 +651,25 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     );
   }
 
-  Color _getUnitColor(UnitStatus status) {
-    switch (status) {
-      case UnitStatus.completed:
-        return Colors.green[50]!;
-      case UnitStatus.inProgress:
-        return Colors.blue[50]!;
-      case UnitStatus.notStarted:
-        return Colors.grey[100]!;
+  Color _getUnitColor(UnitStatus status, bool isDarkMode) {
+    if (isDarkMode) {
+      switch (status) {
+        case UnitStatus.completed:
+          return Colors.green[900]!;
+        case UnitStatus.inProgress:
+          return Colors.blue[900]!;
+        case UnitStatus.notStarted:
+          return Colors.grey[800]!;
+      }
+    } else {
+      switch (status) {
+        case UnitStatus.completed:
+          return Colors.green[50]!;
+        case UnitStatus.inProgress:
+          return Colors.blue[50]!;
+        case UnitStatus.notStarted:
+          return Colors.grey[100]!;
+      }
     }
   }
 
@@ -698,7 +727,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       });
       _unitController.reset();
       _unitController.forward();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -709,10 +738,14 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         );
       }
     } else {
+      // All sections completed - generate certificate
+      final appState = AppState.instance;
+      appState.completeCourse(widget.courseId ?? '1', widget.courseName);
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Congratulations! You have completed all sections! 🎉'),
+            content: Text('Congratulations! You have completed all sections! 🎉\nCertificate earned!'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
@@ -722,12 +755,15 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   }
 
   void _showActionMenu() {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: isDarkMode ? Colors.grey[800] : Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         padding: EdgeInsets.all(20),
@@ -736,17 +772,17 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
           children: [
             ListTile(
               leading: Icon(Icons.download, color: sections[currentSectionIndex].color),
-              title: Text('Download for Offline'),
+              title: Text('Download for Offline', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: Icon(Icons.share, color: sections[currentSectionIndex].color),
-              title: Text('Share Course'),
+              title: Text('Share Course', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: Icon(Icons.bookmark, color: sections[currentSectionIndex].color),
-              title: Text('Bookmark'),
+              title: Text('Bookmark', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
               onTap: () => Navigator.pop(context),
             ),
           ],
@@ -813,28 +849,31 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   
   void _showUnitDialog(Unit unit, int unitIndex) {
     if (!mounted) return;
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(unit.title),
+          backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
+          title: Text(unit.title, style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(unit.description),
+              Text(unit.description, style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
               SizedBox(height: 16),
               Text(
                 'This unit is not yet implemented. Would you like to mark it as completed for demo purposes?',
-                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                style: TextStyle(fontSize: 14, color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
+              child: Text('Cancel', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
             ),
             ElevatedButton(
               onPressed: () {

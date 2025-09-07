@@ -33,11 +33,11 @@ class _ExplorePageState extends State<ExplorePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Discover Your Sports Journey'),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF1F2937),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
+        foregroundColor: Theme.of(context).appBarTheme.foregroundColor ?? Theme.of(context).textTheme.bodyLarge?.color,
         elevation: 0,
       ),
       body: Form(
@@ -213,10 +213,11 @@ class _ExplorePageState extends State<ExplorePage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2563EB),
+                      backgroundColor: Theme.of(context).primaryColor,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
-                    child: const Text('Find My Course', style: TextStyle(color: Colors.white)),
+                    child: const Text('Find My Course'),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -229,6 +230,8 @@ class _ExplorePageState extends State<ExplorePage> {
                       );
                     },
                     style: OutlinedButton.styleFrom(
+                      foregroundColor: Theme.of(context).primaryColor,
+                      side: BorderSide(color: Theme.of(context).primaryColor),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: const Text('Save & Continue'),
@@ -246,11 +249,11 @@ class _ExplorePageState extends State<ExplorePage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -261,14 +264,14 @@ class _ExplorePageState extends State<ExplorePage> {
         children: [
           Row(
             children: [
-              Icon(icon, color: const Color(0xFF2563EB)),
+              Icon(icon, color: Theme.of(context).primaryColor),
               const SizedBox(width: 8),
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1F2937),
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ],
