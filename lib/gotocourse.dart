@@ -29,10 +29,13 @@ class GotoCoursePage extends StatefulWidget {
 class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStateMixin {
   int currentSectionIndex = 0;
   bool showSectionOverlay = false;
+  bool showUnitsCard = false; // Controls visibility of units card in gamified view
   late AnimationController _overlayController;
   late AnimationController _unitController;
+  late AnimationController _breathingController; // For breathing animation
   late Animation<double> _overlayAnimation;
   late Animation<double> _unitAnimation;
+  late Animation<double> _breathingAnimation; // For breathing effect
   late Future<WebViewController> _webViewControllerFuture;
   
   // Track completion status for each unit in each section
@@ -85,14 +88,44 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       vsync: this,
       duration: Duration(milliseconds: 200),
     );
+    _breathingController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    )..repeat(reverse: true);
+    
     _overlayAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _overlayController, curve: Curves.easeInOut),
     );
     _unitAnimation = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _unitController, curve: Curves.easeInOut),
     );
+    _breathingAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(
+        parent: _breathingController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    
     _webViewControllerFuture = _initWebViewController();
     _unitController.forward();
+    
+    // Initialize overlay animation state
+    if (showSectionOverlay) {
+      _overlayController.forward();
+    } else {
+      _overlayController.reverse();
+    }
+  }
+  
+  @override
+  void didUpdateWidget(GotoCoursePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Ensure overlay animation matches the current state
+    if (showSectionOverlay && _overlayController.status != AnimationStatus.forward) {
+      _overlayController.forward();
+    } else if (!showSectionOverlay && _overlayController.status != AnimationStatus.dismissed) {
+      _overlayController.reverse();
+    }
   }
   
   Future<WebViewController> _initWebViewController() async {
@@ -289,6 +322,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   void dispose() {
     _overlayController.dispose();
     _unitController.dispose();
+    _breathingController.dispose();
     super.dispose();
   }
 
@@ -326,7 +360,13 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
             Column(
               children: [
                 if (!isGamified) _buildSectionBar(),
-                Expanded(child: isGamified ? _buildGamifiedCourseView() : _buildUnitsSection()),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      isGamified ? _buildGamifiedCourseView() : _buildUnitsSection(),
+                    ],
+                  ),
+                ),
               ],
             ),
             if (showSectionOverlay && !isGamified) _buildSectionOverlay(),
@@ -433,38 +473,56 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
-    return GestureDetector(
-      onTap: _toggleSectionOverlay,
-      child: AnimatedBuilder(
-        animation: _overlayAnimation,
-        builder: (context, child) {
-          return Container(
-            color: Colors.black.withOpacity(0.5 * _overlayAnimation.value),
-            child: Column(
-              children: [
-                SizedBox(height: 80), // Account for section bar
-                Expanded(
-                  child: Transform.translate(
-                    offset: Offset(0, 50 * (1 - _overlayAnimation.value)),
-                    child: Opacity(
-                      opacity: _overlayAnimation.value.clamp(0.0, 1.0),
-                      child: Container(
-                        margin: EdgeInsets.all(16),
-                        child: ListView.builder(
-                          itemCount: sections.length,
-                          itemBuilder: (context, index) {
-                            return _buildSectionCard(sections[index], index);
-                          },
+    return AnimatedSwitcher(
+      duration: Duration(milliseconds: 300),
+      child: showSectionOverlay ? GestureDetector(
+        onTap: _toggleSectionOverlay,
+        child: AnimatedBuilder(
+          animation: _overlayAnimation,
+          builder: (context, child) {
+            return Container(
+              color: Colors.black.withOpacity(0.5 * _overlayAnimation.value),
+              child: Column(
+                children: [
+                  SizedBox(height: 80), // Account for section bar
+                  Expanded(
+                    child: Transform.translate(
+                      offset: Offset(0, 50 * (1 - _overlayAnimation.value)),
+                      child: Opacity(
+                        opacity: _overlayAnimation.value.clamp(0.0, 1.0),
+                        child: Container(
+                          margin: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: isDarkMode ? Colors.grey[900] : Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: ListView.builder(
+                              padding: EdgeInsets.zero,
+                              itemCount: sections.length,
+                              itemBuilder: (context, index) {
+                                return _buildSectionCard(sections[index], index);
+                              },
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+                ],
+              ),
+            );
+          },
+        ),
+      ) : SizedBox.shrink(),
     );
   }
 
@@ -569,126 +627,127 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   }
 
   Widget _buildGamifiedCourseView() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    
     return Stack(
       children: [
-        // Background WebView
-        FutureBuilder<WebViewController>(
-          future: _webViewControllerFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-              return SizedBox.expand(
-                child: WebViewWidget(controller: snapshot.data!),
-              );
-            } else {
-              return Container(
-                color: Colors.black12,
-                child: const Center(
-                  child: Text(
-                    'Loading adventure...',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              );
-            }
-          },
+        // Background with wavy path
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.blue.shade900,
+                  Colors.blue.shade800,
+                  Colors.indigo.shade900,
+                ],
+              ),
+            ),
+            child: _buildWavyPathSections(),
+          ),
         ),
         
-        // Main content
-        Column(
-          children: [
-            // Header section
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  Text(
-                    '${widget.courseName} Adventure',
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(2, 2),
-                          blurRadius: 4,
-                          color: Colors.black54,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Complete your journey through ${sections.length} magical sections!',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      shadows: [
-                        Shadow(
-                          offset: Offset(1, 1),
-                          blurRadius: 2,
-                          color: Colors.black54,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            
-            // Wavy path with sections
-            Expanded(
-              child: Stack(
-                children: [
-                  _buildWavyPathSections(),
-                  
-                  // Current section units (if section is unlocked)
-                  if (_isSectionUnlocked(currentSectionIndex))
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        height: 250,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.95),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(20),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, -5),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              sections.isNotEmpty 
-                                  ? sections[currentSectionIndex].title 
-                                  : 'Loading...',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Expanded(
-                              child: _buildGamifiedUnitsRow(),
-                            ),
-                          ],
-                        ),
+        // Content overlay
+        Positioned.fill(
+          child: Container(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 20),
+                Text(
+                  '${widget.courseName} Adventure',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.5),
+                        offset: Offset(1, 1),
+                        blurRadius: 3,
                       ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Complete sections to unlock new challenges',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.8),
+                    fontSize: 14,
+                  ),
+                ),
+                SizedBox(height: 8),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      showUnitsCard = !showUnitsCard;
+                    });
+                  },
+                  icon: Icon(showUnitsCard ? Icons.visibility_off : Icons.visibility),
+                  label: Text(showUnitsCard ? 'Hide Units' : 'Show Units'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white.withOpacity(0.1),
+                    foregroundColor: Colors.white,
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                ],
-              ),
+                  ),
+                ),
+                SizedBox(height: 12),
+                Expanded(
+                  child: Stack(
+                    children: [
+                      if (showUnitsCard)
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            height: 200,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.95),
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(20),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, -5),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Units in this section',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                SizedBox(height: 12),
+                                Expanded(child: _buildGamifiedUnitsRow()),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ],
     );
@@ -1092,10 +1151,12 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
 
   void _toggleSectionOverlay() {
     if (!mounted) return;
+    
     setState(() {
       showSectionOverlay = !showSectionOverlay;
     });
     
+    // Handle animation based on the new state
     if (showSectionOverlay) {
       _overlayController.forward();
     } else {
@@ -1105,6 +1166,12 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
 
   void _selectSection(int index) {
     if (!mounted) return;
+    
+    // Don't do anything if selecting the current section
+    if (index == currentSectionIndex) {
+      _toggleSectionOverlay();
+      return;
+    }
     
     // Check if section is unlocked before allowing selection
     if (!_isSectionUnlocked(index)) {
@@ -1118,24 +1185,30 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       return;
     }
     
-    // Update current section and show its units
-    setState(() {
-      currentSectionIndex = index;
-      showSectionOverlay = false;
+    // Close the overlay with animation
+    _overlayController.reverse().then((_) {
+      if (!mounted) return;
+      
+      // Update the current section
+      setState(() {
+        currentSectionIndex = index;
+        showSectionOverlay = false;
+      });
+      
+      // Animate the unit list
+      _unitController.reset();
+      _unitController.forward();
+      
+      // Show success message when opening a new section
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Opened ${sections[index].title}! Start your training.'),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
     });
-    _overlayController.reverse();
-    _unitController.reset();
-    _unitController.forward();
-    
-    // Show success message when opening a new section
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opened ${sections[index].title}! Start your training.'),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   void _moveToNextSection() {
