@@ -253,18 +253,17 @@ class _CoursePageState extends State<CoursePage> {
               height: 200,
               width: double.infinity,
               decoration: BoxDecoration(
-                color: const Color(0xFFE5E7EB),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(16),
                   topRight: Radius.circular(16),
                 ),
               ),
-              child: const Center(
-                child: Icon(
-                  Icons.play_circle_outline,
-                  size: 48,
-                  color: Color(0xFF9CA3AF),
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
+                child: _getCourseImage(course.title),
               ),
             ),
             
@@ -403,6 +402,35 @@ class _CoursePageState extends State<CoursePage> {
         ),
       ),
     );
+  }
+
+  Widget _getCourseImage(String courseTitle) {
+    if (courseTitle.toLowerCase().contains('javelin')) {
+      return Image.asset(
+        'assets/images/javeline.jpg',
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    } else if (courseTitle.toLowerCase().contains('hurdle')) {
+      return Image.asset(
+        'assets/images/hurdle.jpg',
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    } else {
+      return Container(
+        color: const Color(0xFFE5E7EB),
+        child: const Center(
+          child: Icon(
+            Icons.play_circle_outline,
+            size: 48,
+            color: Color(0xFF9CA3AF),
+          ),
+        ),
+      );
+    }
   }
 
   Color _getDifficultyColor(String difficulty) {

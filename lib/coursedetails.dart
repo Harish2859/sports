@@ -63,7 +63,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   
   late Course _course;
   int _enrolledCount = 0;
-  String _selectedGenderTab = 'Male'; // Track selected gender tab
   
   List<Comment> _comments = [
     Comment(
@@ -213,23 +212,23 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: themeProvider.themeMode == ThemeMode.dark
-                        ? [Colors.grey[800]!, Colors.grey[700]!]
-                        : [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _getCourseBannerImage(_course.title),
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.black.withOpacity(0.3),
+                          Colors.black.withOpacity(0.1),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
                   ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.play_circle_outline,
-                    size: 64,
-                    color: Colors.white38,
-                  ),
-                ),
+                ],
               ),
             ),
           ),
@@ -787,14 +786,14 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                   ),
                 ),
 
-                        // Gender Leaderboards
+                        // User Gender Leaderboard
                         Padding(
                           padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Course Leaderboards',
+                        'Course Leaderboard',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -806,9 +805,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                         ),
                       ),
                       const SizedBox(height: 16),
-                      _buildLeaderboardTabs(),
-                      const SizedBox(height: 16),
-                      _buildSelectedLeaderboardView(),
+                      _buildUserGenderLeaderboard(),
                     ],
                   ),
                 ),
@@ -1022,6 +1019,40 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     );
   }
 
+  Widget _getCourseBannerImage(String courseTitle) {
+    if (courseTitle.toLowerCase().contains('javelin')) {
+      return Image.asset(
+        'assets/images/javeline.jpg',
+        fit: BoxFit.cover,
+      );
+    } else if (courseTitle.toLowerCase().contains('hurdle')) {
+      return Image.asset(
+        'assets/images/hurdle.jpg',
+        fit: BoxFit.cover,
+      );
+    } else {
+      final themeProvider = Provider.of<ThemeProvider>(context);
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: themeProvider.themeMode == ThemeMode.dark
+                ? [Colors.grey[800]!, Colors.grey[700]!]
+                : [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: const Center(
+          child: Icon(
+            Icons.play_circle_outline,
+            size: 64,
+            color: Colors.white38,
+          ),
+        ),
+      );
+    }
+  }
+
   String _formatTimestamp(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
@@ -1035,72 +1066,19 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     }
   }
 
-  Widget _buildLeaderboardTabs() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final genders = ['Male', 'Female', 'Other'];
-
-    return Row(
-      children: genders.map((gender) {
-        final isSelected = _selectedGenderTab == gender;
-        return Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  _selectedGenderTab = gender;
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isSelected
-                    ? const Color(0xFF2563EB)
-                    : themeProvider.themeMode == ThemeMode.dark
-                        ? Colors.grey[800]
-                        : Colors.white,
-                foregroundColor: isSelected
-                    ? Colors.white
-                    : themeProvider.themeMode == ThemeMode.dark
-                        ? Colors.white
-                        : const Color(0xFF6B7280),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(
-                    color: isSelected
-                        ? const Color(0xFF2563EB)
-                        : themeProvider.themeMode == ThemeMode.dark
-                            ? Colors.grey[700]!
-                            : const Color(0xFFE5E7EB),
-                  ),
-                ),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-              child: Text(
-                gender,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildSelectedLeaderboardView() {
+  Widget _buildUserGenderLeaderboard() {
+    final userGender = _appState.userGender;
     final genderData = {
       'Male': {'icon': Icons.male, 'color': const Color(0xFF2563EB)},
       'Female': {'icon': Icons.female, 'color': const Color(0xFFDC2626)},
       'Other': {'icon': Icons.transgender, 'color': const Color(0xFF7C3AED)},
     };
 
-    final data = genderData[_selectedGenderTab]!;
+    final data = genderData[userGender] ?? genderData['Other']!;
     final icon = data['icon'] as IconData;
     final color = data['color'] as Color;
 
-    return _buildGenderLeaderboard(_selectedGenderTab, icon, color);
+    return _buildGenderLeaderboard(userGender, icon, color);
   }
 
   Widget _buildGenderLeaderboard(String gender, IconData icon, Color color) {

@@ -24,10 +24,23 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   late Animation<double> _fadeAnimation;
   final AppState _appState = AppState.instance;
 
+  // Lifecycle Methods
   @override
   void initState() {
     super.initState();
+    _initializeAnimation();
     _appState.addListener(_onAppStateChanged);
+  }
+
+  @override
+  void dispose() {
+    _appState.removeListener(_onAppStateChanged);
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  // Private Methods
+  void _initializeAnimation() {
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
@@ -39,54 +52,55 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   void _onAppStateChanged() {
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
-  @override
-  void dispose() {
-    _appState.removeListener(_onAppStateChanged);
-    _animationController.dispose();
-    super.dispose();
-  }
-
+  // Main Build Method
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
     return Container(
-      decoration: themeProvider.isGamified
-          ? const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF1a237e), Color(0xFF000000)],
-              ),
-            )
-          : null,
+      decoration: _buildBackgroundDecoration(themeProvider),
       child: Scaffold(
         backgroundColor: themeProvider.isGamified ? Colors.transparent : Theme.of(context).scaffoldBackgroundColor,
         body: FadeTransition(
           opacity: _fadeAnimation,
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            child: Column(
-              children: [
-                _buildProfileHeader(isDarkMode),
-                const SizedBox(height: 20),
-                _buildStatsCards(isDarkMode),
-                const SizedBox(height: 20),
-                _buildXPCard(),
-                const SizedBox(height: 20),
-                _buildActionButtons(isDarkMode),
-                const SizedBox(height: 20),
-              ],
-            ),
+            child: _buildProfileContent(isDarkMode),
           ),
         ),
       ),
+    );
+  }
+
+  // UI Building Methods
+  BoxDecoration? _buildBackgroundDecoration(ThemeProvider themeProvider) {
+    return themeProvider.isGamified
+        ? const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF1a237e), Color(0xFF000000)],
+            ),
+          )
+        : null;
+  }
+
+  Widget _buildProfileContent(bool isDarkMode) {
+    return Column(
+      children: [
+        _buildProfileHeader(isDarkMode),
+        const SizedBox(height: 20),
+        _buildStatsCards(isDarkMode),
+        const SizedBox(height: 20),
+        _buildXPCard(),
+        const SizedBox(height: 20),
+        _buildActionButtons(isDarkMode),
+        const SizedBox(height: 20),
+      ],
     );
   }
 
@@ -204,14 +218,34 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
-          Expanded(child: _buildStatCard('Videos Watched', '127', Icons.play_circle_outline, Colors.blue, isDarkMode)),
+          Expanded(
+            child: _buildStatCard(
+              'Videos Watched', 
+              '127', 
+              Icons.play_circle_outline, 
+              Colors.blue, 
+              isDarkMode
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _buildStatCard('Skill Rating', '8.7/10', Icons.trending_up, Colors.green, isDarkMode)),
+          Expanded(
+            child: _buildStatCard(
+              'Skill Rating', 
+              '8.7/10', 
+              Icons.trending_up, 
+              Colors.green, 
+              isDarkMode
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: GestureDetector(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AchievementsPage())),
-            child: hasBeginnerBadge ? _buildBadgeStatCard(isDarkMode) : _buildStatCard('Achievements', '0', Icons.emoji_events, Colors.orange, isDarkMode),
-          )),
+          Expanded(
+            child: GestureDetector(
+              onTap: () => _navigateToAchievements(),
+              child: hasBeginnerBadge 
+                  ? _buildBadgeStatCard(isDarkMode) 
+                  : _buildStatCard('Achievements', '0', Icons.emoji_events, Colors.orange, isDarkMode),
+            ),
+          ),
         ],
       ),
     );
@@ -329,6 +363,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
+  // League System Helper Methods
   String _getLeague(int xp) {
     if (xp >= 5000) return 'Champion';
     if (xp >= 3000) return 'Expert';
@@ -338,54 +373,50 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Map<String, dynamic> _getLeagueInfo(String league) {
-    switch (league) {
-      case 'Champion':
-        return {
-          'colors': [const Color(0xFFFFD700), const Color(0xFFFFA500)],
-          'icon': Icons.emoji_events,
-        };
-      case 'Expert':
-        return {
-          'colors': [const Color(0xFF9C27B0), const Color(0xFF673AB7)],
-          'icon': Icons.star,
-        };
-      case 'Advanced':
-        return {
-          'colors': [const Color(0xFF2196F3), const Color(0xFF3F51B5)],
-          'icon': Icons.trending_up,
-        };
-      case 'Intermediate':
-        return {
-          'colors': [const Color(0xFF4CAF50), const Color(0xFF388E3C)],
-          'icon': Icons.school,
-        };
-      default:
-        return {
-          'colors': [const Color(0xFF9E9E9E), const Color(0xFF616161)],
-          'icon': Icons.sports,
-        };
-    }
+    const leagueData = {
+      'Champion': {
+        'colors': [Color(0xFFFFD700), Color(0xFFFFA500)],
+        'icon': Icons.emoji_events,
+      },
+      'Expert': {
+        'colors': [Color(0xFF9C27B0), Color(0xFF673AB7)],
+        'icon': Icons.star,
+      },
+      'Advanced': {
+        'colors': [Color(0xFF2196F3), Color(0xFF3F51B5)],
+        'icon': Icons.trending_up,
+      },
+      'Intermediate': {
+        'colors': [Color(0xFF4CAF50), Color(0xFF388E3C)],
+        'icon': Icons.school,
+      },
+    };
+    
+    return leagueData[league] ?? {
+      'colors': [const Color(0xFF9E9E9E), const Color(0xFF616161)],
+      'icon': Icons.sports,
+    };
   }
 
   int _getNextLeagueXP(String currentLeague) {
-    switch (currentLeague) {
-      case 'Beginner': return 500;
-      case 'Intermediate': return 1500;
-      case 'Advanced': return 3000;
-      case 'Expert': return 5000;
-      default: return 0;
-    }
+    const xpThresholds = {
+      'Beginner': 500,
+      'Intermediate': 1500,
+      'Advanced': 3000,
+      'Expert': 5000,
+    };
+    return xpThresholds[currentLeague] ?? 0;
   }
 
   int _getLeagueMinXP(String currentLeague) {
-    switch (currentLeague) {
-      case 'Beginner': return 0;
-      case 'Intermediate': return 500;
-      case 'Advanced': return 1500;
-      case 'Expert': return 3000;
-      case 'Champion': return 5000;
-      default: return 0;
-    }
+    const minXpThresholds = {
+      'Beginner': 0,
+      'Intermediate': 500,
+      'Advanced': 1500,
+      'Expert': 3000,
+      'Champion': 5000,
+    };
+    return minXpThresholds[currentLeague] ?? 0;
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color, bool isDarkMode) {
@@ -546,47 +577,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ),
             ],
           ),
-          const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionButton(
-                'Leaderboard',
-                Icons.leaderboard,
-                Colors.orange[600]!,
-                () => _navigateToLeaderboard(),
-                isDarkMode,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildActionButton(
-                'Favorites',
-                Icons.favorite_outline,
-                Colors.red[600]!,
-                () => _navigateToFavorites(),
-                isDarkMode,
-              ),
-            ),
           ],
-        ),
-        const SizedBox(height: 12),
-      ],
-    ),
-  );
-}
-
-  Widget _buildRecordPerformanceCard(bool isDarkMode, bool hasVideos) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    
-    return _buildActionButton(
-      'Your Performance',
-      Icons.videocam_outlined,
-      Colors.red[600]!,
-      () => _navigateToPerformanceVideos(),
-      isDarkMode,
+      ),
     );
   }
+
+
 
   Widget _buildActionButton(String title, IconData icon, Color color, VoidCallback onTap, bool isDarkMode) {
     return GestureDetector(
@@ -619,7 +615,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  // Navigation methods
+  // Navigation Methods
   void _editProfile() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Edit Profile clicked')),
@@ -640,28 +636,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  void _uploadVideo() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Upload Video clicked')),
-    );
-  }
-
   void _navigateToFavorites() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const FavoritesPage()),
-    );
-  }
-
-  void _navigateToSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Settings clicked')),
-    );
-  }
-
-  void _showNotifications() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Notifications clicked')),
     );
   }
 
@@ -676,6 +654,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const PerformanceVideosPage()),
+    );
+  }
+
+  void _navigateToAchievements() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AchievementsPage()),
     );
   }
 }
