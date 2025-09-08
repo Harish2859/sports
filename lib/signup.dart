@@ -58,7 +58,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(24.0),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.transparent,
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                           color: Colors.white.withOpacity(0.3),
@@ -80,13 +80,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             'Findrly',
                             style: TextStyle(
                               fontSize: 36,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1F2937),
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white,
                               shadows: [
                                 Shadow(
-                                  color: Colors.white,
-                                  offset: Offset(0, 1),
-                                  blurRadius: 2,
+                                  color: Colors.black,
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
                                 ),
                               ],
                             ),
@@ -99,11 +99,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             'Join Findrly and start your journey',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Color(0xFF1F2937),
-                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
                               shadows: [
                                 Shadow(
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   offset: Offset(0, 1),
                                   blurRadius: 2,
                                 ),
@@ -119,43 +119,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             decoration: InputDecoration(
                               labelText: 'Username',
                               labelStyle: const TextStyle(
-                                color: Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     offset: Offset(0, 1),
-                                    blurRadius: 1,
+                                    blurRadius: 2,
                                   ),
                                 ],
                               ),
                               hintText: 'Enter your username',
                               hintStyle: const TextStyle(
-                                color: Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     offset: Offset(0, 1),
-                                    blurRadius: 1,
+                                    blurRadius: 2,
                                   ),
                                 ],
                               ),
-                              prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF6B7280)),
+                              prefixIcon: const Icon(Icons.person_outline, color: Colors.white),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                borderSide: BorderSide.none,
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
                               ),
                               filled: true,
-                              fillColor: const Color(0xFFF9FAFB),
+                              fillColor: Colors.white.withOpacity(0.2),
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           
@@ -168,43 +172,47 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             decoration: InputDecoration(
                               labelText: 'Email',
                               labelStyle: const TextStyle(
-                                color: Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     offset: Offset(0, 1),
-                                    blurRadius: 1,
+                                    blurRadius: 2,
                                   ),
                                 ],
                               ),
                               hintText: 'Enter your email',
                               hintStyle: const TextStyle(
-                                color: Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     offset: Offset(0, 1),
-                                    blurRadius: 1,
+                                    blurRadius: 2,
                                   ),
                                 ],
                               ),
-                              prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF6B7280)),
+                              prefixIcon: const Icon(Icons.email_outlined, color: Colors.white),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                borderSide: BorderSide.none,
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
                               ),
                               filled: true,
-                              fillColor: const Color(0xFFF9FAFB),
+                              fillColor: Colors.white.withOpacity(0.2),
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           
@@ -217,33 +225,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             decoration: InputDecoration(
                               labelText: 'Password',
                               labelStyle: const TextStyle(
-                                color: Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     offset: Offset(0, 1),
-                                    blurRadius: 1,
+                                    blurRadius: 2,
                                   ),
                                 ],
                               ),
                               hintText: 'Enter your password',
                               hintStyle: const TextStyle(
-                                color: Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     offset: Offset(0, 1),
-                                    blurRadius: 1,
+                                    blurRadius: 2,
                                   ),
                                 ],
                               ),
-                              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF6B7280)),
+                              prefixIcon: const Icon(Icons.lock_outline, color: Colors.white),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                                  color: const Color(0xFF6B7280),
+                                  color: Colors.white,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -253,18 +261,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                borderSide: BorderSide.none,
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
                               ),
                               filled: true,
-                              fillColor: const Color(0xFFF9FAFB),
+                              fillColor: Colors.white.withOpacity(0.2),
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           
@@ -277,33 +289,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             decoration: InputDecoration(
                               labelText: 'Confirm Password',
                               labelStyle: const TextStyle(
-                                color: Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     offset: Offset(0, 1),
-                                    blurRadius: 1,
+                                    blurRadius: 2,
                                   ),
                                 ],
                               ),
                               hintText: 'Confirm your password',
                               hintStyle: const TextStyle(
-                                color: Color(0xFF1F2937),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
                                 shadows: [
                                   Shadow(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     offset: Offset(0, 1),
-                                    blurRadius: 1,
+                                    blurRadius: 2,
                                   ),
                                 ],
                               ),
-                              prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF6B7280)),
+                              prefixIcon: const Icon(Icons.lock_outline, color: Colors.white),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                                  color: const Color(0xFF6B7280),
+                                  color: Colors.white,
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -313,18 +325,22 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                borderSide: BorderSide.none,
                               ),
                               enabledBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(color: Color(0xFFE5E7EB)),
+                                borderSide: BorderSide.none,
                               ),
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
                               ),
                               filled: true,
-                              fillColor: const Color(0xFFF9FAFB),
+                              fillColor: Colors.white.withOpacity(0.2),
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                           
@@ -341,22 +357,33 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               Expanded(
                                 child: RichText(
                                   text: const TextSpan(
-                                    style: TextStyle(fontSize: 14, color: Color(0xFF6B7280)),
+                                    style: TextStyle(
+                                      fontSize: 14, 
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      shadows: [
+                                        Shadow(
+                                          color: Colors.black,
+                                          offset: Offset(0, 1),
+                                          blurRadius: 1,
+                                        ),
+                                      ],
+                                    ),
                                     children: [
                                       TextSpan(text: 'I agree to the '),
                                       TextSpan(
                                         text: 'Terms of Service',
                                         style: TextStyle(
-                                          color: Color(0xFF2563EB),
-                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF60A5FA),
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                       TextSpan(text: ' and '),
                                       TextSpan(
                                         text: 'Privacy Policy',
                                         style: TextStyle(
-                                          color: Color(0xFF2563EB),
-                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF60A5FA),
+                                          fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                     ],
@@ -390,7 +417,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 elevation: 0,
                               ),
                               child: const Text(
-                                'Create Account',
+                                'Sign Up',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -401,21 +428,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           
                           const SizedBox(height: 16),
                           
-                          // Already have account
+                          // Don't have account text
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               const Text(
-                                'Already have an account? ',
+                                "Don't have an account? ",
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Color(0xFF1F2937),
-                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
                                   shadows: [
                                     Shadow(
-                                      color: Colors.white,
+                                      color: Colors.black,
                                       offset: Offset(0, 1),
-                                      blurRadius: 1,
+                                      blurRadius: 2,
                                     ),
                                   ],
                                 ),
@@ -424,17 +451,71 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 onPressed: () {
                                   Navigator.pop(context);
                                 },
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
                                 child: const Text(
                                   'Sign In',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Color(0xFF1E40AF),
-                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF60A5FA),
+                                    fontWeight: FontWeight.w800,
                                     shadows: [
                                       Shadow(
-                                        color: Colors.white,
+                                        color: Colors.black,
                                         offset: Offset(0, 1),
-                                        blurRadius: 1,
+                                        blurRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          
+                          // Already have account text
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                'Already have an account? ',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black,
+                                      offset: Offset(0, 1),
+                                      blurRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.zero,
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: const Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Color(0xFF60A5FA),
+                                    fontWeight: FontWeight.w800,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black,
+                                        offset: Offset(0, 1),
+                                        blurRadius: 2,
                                       ),
                                     ],
                                   ),
