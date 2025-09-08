@@ -87,25 +87,19 @@ class _AchievementsPageState extends State<AchievementsPage>
           Navigator.pop(context);
         }
       },
-      child: Scaffold(
-        backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFC),
-        appBar: AppBar(
-          title: Text('Achievements'),
-          backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
-          foregroundColor: isDarkMode ? Colors.white : Color(0xFF1F2937),
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: Icon(
-                isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              ),
-              onPressed: () {
-                themeProvider.toggleTheme();
-              },
-            ),
-          ],
-        ),
-        body: GridView.builder(
+      child: Container(
+        decoration: themeProvider.isGamified
+            ? const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                ),
+              )
+            : null,
+        child: Scaffold(
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFC)),
+          body: GridView.builder(
           padding: EdgeInsets.all(20),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
@@ -117,6 +111,7 @@ class _AchievementsPageState extends State<AchievementsPage>
           itemBuilder: (context, index) {
             return _build3DBadge(badges[index]);
           },
+        ),
         ),
       ),
     );
@@ -153,9 +148,9 @@ class _AchievementsPageState extends State<AchievementsPage>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 15,
-            offset: Offset(0, 8),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -235,9 +230,9 @@ class _AchievementsPageState extends State<AchievementsPage>
         border: Border.all(color: color, width: 2),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
-            blurRadius: 12,
-            offset: Offset(0, 6),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
         ],
       ),

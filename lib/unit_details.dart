@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import 'analysis_results.dart';
 import 'theme_provider.dart';
 
@@ -13,6 +14,7 @@ class EnhancedUnitDetailsPage extends StatefulWidget {
   final List<String> objectives;
   final List<String> dos;
   final List<String> donts;
+  final String? videoUrl;
 
   const EnhancedUnitDetailsPage({
     Key? key,
@@ -25,6 +27,7 @@ class EnhancedUnitDetailsPage extends StatefulWidget {
     required this.objectives,
     required this.dos,
     required this.donts,
+    this.videoUrl,
   }) : super(key: key);
 
   @override
@@ -37,6 +40,38 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
   bool _hasRecording = false;
   String? _analysisResult;
   bool _hasMalpractice = false;
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  @override
+  void dispose() {
+    _videoController?.dispose();
+    super.dispose();
+  }
+
+  void _initializeVideo() {
+    if (widget.videoUrl != null && widget.videoUrl!.isNotEmpty) {
+      if (widget.videoUrl!.startsWith('http')) {
+        _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+      } else {
+        _videoController = VideoPlayerController.asset(widget.videoUrl!);
+      }
+      
+      _videoController!.initialize().then((_) {
+        setState(() {
+          _isVideoInitialized = true;
+        });
+      }).catchError((error) {
+        print('Video initialization error: $error');
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -748,16 +783,54 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
         Container(
           height: 200,
           decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.play_circle_outline, size: 64, color: Colors.white),
-                SizedBox(height: 8),
-                Text('Video demonstration coming soon', style: TextStyle(color: Colors.white70)),
-              ],
-            ),
-          ),
+          child: _isVideoInitialized && _videoController != null
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    children: [
+                      AspectRatio(
+                        aspectRatio: _videoController!.value.aspectRatio,
+                        child: VideoPlayer(_videoController!),
+                      ),
+                      Positioned.fill(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _videoController!.value.isPlaying
+                                  ? _videoController!.pause()
+                                  : _videoController!.play();
+                            });
+                          },
+                          child: Container(
+                            color: Colors.transparent,
+                            child: Center(
+                              child: Icon(
+                                _videoController!.value.isPlaying
+                                    ? Icons.pause_circle_outline
+                                    : Icons.play_circle_outline,
+                                size: 64,
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.play_circle_outline, size: 64, color: Colors.white),
+                      SizedBox(height: 8),
+                      Text(
+                        widget.videoUrl != null ? 'Loading video...' : 'No video available',
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                ),
         ),
         SizedBox(height: 12),
         Text('Watch this video for an overview and demonstration of key concepts for ${widget.unitName}.', style: TextStyle(color: Colors.white70, fontSize: 14)),
@@ -980,6 +1053,7 @@ class UnitDetailsPage extends StatefulWidget {
   final List<String> objectives;
   final List<String> dos;
   final List<String> donts;
+  final String? videoUrl;
 
   const UnitDetailsPage({
     Key? key,
@@ -992,6 +1066,7 @@ class UnitDetailsPage extends StatefulWidget {
     required this.objectives,
     required this.dos,
     required this.donts,
+    this.videoUrl,
   }) : super(key: key);
 
   @override
@@ -1004,15 +1079,37 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   bool _hasRecording = false;
   String? _analysisResult;
   bool _hasMalpractice = false;
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
 
   @override
   void initState() {
     super.initState();
+    _initializeVideo();
   }
 
   @override
   void dispose() {
+    _videoController?.dispose();
     super.dispose();
+  }
+
+  void _initializeVideo() {
+    if (widget.videoUrl != null && widget.videoUrl!.isNotEmpty) {
+      if (widget.videoUrl!.startsWith('http')) {
+        _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+      } else {
+        _videoController = VideoPlayerController.asset(widget.videoUrl!);
+      }
+      
+      _videoController!.initialize().then((_) {
+        setState(() {
+          _isVideoInitialized = true;
+        });
+      }).catchError((error) {
+        print('Video initialization error: $error');
+      });
+    }
   }
 
   @override

@@ -17,10 +17,6 @@ class CertificatePage extends StatelessWidget {
     final formattedDate = "${completionDate.day}/${completionDate.month}/${completionDate.year}";
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Certificate of Completion'),
-        backgroundColor: Colors.deepPurple,
-      ),
       body: Center(
         child: Container(
           margin: const EdgeInsets.all(24),

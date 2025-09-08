@@ -149,39 +149,11 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
             : null,
         child: Scaffold(
           backgroundColor: themeProvider.isGamified ? Colors.transparent : theme.scaffoldBackgroundColor,
-          appBar: AppBar(
-            title: const Text('Leaderboard'),
-            backgroundColor: themeProvider.isGamified ? Colors.transparent : theme.appBarTheme.backgroundColor,
-            flexibleSpace: themeProvider.isGamified
-                ? Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                      ),
-                    ),
-                  )
-                : null,
-            foregroundColor: theme.appBarTheme.foregroundColor,
-            elevation: 0,
-          actions: [
-            IconButton(
-              icon: Icon(
-                isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              ),
-              onPressed: () {
-                themeProvider.toggleTheme();
-              },
-            ),
-          ],
-        ),
-        body: SingleChildScrollView(
+          body: SingleChildScrollView(
           child: Column(
             children: [
               // Header with tabs
               Container(
-                color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : theme.colorScheme.surface,
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [

@@ -236,18 +236,23 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
           
           // Course Content
           SliverToBoxAdapter(
-            child: themeProvider.isGamified
-                ? Container(
-                    decoration: const BoxDecoration(
+            child: Container(
+              decoration: themeProvider.isGamified
+                  ? const BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [Color(0xFF1a237e), Color(0xFF000000)],
                       ),
+                    )
+                  : BoxDecoration(
+                      color: themeProvider.themeMode == ThemeMode.dark
+                          ? Colors.grey[900]
+                          : Colors.white,
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                         // Course Header
                         Padding(
                           padding: const EdgeInsets.all(24),
@@ -295,14 +300,22 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: Colors.white,
+                                    color: themeProvider.isGamified
+                                        ? Colors.white
+                                        : themeProvider.themeMode == ThemeMode.dark
+                                            ? Colors.white
+                                            : const Color(0xFF1F2937),
                                   ),
                                 ),
                                 Text(
                                   '${_course.duration} • ${_course.difficulty}',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.white70,
+                                    color: themeProvider.isGamified
+                                        ? Colors.white70
+                                        : themeProvider.themeMode == ThemeMode.dark
+                                            ? Colors.grey[400]
+                                            : const Color(0xFF6B7280),
                                   ),
                                 ),
                               ],
@@ -333,7 +346,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                  color: themeProvider.isGamified
+                                      ? Colors.white
+                                      : themeProvider.themeMode == ThemeMode.dark
+                                          ? Colors.white
+                                          : const Color(0xFF1F2937),
                                 ),
                               ),
                             ],
@@ -353,7 +370,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                 '$_enrolledCount enrolled',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: Colors.white70,
+                                  color: themeProvider.isGamified
+                                      ? Colors.white70
+                                      : themeProvider.themeMode == ThemeMode.dark
+                                          ? Colors.grey[400]
+                                          : const Color(0xFF6B7280),
                                 ),
                               ),
                             ],
@@ -434,7 +455,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                   prereq,
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.white70,
+                                    color: themeProvider.isGamified
+                                        ? Colors.white70
+                                        : themeProvider.themeMode == ThemeMode.dark
+                                            ? Colors.grey[400]
+                                            : const Color(0xFF4B5563),
                                   ),
                                 ),
                               ),
@@ -531,7 +556,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
-                                            color: Colors.white,
+                                            color: themeProvider.isGamified
+                                                ? Colors.white
+                                                : themeProvider.themeMode == ThemeMode.dark
+                                                    ? Colors.white
+                                                    : const Color(0xFF1F2937),
                                           ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
@@ -784,41 +813,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                   ),
                 ),
 
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Non-gamified theme content
-                      Container(
-                        decoration: BoxDecoration(
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.grey[900]
-                              : Colors.white,
-                        ),
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _course.title,
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: themeProvider.themeMode == ThemeMode.dark
-                                    ? Colors.white
-                                    : const Color(0xFF1F2937),
-                                height: 1.2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
           ),
           ],
         ),
@@ -855,7 +853,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white,
+                      color: themeProvider.isGamified
+                          ? Colors.white
+                          : themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.white
+                              : const Color(0xFF1F2937),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -863,7 +865,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     _formatTimestamp(comment.timestamp),
                     style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white70,
+                      color: themeProvider.isGamified
+                          ? Colors.white70
+                          : themeProvider.themeMode == ThemeMode.dark
+                              ? Colors.grey[400]
+                              : const Color(0xFF6B7280),
                     ),
                   ),
                 ],
@@ -873,7 +879,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                 comment.text,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.white70,
+                  color: themeProvider.isGamified
+                      ? Colors.white70
+                      : themeProvider.themeMode == ThemeMode.dark
+                          ? Colors.grey[400]
+                          : const Color(0xFF4B5563),
                   height: 1.4,
                 ),
               ),
@@ -985,7 +995,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
               label,
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.white70,
+                color: themeProvider.isGamified
+                    ? Colors.white70
+                    : themeProvider.themeMode == ThemeMode.dark
+                        ? Colors.grey[400]
+                        : const Color(0xFF6B7280),
               ),
             ),
           ),
@@ -995,7 +1009,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color: themeProvider.isGamified
+                    ? Colors.white
+                    : themeProvider.themeMode == ThemeMode.dark
+                        ? Colors.white
+                        : const Color(0xFF1F2937),
               ),
             ),
           ),

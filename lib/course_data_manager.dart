@@ -9,42 +9,29 @@ class CourseDataManager {
   final List<Course> _courses = [
     Course(
       id: '1',
-      title: 'Long Jump',
-      instructor: 'Coach Johnson',
-      summary: 'Master the art of long jump with proper technique and explosive power',
-      rating: 4.8,
-      difficulty: 'Intermediate',
-      enrolledCount: 450,
-      duration: '10 weeks',
+      title: 'Javelin Throw Mastery',
+      instructor: 'Coach Rodriguez',
+      summary: 'Complete javelin throwing program from fundamentals to competition level',
+      rating: 4.9,
+      difficulty: 'Advanced',
+      enrolledCount: 520,
+      duration: '16 weeks',
       category: 'Track & Field',
-      prerequisites: ['Basic running ability', 'Good coordination'],
-      description: 'Comprehensive long jump training covering approach run, takeoff, flight, and landing techniques. Develop explosive power and perfect your form for maximum distance.',
+      prerequisites: ['Athletic background', 'Shoulder mobility', 'Core strength'],
+      description: 'Comprehensive javelin throwing course covering biomechanics, power development, and competition strategies. Transform your technique with scientific training methods.',
     ),
     Course(
       id: '2',
-      title: 'Javelin Throw',
-      instructor: 'Coach Martinez',
-      summary: 'Learn proper javelin throwing techniques for maximum distance and accuracy',
-      rating: 4.7,
-      difficulty: 'Intermediate',
-      enrolledCount: 380,
-      duration: '12 weeks',
+      title: 'Sprint Hurdles Excellence',
+      instructor: 'Coach Thompson',
+      summary: 'Elite hurdling program for competitive sprint hurdle events',
+      rating: 4.8,
+      difficulty: 'Advanced',
+      enrolledCount: 285,
+      duration: '14 weeks',
       category: 'Track & Field',
-      prerequisites: ['Basic throwing experience', 'Good upper body strength'],
-      description: 'Master the javelin throw with proper grip, approach, and release techniques. Build strength and coordination for optimal performance.',
-    ),
-    Course(
-      id: '3',
-      title: 'Hurdles',
-      instructor: 'Coach Smith',
-      summary: 'Master hurdling techniques for speed and efficiency over obstacles',
-      rating: 4.6,
-      difficulty: 'Intermediate',
-      enrolledCount: 320,
-      duration: '8 weeks',
-      category: 'Track & Field',
-      prerequisites: ['Basic sprinting skills', 'Good agility'],
-      description: 'Learn proper hurdling form, rhythm, and clearance techniques. Develop the speed and coordination needed for successful hurdle races.',
+      prerequisites: ['Sub-12 second 100m', 'Flexibility training', 'Sprint experience'],
+      description: 'Advanced hurdle training focusing on race strategy, technical precision, and speed endurance. Master 110m and 100m hurdle events with professional coaching methods.',
     ),
   ];
 
@@ -63,12 +50,22 @@ class CourseDataManager {
     if (details != null && details.sessionTitles.isNotEmpty) {
       return details.sessionTitles;
     }
+    
+    // Return specific session titles based on course ID
+    if (courseId == '2') {
+      // Hurdles course - only 1 session
+      return [
+        'Sprint Hurdle Mastery',
+      ];
+    }
+    
+    // Default for other courses
     return [
-      'Introduction & Setup',
-      'Core Concepts',
-      'Practical Applications',
-      'Advanced Topics',
-      'Final Project',
+      'Fundamentals & Assessment',
+      'Technical Development',
+      'Power & Conditioning',
+      'Competition Preparation',
+      'Performance Optimization',
     ];
   }
 
@@ -86,16 +83,16 @@ class CourseDataManager {
     }
     return [
       FAQItem(
-        question: 'How long do I have access to the course?',
-        answer: 'You have lifetime access to the course materials once enrolled.',
+        question: 'What equipment do I need for training?',
+        answer: 'Basic training equipment includes practice implements, proper footwear, and access to a throwing/running area.',
       ),
       FAQItem(
-        question: 'Is there a certificate upon completion?',
-        answer: 'Yes, you will receive a certificate of completion that you can share on your professional profiles.',
+        question: 'How often should I train per week?',
+        answer: 'We recommend 4-5 training sessions per week with proper rest and recovery periods.',
       ),
       FAQItem(
-        question: 'Can I get a refund if I\'m not satisfied?',
-        answer: 'We offer a 30-day money-back guarantee if you\'re not completely satisfied with the course.',
+        question: 'Is this suitable for beginners?',
+        answer: 'This course is designed for athletes with some athletic background. We recommend basic fitness before starting.',
       ),
     ];
   }
@@ -111,8 +108,8 @@ class CourseDataManager {
     }
     return {
       'Language': 'English',
-      'Last Updated': 'December 2024',
-      'Release Date': 'January 2024',
+      'Last Updated': 'January 2025',
+      'Release Date': 'March 2024',
     };
   }
 
@@ -124,211 +121,12 @@ class CourseDataManager {
 
     // Return specific sections based on course ID
     if (courseId == '1') {
-      // Long Jump Course Sections
-      return [
-        CourseSectionData(
-          id: '1',
-          title: 'Section 1: Approach Run Fundamentals',
-          description: 'Master the approach run technique for optimal speed and rhythm',
-          units: [
-            UnitData(
-              id: '1',
-              name: 'Approach Run Basics',
-              description: 'Learn the proper approach run setup and initial steps',
-              objectives: ['Establish correct starting position', 'Develop consistent rhythm'],
-              dos: ['Maintain upright posture', 'Keep eyes focused ahead'],
-              donts: ['Don\'t look down', 'Avoid starting too fast'],
-            ),
-            UnitData(
-              id: '2',
-              name: 'Speed Development',
-              description: 'Build speed throughout the approach run',
-              objectives: ['Achieve maximum controllable speed', 'Maintain acceleration'],
-              dos: ['Drive with arms', 'Keep strides consistent'],
-              donts: ['Don\'t decelerate', 'Avoid short strides'],
-            ),
-            UnitData(
-              id: '3',
-              name: 'Rhythm and Timing',
-              description: 'Perfect the timing of your approach run',
-              objectives: ['Count steps accurately', 'Time the takeoff point'],
-              dos: ['Practice with markers', 'Maintain consistent pace'],
-              donts: ['Don\'t rush the last steps', 'Avoid changing rhythm'],
-            ),
-            UnitData(
-              id: '4',
-              name: 'Approach Run Drills',
-              description: 'Practice drills to improve approach consistency',
-              objectives: ['Execute smooth transitions', 'Build muscle memory'],
-              dos: ['Focus on form', 'Repeat consistently'],
-              donts: ['Don\'t sacrifice technique', 'Avoid fatigue'],
-            ),
-          ],
-        ),
-        CourseSectionData(
-          id: '2',
-          title: 'Section 2: Takeoff Technique',
-          description: 'Learn the critical takeoff mechanics for maximum height and distance',
-          units: [
-            UnitData(
-              id: '5',
-              name: 'Takeoff Board Setup',
-              description: 'Master the positioning and setup for takeoff',
-              objectives: ['Position correctly on board', 'Prepare for explosive takeoff'],
-              dos: ['Plant support foot firmly', 'Keep body aligned'],
-              donts: ['Don\'t step on the board early', 'Avoid leaning back'],
-            ),
-            UnitData(
-              id: '6',
-              name: 'Drive Phase',
-              description: 'Execute powerful upward and forward drive',
-              objectives: ['Generate maximum force', 'Maintain forward momentum'],
-              dos: ['Drive arms upward', 'Extend takeoff leg fully'],
-              donts: ['Don\'t block with arms', 'Avoid early takeoff'],
-            ),
-            UnitData(
-              id: '7',
-              name: 'Body Position',
-              description: 'Achieve optimal body position during takeoff',
-              objectives: ['Maintain upright posture', 'Control body rotation'],
-              dos: ['Keep head neutral', 'Drive knees upward'],
-              donts: ['Don\'t arch back excessively', 'Avoid side-to-side movement'],
-            ),
-            UnitData(
-              id: '8',
-              name: 'Takeoff Drills',
-              description: 'Practice takeoff-specific exercises and drills',
-              objectives: ['Build explosive power', 'Perfect timing'],
-              dos: ['Focus on height', 'Practice repeatedly'],
-              donts: ['Don\'t neglect form', 'Avoid rushing'],
-            ),
-          ],
-        ),
-        CourseSectionData(
-          id: '3',
-          title: 'Section 3: Flight and Hang Technique',
-          description: 'Master the flight phase for optimal distance and style',
-          units: [
-            UnitData(
-              id: '9',
-              name: 'Flight Position',
-              description: 'Learn the proper body position during flight',
-              objectives: ['Achieve hang position', 'Maintain aerodynamic form'],
-              dos: ['Keep legs together', 'Arms extended forward'],
-              donts: ['Don\'t bend at waist', 'Avoid tucking legs'],
-            ),
-            UnitData(
-              id: '10',
-              name: 'Hang Time Optimization',
-              description: 'Maximize time in the air with proper technique',
-              objectives: ['Control body position', 'Maintain forward momentum'],
-              dos: ['Stay relaxed', 'Keep core engaged'],
-              donts: ['Don\'t tense up', 'Avoid premature descent'],
-            ),
-            UnitData(
-              id: '11',
-              name: 'Style Development',
-              description: 'Develop personal style while maintaining efficiency',
-              objectives: ['Find comfortable position', 'Ensure consistency'],
-              dos: ['Experiment safely', 'Focus on comfort'],
-              donts: ['Don\'t sacrifice form', 'Avoid unsafe positions'],
-            ),
-            UnitData(
-              id: '12',
-              name: 'Flight Drills',
-              description: 'Practice flight techniques with specific exercises',
-              objectives: ['Build confidence', 'Improve control'],
-              dos: ['Start from low heights', 'Focus on form'],
-              donts: ['Don\'t force positions', 'Avoid overthinking'],
-            ),
-          ],
-        ),
-        CourseSectionData(
-          id: '4',
-          title: 'Section 4: Landing Technique',
-          description: 'Perfect the landing for maximum distance and safety',
-          units: [
-            UnitData(
-              id: '13',
-              name: 'Landing Preparation',
-              description: 'Prepare for safe and effective landing',
-              objectives: ['Position for landing', 'Control descent'],
-              dos: ['Prepare arms for balance', 'Keep eyes forward'],
-              donts: ['Don\'t land flat-footed', 'Avoid stiff legs'],
-            ),
-            UnitData(
-              id: '14',
-              name: 'Sand Pit Landing',
-              description: 'Master landing technique in the sand pit',
-              objectives: ['Land safely', 'Maximize distance'],
-              dos: ['Bend knees on contact', 'Fall forward'],
-              donts: ['Don\'t land on heels', 'Avoid sitting back'],
-            ),
-            UnitData(
-              id: '15',
-              name: 'Distance Optimization',
-              description: 'Learn to land for maximum distance',
-              objectives: ['Control forward momentum', 'Minimize energy loss'],
-              dos: ['Lean forward', 'Keep moving after landing'],
-              donts: ['Don\'t stop abruptly', 'Avoid backward movement'],
-            ),
-            UnitData(
-              id: '16',
-              name: 'Landing Drills',
-              description: 'Practice landing with progressive difficulty',
-              objectives: ['Build confidence', 'Perfect technique'],
-              dos: ['Start from height', 'Focus on form'],
-              donts: ['Don\'t skip safety', 'Avoid rushing progress'],
-            ),
-          ],
-        ),
-        CourseSectionData(
-          id: '5',
-          title: 'Section 5: Competition Preparation',
-          description: 'Prepare mentally and physically for competition',
-          units: [
-            UnitData(
-              id: '17',
-              name: 'Competition Strategy',
-              description: 'Develop competition tactics and mental preparation',
-              objectives: ['Plan approach', 'Manage pressure'],
-              dos: ['Visualize success', 'Stay focused'],
-              donts: ['Don\'t overthink', 'Avoid negative thoughts'],
-            ),
-            UnitData(
-              id: '18',
-              name: 'Performance Analysis',
-              description: 'Analyze performance and make improvements',
-              objectives: ['Review technique', 'Identify weaknesses'],
-              dos: ['Use video analysis', 'Track progress'],
-              donts: ['Don\'t be too critical', 'Avoid comparison'],
-            ),
-            UnitData(
-              id: '19',
-              name: 'Injury Prevention',
-              description: 'Learn to prevent common long jump injuries',
-              objectives: ['Recognize risk factors', 'Implement prevention strategies'],
-              dos: ['Warm up properly', 'Listen to body'],
-              donts: ['Don\'t ignore pain', 'Avoid overtraining'],
-            ),
-            UnitData(
-              id: '20',
-              name: 'Competition Day',
-              description: 'Final preparation and execution strategies',
-              objectives: ['Optimize performance', 'Handle competition stress'],
-              dos: ['Follow routine', 'Stay confident'],
-              donts: ['Don\'t change technique', 'Avoid distractions'],
-            ),
-          ],
-        ),
-      ];
-    } else if (courseId == '2') {
       // Javelin Throw Course Sections
       return [
         CourseSectionData(
           id: '1',
-          title: 'Section 1: Grip and Stance',
-          description: 'Master the fundamental grip and stance for javelin throwing',
+          title: 'Section 1: Biomechanics & Foundation',
+          description: 'Master throwing biomechanics and establish proper foundation',
           units: [
             UnitData(
               id: '1',
@@ -366,8 +164,8 @@ class CourseDataManager {
         ),
         CourseSectionData(
           id: '2',
-          title: 'Section 2: Approach Run',
-          description: 'Develop speed and rhythm in the approach run',
+          title: 'Section 2: Dynamic Approach System',
+          description: 'Master the dynamic approach run and acceleration patterns',
           units: [
             UnitData(
               id: '5',
@@ -405,8 +203,8 @@ class CourseDataManager {
         ),
         CourseSectionData(
           id: '3',
-          title: 'Section 3: Throwing Technique',
-          description: 'Master the throwing motion and release mechanics',
+          title: 'Section 3: Power Transfer & Release',
+          description: 'Optimize power transfer through kinetic chain and perfect release mechanics',
           units: [
             UnitData(
               id: '9',
@@ -444,8 +242,8 @@ class CourseDataManager {
         ),
         CourseSectionData(
           id: '4',
-          title: 'Section 4: Strength and Conditioning',
-          description: 'Build the strength and conditioning needed for javelin throwing',
+          title: 'Section 4: Athletic Performance Development',
+          description: 'Develop sport-specific strength, power, and conditioning for elite performance',
           units: [
             UnitData(
               id: '13',
@@ -483,8 +281,8 @@ class CourseDataManager {
         ),
         CourseSectionData(
           id: '5',
-          title: 'Section 5: Competition and Advanced Techniques',
-          description: 'Prepare for competition and master advanced throwing techniques',
+          title: 'Section 5: Elite Competition Strategy',
+          description: 'Master competition psychology, advanced techniques, and performance optimization',
           units: [
             UnitData(
               id: '17',
@@ -521,21 +319,21 @@ class CourseDataManager {
           ],
         ),
       ];
-    } else if (courseId == '3') {
+    } else if (courseId == '2') {
       // Hurdles Course Sections
       return [
         CourseSectionData(
           id: '1',
-          title: 'Section 1: Hurdling Fundamentals',
-          description: 'Master the basic techniques of hurdling',
+          title: 'Section 1: Sprint Hurdle Mastery',
+          description: 'Master elite sprint hurdle technique and race strategy',
           units: [
             UnitData(
               id: '1',
-              name: 'Hurdle Clearance Basics',
-              description: 'Learn the proper technique for clearing hurdles',
-              objectives: ['Maintain proper form', 'Clear hurdles efficiently'],
-              dos: ['Lead with the knee', 'Keep body upright'],
-              donts: ['Don\'t knock down hurdles', 'Avoid leaning back'],
+              name: 'Advanced Hurdle Clearance',
+              description: 'Perfect the technical aspects of hurdle clearance at race pace',
+              objectives: ['Minimize clearance time', 'Maintain sprint rhythm'],
+              dos: ['Attack the hurdle', 'Drive through with speed'],
+              donts: ['Don\'t decelerate before hurdles', 'Avoid excessive height'],
             ),
           ],
         ),

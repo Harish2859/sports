@@ -435,9 +435,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -662,21 +662,6 @@ class MyCoursesPage extends StatelessWidget {
             : null,
         child: Scaffold(
           backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-          appBar: AppBar(
-            title: const Text('My Courses'),
-            backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-            flexibleSpace: themeProvider.isGamified
-                ? Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                      ),
-                    ),
-                  )
-                : null,
-          ),
         body: appState.enrolledCourses.isEmpty
             ? Center(
                 child: Column(
@@ -806,21 +791,6 @@ class FavoritesPage extends StatelessWidget {
             : null,
         child: Scaffold(
           backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-          appBar: AppBar(
-            title: const Text('Favorites'),
-            backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-            flexibleSpace: themeProvider.isGamified
-                ? Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                      ),
-                    ),
-                  )
-                : null,
-          ),
         body: appState.favoriteCourses.isEmpty
             ? Center(
                 child: Column(
@@ -919,11 +889,26 @@ class MyCertificatesPage extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Certificates'),
-      ),
-      body: certificates.isEmpty
+    return MainLayout(
+      currentIndex: 4, // Profile tab
+      onTabChanged: (index) {
+        if (index != 4) {
+          Navigator.pop(context);
+        }
+      },
+      child: Container(
+        decoration: themeProvider.isGamified
+            ? const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                ),
+              )
+            : null,
+        child: Scaffold(
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
+          body: certificates.isEmpty
           ? Center(
               child: Text(
                 'No certificates earned yet.',
@@ -1006,6 +991,8 @@ class MyCertificatesPage extends StatelessWidget {
                 );
               },
             ),
+        ),
+      ),
     );
   }
 }
