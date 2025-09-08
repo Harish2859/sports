@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_player/video_player.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
 
 class SimpleVideoRecorder extends StatefulWidget {
   const SimpleVideoRecorder({super.key});
@@ -51,39 +53,61 @@ class _SimpleVideoRecorderState extends State<SimpleVideoRecorder> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Record Performance', style: TextStyle(color: Colors.white)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context, _videoPath),
-        ),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: _videoPath != null
-                ? _buildVideoPreview()
-                : _buildRecordingPrompt(),
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isGamified = themeProvider.isGamified;
+    
+    return Container(
+      decoration: isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: Scaffold(
+        backgroundColor: isGamified ? Colors.transparent : Colors.black,
+        appBar: AppBar(
+          backgroundColor: isGamified ? Colors.transparent : Colors.black,
+          title: Text(
+            isGamified ? '🎥 Capture Your Prowess' : 'Record Performance', 
+            style: const TextStyle(color: Colors.white)
           ),
-          _buildControls(),
-        ],
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context, _videoPath),
+          ),
+          elevation: 0,
+        ),
+        body: Column(
+          children: [
+            Expanded(
+              child: _videoPath != null
+                  ? _buildVideoPreview()
+                  : _buildRecordingPrompt(),
+            ),
+            _buildControls(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildRecordingPrompt() {
-    return const Center(
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isGamified = themeProvider.isGamified;
+    
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.videocam, size: 80, color: Colors.white54),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Text(
-            'Tap the record button to start',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+            isGamified ? '🎯 Ready to prove your skills?' : 'Tap the record button to start',
+            style: const TextStyle(color: Colors.white, fontSize: 18),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

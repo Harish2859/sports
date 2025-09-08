@@ -729,9 +729,18 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
       return;
     }
 
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     final result = await Navigator.push<String>(
       context,
-      MaterialPageRoute(builder: (context) => const SimpleVideoRecorder()),
+      themeProvider.isGamified
+          ? PageRouteBuilder<String>(
+              pageBuilder: (context, animation, secondaryAnimation) => const SimpleVideoRecorder(),
+              transitionDuration: const Duration(milliseconds: 300),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+            )
+          : MaterialPageRoute(builder: (context) => const SimpleVideoRecorder()),
     );
 
     if (result != null) {
