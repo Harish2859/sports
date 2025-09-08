@@ -38,6 +38,8 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   late Animation<double> _unitAnimation;
   late Animation<double> _breathingAnimation; // For breathing effect
   late Future<WebViewController> _webViewControllerFuture;
+  WebViewController? _webViewController;
+  bool _isWebViewLoaded = false;
   
   // Track completion status for each unit in each section
   Map<int, Map<int, bool>> unitCompletionStatus = {};
@@ -108,6 +110,9 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     );
     
     _webViewControllerFuture = _initWebViewController();
+    _webViewControllerFuture.then((controller) {
+      _webViewController = controller;
+    });
     _unitController.forward();
     
     // Initialize overlay animation state
@@ -149,6 +154,11 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       NavigationDelegate(
         onPageFinished: (String url) {
           debugPrint('Page finished loading: $url');
+          if (mounted) {
+            setState(() {
+              _isWebViewLoaded = true;
+            });
+          }
         },
         onWebResourceError: (WebResourceError error) {
           debugPrint('WebView error: ${error.description}');
@@ -634,18 +644,22 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       children: [
         // Background with WebView animation
         Positioned.fill(
-          child: WebViewWidget(
-            controller: WebViewController()
-              ..setJavaScriptMode(JavaScriptMode.unrestricted)
-              ..loadFlutterAsset('assets/gamified_background.html')
-              ..setBackgroundColor(Colors.transparent)
-              ..setNavigationDelegate(
-                NavigationDelegate(
-                  onPageFinished: (String url) {
-                    // Page finished loading
-                  },
+          child: Stack(
+            children: [
+              // Always show gradient background
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                  ),
                 ),
               ),
+              // WebView on top when loaded
+              if (_webViewController != null && _isWebViewLoaded)
+                WebViewWidget(controller: _webViewController!),
+            ],
           ),
         ),
         
@@ -707,6 +721,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                         foregroundColor: Colors.white,
                         elevation: 4,
                         padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        splashFactory: NoSplash.splashFactory,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
