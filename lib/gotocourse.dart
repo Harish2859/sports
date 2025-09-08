@@ -1337,6 +1337,13 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       final currentSection = courseSections[currentSectionIndex];
       final currentUnit = currentSection.units[unitIndex];
       
+      // Add video for Javelin course first unit only
+      String? videoUrl;
+      if (widget.courseName.toLowerCase().contains('javelin') && 
+          currentSectionIndex == 0 && unitIndex == 0) {
+        videoUrl = 'assets/videos/video.mp4';
+      }
+      
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
@@ -1350,6 +1357,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
             objectives: currentUnit.objectives,
             dos: currentUnit.dos,
             donts: currentUnit.donts,
+            videoUrl: videoUrl,
           ),
         ),
       );

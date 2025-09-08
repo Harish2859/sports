@@ -250,19 +250,54 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
               color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.play_circle_outline, size: 64, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
-                  SizedBox(height: 8),
-                  Text(
-                    'Video demonstration coming soon',
-                    style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+            child: _isVideoInitialized && _videoController != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Stack(
+                      children: [
+                        AspectRatio(
+                          aspectRatio: _videoController!.value.aspectRatio,
+                          child: VideoPlayer(_videoController!),
+                        ),
+                        Positioned.fill(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _videoController!.value.isPlaying
+                                    ? _videoController!.pause()
+                                    : _videoController!.play();
+                              });
+                            },
+                            child: Container(
+                              color: Colors.transparent,
+                              child: Center(
+                                child: Icon(
+                                  _videoController!.value.isPlaying
+                                      ? Icons.pause_circle_outline
+                                      : Icons.play_circle_outline,
+                                  size: 64,
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.play_circle_outline, size: 64, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
+                        SizedBox(height: 8),
+                        Text(
+                          widget.videoUrl != null ? 'Loading video...' : 'No video available',
+                          style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
           ),
           SizedBox(height: 12),
           Text(
@@ -1243,19 +1278,54 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
               color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.play_circle_outline, size: 64, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
-                  SizedBox(height: 8),
-                  Text(
-                    'Video demonstration coming soon',
-                    style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+            child: _isVideoInitialized && _videoController != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Stack(
+                      children: [
+                        AspectRatio(
+                          aspectRatio: _videoController!.value.aspectRatio,
+                          child: VideoPlayer(_videoController!),
+                        ),
+                        Positioned.fill(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _videoController!.value.isPlaying
+                                    ? _videoController!.pause()
+                                    : _videoController!.play();
+                              });
+                            },
+                            child: Container(
+                              color: Colors.transparent,
+                              child: Center(
+                                child: Icon(
+                                  _videoController!.value.isPlaying
+                                      ? Icons.pause_circle_outline
+                                      : Icons.play_circle_outline,
+                                  size: 64,
+                                  color: Colors.white.withOpacity(0.8),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.play_circle_outline, size: 64, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
+                        SizedBox(height: 8),
+                        Text(
+                          widget.videoUrl != null ? 'Loading video...' : 'No video available',
+                          style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
           ),
           SizedBox(height: 12),
           Text(
