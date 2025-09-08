@@ -42,52 +42,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
               ),
               
-              // App Name and Subtitle
-              Positioned(
-                top: 100,
-                left: 0,
-                right: 0,
-                child: Column(
-                  children: [
-                    const Text(
-                      'Findrly',
-                      style: TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        shadows: [
-                          Shadow(
-                            color: Colors.white,
-                            offset: Offset(0, 1),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Join Findrly and start your journey',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        shadows: [
-                          Shadow(
-                            color: Colors.white,
-                            offset: Offset(0, 1),
-                            blurRadius: 2,
-                          ),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              
               // Static Signup Card
               Positioned(
-                top: 220,
+                top: 100,
                 left: 24,
                 right: 24,
                 child: SingleChildScrollView(
@@ -118,6 +75,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                       child: Column(
                         children: [
+                          // App Name
+                          const Text(
+                            'Findrly',
+                            style: TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF1F2937),
+                              shadows: [
+                                Shadow(
+                                  color: Colors.white,
+                                  offset: Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                          
+                          const SizedBox(height: 8),
+                          
+                          // Subtitle
+                          const Text(
+                            'Join Findrly and start your journey',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF1F2937),
+                              fontWeight: FontWeight.w600,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.white,
+                                  offset: Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          
+                          const SizedBox(height: 32),
                           // Username TextField
                           TextField(
                             controller: _usernameController,

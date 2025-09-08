@@ -143,46 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 40),
-                  
-                  // App Name
-                  const Text(
-                    'Findrly',
-                    style: TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      shadows: [
-                        Shadow(
-                          color: Colors.white,
-                          offset: Offset(0, 1),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // Slogan
-                  const Text(
-                    'Empowering Your Fair Quest for Talent',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w400,
-                      shadows: [
-                        Shadow(
-                          color: Colors.white,
-                          offset: Offset(0, 1),
-                          blurRadius: 2,
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 80),
                   
                   // Login Card
                   ClipRRect(
@@ -211,6 +172,45 @@ class _LoginScreenState extends State<LoginScreen> {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
+                            // App Name
+                            const Text(
+                              'Findrly',
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1F2937),
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.white,
+                                    offset: Offset(0, 1),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            // Slogan
+                            const Text(
+                              'Empowering Your Fair Quest for Talent',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF1F2937),
+                                fontWeight: FontWeight.w600,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.white,
+                                    offset: Offset(0, 1),
+                                    blurRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            
+                            const SizedBox(height: 32),
+                            
                         // Email TextField
                         TextField(
                           controller: _emailController,
@@ -496,32 +496,46 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 20),
                         
                         // Admin Login Button
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
-                            );
-                          },
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          ),
-                          child: const Text(
-                            'Admin Login',
-                            style: TextStyle(
-                              color: Color(0xFF6B7280),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.white,
-                                  offset: Offset(0, 1),
-                                  blurRadius: 1,
-                                ),
-                              ],
+                        Container(
+                          width: double.infinity,
+                          height: 40,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const AdminLoginScreen()),
+                              );
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF7C3AED),
+                              side: const BorderSide(color: Color(0xFF7C3AED), width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              backgroundColor: const Color(0xFF7C3AED).withOpacity(0.1),
+                            ),
+                            icon: const Icon(
+                              Icons.admin_panel_settings,
+                              size: 18,
+                              color: Color(0xFF7C3AED),
+                            ),
+                            label: const Text(
+                              'Admin Login',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF7C3AED),
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.white,
+                                    offset: Offset(0, 1),
+                                    blurRadius: 1,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                          ),
+                        ),
                         ],
                       ),
                     ),
