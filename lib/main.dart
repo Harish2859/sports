@@ -38,6 +38,11 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
         ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.black,
+          selectedItemColor: Color(0xFF2563EB),
+          unselectedItemColor: Colors.white54,
+        ),
         textTheme: const TextTheme(
           bodyLarge: TextStyle(color: Colors.white),
           bodyMedium: TextStyle(color: Colors.white70),

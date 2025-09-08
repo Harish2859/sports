@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import 'package:provider/provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -723,37 +724,51 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                           left: 0,
                           right: 0,
                           bottom: 0,
-                          child: Container(
-                            height: 200,
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95),
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(20),
-                                topRight: Radius.circular(20),
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, -5),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Units in this section',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                              child: Container(
+                                height: 150,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.3),
+                                    width: 1,
                                   ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.4),
+                                      blurRadius: 20,
+                                      offset: const Offset(0, -8),
+                                    ),
+                                  ],
                                 ),
-                                SizedBox(height: 12),
-                                Expanded(child: _buildGamifiedUnitsRow()),
-                              ],
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Units in this section',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black.withOpacity(0.5),
+                                            offset: Offset(1, 1),
+                                            blurRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Expanded(child: _buildGamifiedUnitsRow()),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -784,11 +799,11 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     
     // Wavy path coordinates that match the HTML SVG path
     List<Map<String, double>> pathPoints = [
-      {'x': 0.2, 'y': 0.1},   // Section 1: Left side, top
-      {'x': 0.7, 'y': 0.25},  // Section 2: Right side
-      {'x': 0.2, 'y': 0.4},   // Section 3: Left side
-      {'x': 0.7, 'y': 0.55},  // Section 4: Right side
-      {'x': 0.2, 'y': 0.7},   // Section 5: Left side
+      {'x': 0.75, 'y': 0.15},   // Section 1: Left side, top
+      {'x': 0.15, 'y': 0.4},  // Section 2: Right side
+      {'x': 0.75, 'y': 0.65},   // Section 3: Left side
+      {'x': 0.15, 'y': 0.9},  // Section 4: Right side
+      {'x': 0.75, 'y': 1},   // Section 5: Left side
       {'x': 0.8, 'y': 0.85},  // Section 6: Right side, bottom
     ];
     
@@ -940,7 +955,14 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
-              color: isUnlocked ? Colors.black87 : Colors.grey,
+              color: isUnlocked ? Colors.white : Colors.grey[400],
+              shadows: [
+                Shadow(
+                  color: Colors.black.withOpacity(0.7),
+                  offset: Offset(1, 1),
+                  blurRadius: 2,
+                ),
+              ],
             ),
             textAlign: TextAlign.center,
             maxLines: 2,

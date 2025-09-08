@@ -17,22 +17,32 @@ class _NotificationsPageState extends State<NotificationsPage> {
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     final theme = Theme.of(context);
 
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        backgroundColor: theme.appBarTheme.backgroundColor,
-        elevation: 0,
-        title: Text(
-          'Notifications',
-          style: TextStyle(
-            color: theme.appBarTheme.foregroundColor,
-            fontWeight: FontWeight.w600,
+    return Container(
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: Scaffold(
+        backgroundColor: themeProvider.isGamified ? Colors.transparent : theme.scaffoldBackgroundColor,
+        appBar: AppBar(
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : theme.appBarTheme.backgroundColor,
+          elevation: 0,
+          title: Text(
+            'Notifications',
+            style: TextStyle(
+              color: themeProvider.isGamified ? Colors.white : theme.appBarTheme.foregroundColor,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: theme.appBarTheme.foregroundColor),
-          onPressed: () => Navigator.pop(context),
-        ),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: themeProvider.isGamified ? Colors.white : theme.appBarTheme.foregroundColor),
+            onPressed: () => Navigator.pop(context),
+          ),
         actions: [
           TextButton(
             onPressed: () {
@@ -42,7 +52,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             child: Text(
               'Mark All Read',
               style: TextStyle(
-                color: theme.appBarTheme.foregroundColor,
+                color: themeProvider.isGamified ? Colors.white : theme.appBarTheme.foregroundColor,
                 fontSize: 14,
               ),
             ),
@@ -50,7 +60,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           IconButton(
             icon: Icon(
               isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: theme.appBarTheme.foregroundColor,
+              color: themeProvider.isGamified ? Colors.white : theme.appBarTheme.foregroundColor,
             ),
             onPressed: () {
               themeProvider.toggleTheme();
@@ -106,6 +116,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
           );
         },
       ),
+    ),
     );
   }
 

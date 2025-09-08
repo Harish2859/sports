@@ -11,7 +11,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a237e 0%, #000000 100%);
             position: relative;
         }
 
@@ -21,7 +21,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a237e 0%, #000000 100%);
         }
 
         .wavy-path {
@@ -53,8 +53,6 @@
             0% { stroke-opacity: 0.3; }
             100% { stroke-opacity: 0.7; }
         }
-
-
 
         .clouds {
             position: absolute;
@@ -218,12 +216,12 @@
         </div>
 
         <!-- Wavy path SVG -->
-        <svg class="wavy-path" viewBox="0 0 400 600" preserveAspectRatio="none">
+        <svg class="wavy-path" viewBox="0 0 400 800" preserveAspectRatio="none">
             <!-- Glow effect -->
-            <path class="path-glow" d="M80 80 Q200 120 320 160 Q200 200 80 240 Q200 280 320 320 Q200 360 80 400 Q200 440 320 480"/>
+            <path class="path-glow" d="M200 60 Q300 90 350 120 Q380 150 320 190 Q260 230 150 260 Q80 290 120 330 Q160 370 300 400 Q380 430 340 470 Q300 510 150 540 Q60 570 100 610 Q140 650 320 680 Q400 710 350 750"/>
             
             <!-- Main path -->
-            <path class="path-line" d="M80 80 Q200 120 320 160 Q200 200 80 240 Q200 280 320 320 Q200 360 80 400 Q200 440 320 480"/>
+            <path class="path-line" d="M200 60 Q300 90 350 120 Q380 150 320 190 Q260 230 150 260 Q80 290 120 330 Q160 370 300 400 Q380 430 340 470 Q300 510 150 540 Q60 570 100 610 Q140 650 320 680 Q400 710 350 750"/>
         </svg>
     </div>
 

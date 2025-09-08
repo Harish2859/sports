@@ -43,30 +43,74 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-      appBar: AppBar(
-        title: Text('Unit Details', style: TextStyle(color: Colors.white)),
-        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildUnitHeader(),
-            SizedBox(height: 24),
-            _buildVideoSection(),
-            SizedBox(height: 24),
-            _buildObjectives(),
-            SizedBox(height: 24),
-            _buildDosAndDonts(),
-            SizedBox(height: 24),
-            _buildRecordingSection(),
-            SizedBox(height: 32),
-            _buildNavigationButtons(),
-          ],
+    return Container(
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: Scaffold(
+        backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE)),
+        appBar: AppBar(
+          title: Text('Unit Details', style: TextStyle(color: Colors.white)),
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[800] : Color(0xFF2563EB)),
+          flexibleSpace: themeProvider.isGamified
+              ? Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                    ),
+                  ),
+                )
+              : null,
+          elevation: 0,
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(16),
+          child: themeProvider.isGamified
+              ? Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(padding: EdgeInsets.all(20), child: _buildGamifiedUnitHeader()),
+                      Padding(padding: EdgeInsets.all(20), child: _buildGamifiedVideoSection()),
+                      Padding(padding: EdgeInsets.all(20), child: _buildGamifiedObjectives()),
+                      Padding(padding: EdgeInsets.all(20), child: _buildGamifiedDosAndDonts()),
+                      Padding(padding: EdgeInsets.all(20), child: _buildGamifiedRecordingSection()),
+                      SizedBox(height: 32),
+                      _buildNavigationButtons(),
+                    ],
+                  ),
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildUnitHeader(),
+                    SizedBox(height: 24),
+                    _buildVideoSection(),
+                    SizedBox(height: 24),
+                    _buildObjectives(),
+                    SizedBox(height: 24),
+                    _buildDosAndDonts(),
+                    SizedBox(height: 24),
+                    _buildRecordingSection(),
+                    SizedBox(height: 32),
+                    _buildNavigationButtons(),
+                  ],
+                ),
         ),
       ),
     );
@@ -673,6 +717,257 @@ class _EnhancedUnitDetailsPageState extends State<EnhancedUnitDetailsPage> {
       ),
     );
   }
+
+  Widget _buildGamifiedUnitHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Welcome to', style: TextStyle(fontSize: 16, color: Colors.white70)),
+        SizedBox(height: 8),
+        Text(widget.unitName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+        SizedBox(height: 16),
+        Text(widget.unitDescription, style: TextStyle(fontSize: 16, color: Colors.white70, height: 1.5)),
+        SizedBox(height: 16),
+        Row(
+          children: [
+            Icon(Icons.access_time, color: Colors.white, size: 20),
+            SizedBox(width: 8),
+            Text('Estimated time: 15-20 minutes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGamifiedVideoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Instructional Video', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        SizedBox(height: 16),
+        Container(
+          height: 200,
+          decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.play_circle_outline, size: 64, color: Colors.white),
+                SizedBox(height: 8),
+                Text('Video demonstration coming soon', style: TextStyle(color: Colors.white70)),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(height: 12),
+        Text('Watch this video for an overview and demonstration of key concepts for ${widget.unitName}.', style: TextStyle(color: Colors.white70, fontSize: 14)),
+      ],
+    );
+  }
+
+  Widget _buildGamifiedObjectives() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Learning Objectives', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        SizedBox(height: 16),
+        ...widget.objectives.map((objective) => Padding(
+          padding: EdgeInsets.only(bottom: 12),
+          child: Row(
+            children: [
+              Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+              SizedBox(width: 12),
+              Expanded(child: Text(objective, style: TextStyle(fontSize: 16, color: Colors.white70))),
+            ],
+          ),
+        )),
+      ],
+    );
+  }
+
+  Widget _buildGamifiedDosAndDonts() {
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green, size: 20),
+                  SizedBox(width: 8),
+                  Text('Do\'s', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.green)),
+                ],
+              ),
+              SizedBox(height: 12),
+              ...widget.dos.map((item) => Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.arrow_right, color: Colors.green, size: 16),
+                    SizedBox(width: 4),
+                    Expanded(child: Text(item, style: TextStyle(fontSize: 14, color: Colors.white70))),
+                  ],
+                ),
+              )),
+            ],
+          ),
+        ),
+        SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.cancel, color: Colors.red, size: 20),
+                  SizedBox(width: 8),
+                  Text('Don\'ts', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red)),
+                ],
+              ),
+              SizedBox(height: 12),
+              ...widget.donts.map((item) => Padding(
+                padding: EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.arrow_right, color: Colors.red, size: 16),
+                    SizedBox(width: 4),
+                    Expanded(child: Text(item, style: TextStyle(fontSize: 14, color: Colors.white70))),
+                  ],
+                ),
+              )),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGamifiedRecordingSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Record Your Performance', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+        SizedBox(height: 16),
+        Container(
+          height: 200,
+          decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.videocam, size: 48, color: Colors.white70),
+                SizedBox(height: 8),
+                Text('Tap to record your performance', style: TextStyle(color: Colors.white70)),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(height: 16),
+        if (_isAnalyzing)
+          Column(
+            children: [
+              CircularProgressIndicator(color: Colors.white),
+              SizedBox(height: 12),
+              Text('AI analyzing your performance...', style: TextStyle(color: Colors.white70)),
+            ],
+          )
+        else if (_hasRecording && !_isAnalyzing)
+          Column(
+            children: [
+              if (_hasMalpractice)
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.warning, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Issues Detected', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(_analysisResult ?? '', style: TextStyle(color: Colors.white)),
+                      SizedBox(height: 12),
+                      ElevatedButton(
+                        onPressed: _retakeRecording,
+                        child: Text('Retake Recording'),
+                        style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green),
+                          SizedBox(width: 8),
+                          Text('Great Performance!', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      SizedBox(height: 8),
+                      Text(_analysisResult ?? '', style: TextStyle(color: Colors.white)),
+                    ],
+                  ),
+                ),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _submitRecording,
+                child: Text('Submit Recording'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Color(0xFF1a237e),
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+              ),
+            ],
+          )
+        else
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton.icon(
+                onPressed: _toggleRecording,
+                icon: Icon(_isRecording ? Icons.stop : Icons.fiber_manual_record),
+                label: Text(_isRecording ? 'Stop Recording' : 'Start Recording'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isRecording ? Colors.red : Colors.white,
+                  foregroundColor: _isRecording ? Colors.white : Color(0xFF1a237e),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _showRecordingTips(),
+                icon: Icon(Icons.info_outline),
+                label: Text('Tips'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  side: BorderSide(color: Colors.white),
+                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
 }
 
 class UnitDetailsPage extends StatefulWidget {
@@ -682,6 +977,9 @@ class UnitDetailsPage extends StatefulWidget {
   final int unitIndex;
   final int sectionIndex;
   final int totalUnitsInSection;
+  final List<String> objectives;
+  final List<String> dos;
+  final List<String> donts;
 
   const UnitDetailsPage({
     Key? key,
@@ -691,6 +989,9 @@ class UnitDetailsPage extends StatefulWidget {
     required this.unitIndex,
     required this.sectionIndex,
     required this.totalUnitsInSection,
+    required this.objectives,
+    required this.dos,
+    required this.donts,
   }) : super(key: key);
 
   @override

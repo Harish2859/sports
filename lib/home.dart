@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'course.dart';
 import 'profile.dart';
 import 'explore.dart';
 import 'main_layout.dart';
 import 'event.dart';
+import 'theme_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -46,11 +48,22 @@ class HomeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return Container(
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Welcome Section
           Container(
             width: double.infinity,
@@ -71,7 +84,7 @@ class HomeContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onPrimary,
+                    color: themeProvider.isGamified ? Colors.white : Theme.of(context).colorScheme.onPrimary,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -94,7 +107,7 @@ class HomeContent extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           
@@ -132,7 +145,7 @@ class HomeContent extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           
@@ -162,7 +175,8 @@ class HomeContent extends StatelessWidget {
             'Your profile was viewed by 5 recruiters',
             '2 days ago',
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

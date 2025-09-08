@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'app_state.dart' as app_state;
+import 'theme_provider.dart';
 
 class Event {
   final String id;
@@ -173,16 +175,28 @@ class _SportsEventPageState extends State<SportsEventPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Column(
-            children: [
-              _buildFilterBar(),
-              _buildSwipeableEventCards(),
-            ],
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return Container(
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: Scaffold(
+        backgroundColor: themeProvider.isGamified ? Colors.transparent : Theme.of(context).scaffoldBackgroundColor,
+        body: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                _buildFilterBar(),
+                _buildSwipeableEventCards(),
+              ],
+            ),
           ),
         ),
       ),
@@ -190,10 +204,11 @@ class _SportsEventPageState extends State<SportsEventPage>
   }
 
   Widget _buildFilterBar() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: themeProvider.isGamified ? Colors.transparent : Theme.of(context).colorScheme.surface,
       ),
       child: Column(
         children: [
@@ -221,12 +236,16 @@ class _SportsEventPageState extends State<SportsEventPage>
   }
 
   Widget _buildGenderDropdown() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return DropdownButtonFormField<String>(
       isExpanded: true,
-      decoration: const InputDecoration(
+      style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
+      decoration: InputDecoration(
         labelText: 'Filter by Gender',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.people),
+        labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
+        border: themeProvider.isGamified ? InputBorder.none : const OutlineInputBorder(),
+        enabledBorder: themeProvider.isGamified ? InputBorder.none : const OutlineInputBorder(),
+        prefixIcon: Icon(Icons.people, color: themeProvider.isGamified ? Colors.white70 : null),
       ),
       value: _genderFilter,
       items: const [
@@ -246,13 +265,17 @@ class _SportsEventPageState extends State<SportsEventPage>
   }
 
   Widget _buildSportDropdown() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     final sports = ['all', 'Running', 'Basketball', 'Soccer', 'Tennis', 'Swimming'];
     return DropdownButtonFormField<String>(
       isExpanded: true,
-      decoration: const InputDecoration(
+      style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
+      decoration: InputDecoration(
         labelText: 'Filter by Sport',
-        border: OutlineInputBorder(),
-        prefixIcon: Icon(Icons.sports),
+        labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
+        border: themeProvider.isGamified ? InputBorder.none : const OutlineInputBorder(),
+        enabledBorder: themeProvider.isGamified ? InputBorder.none : const OutlineInputBorder(),
+        prefixIcon: Icon(Icons.sports, color: themeProvider.isGamified ? Colors.white70 : null),
       ),
       value: _sportFilter,
       items: sports.map((sport) {
@@ -274,11 +297,15 @@ class _SportsEventPageState extends State<SportsEventPage>
   Widget _buildSwipeableEventCards() {
     final events = _getDisplayedEvents(context);
     if (events.isEmpty) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Flexible(
       child: Center(
         child: Text(
           'No events match your filters',
-          style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5)),
+          style: TextStyle(
+            fontSize: 18, 
+            color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
+          ),
         ),
       ),
     );
@@ -488,8 +515,10 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
                 child: Card(
                   elevation: _isHovered ? 12 : 8,
                   shadowColor: null,
+                  color: Provider.of<ThemeProvider>(context).isGamified ? Colors.white.withOpacity(0.1) : null,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
+                    side: Provider.of<ThemeProvider>(context).isGamified ? BorderSide(color: Colors.white.withOpacity(0.2)) : BorderSide.none,
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
@@ -569,9 +598,10 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
         children: [
           Text(
             widget.event.title ?? 'Event',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 22.0,
               fontWeight: FontWeight.bold,
+              color: Provider.of<ThemeProvider>(context).isGamified ? Colors.white : null,
             ),
           ),
           const SizedBox(height: 16.0),
@@ -588,16 +618,21 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
   }
 
   Widget _buildInfoRow(IconData icon, String text) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Row(
       children: [
-        Icon(icon, size: 18.0, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6)),
+        Icon(
+          icon, 
+          size: 18.0, 
+          color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.6)
+        ),
         const SizedBox(width: 12.0),
         Expanded(
           child: Text(
             text,
             style: TextStyle(
               fontSize: 14.0,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
             ),
           ),
         ),

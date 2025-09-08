@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'recommended_courses.dart';
+import 'theme_provider.dart';
 
 class ExplorePage extends StatefulWidget {
   @override
@@ -32,14 +34,30 @@ class _ExplorePageState extends State<ExplorePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('Discover Your Sports Journey'),
-        backgroundColor: Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
-        foregroundColor: Theme.of(context).appBarTheme.foregroundColor ?? Theme.of(context).textTheme.bodyLarge?.color,
-        elevation: 0,
-      ),
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return Container(
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: Scaffold(
+        backgroundColor: themeProvider.isGamified ? Colors.transparent : Theme.of(context).scaffoldBackgroundColor,
+        appBar: AppBar(
+          title: Text(
+            'Discover Your Sports Journey',
+            style: TextStyle(
+              color: themeProvider.isGamified ? Colors.white : null,
+            ),
+          ),
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
+          foregroundColor: themeProvider.isGamified ? Colors.white : Theme.of(context).appBarTheme.foregroundColor ?? Theme.of(context).textTheme.bodyLarge?.color,
+          elevation: 0,
+        ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -51,28 +69,52 @@ class _ExplorePageState extends State<ExplorePage> {
               Icons.person,
               [
                 TextFormField(
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
+                  decoration: InputDecoration(
                     labelText: 'Location',
-                    prefixIcon: Icon(Icons.location_on),
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
+                    prefixIcon: Icon(Icons.location_on, color: themeProvider.isGamified ? Colors.white70 : null),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : Colors.grey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor),
+                    ),
                   ),
                   onSaved: (value) => location = value,
                 ),
                 const SizedBox(height: 16),
-                Text('Age: $age'),
+                Text(
+                  'Age: $age',
+                  style: TextStyle(
+                    color: themeProvider.isGamified ? Colors.white : null,
+                  ),
+                ),
                 Slider(
                   value: age.toDouble(),
                   min: 12,
                   max: 65,
                   divisions: 53,
+                  activeColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                  inactiveColor: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : null,
                   onChanged: (value) => setState(() => age = value.round()),
                 ),
                 const SizedBox(height: 16),
-                Text('Weight: ${weight.round()} kg'),
+                Text(
+                  'Weight: ${weight.round()} kg',
+                  style: TextStyle(
+                    color: themeProvider.isGamified ? Colors.white : null,
+                  ),
+                ),
                 Slider(
                   value: weight,
                   min: 30,
                   max: 150,
+                  activeColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                  inactiveColor: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : null,
                   onChanged: (value) => setState(() => weight = value),
                 ),
               ],
@@ -87,9 +129,17 @@ class _ExplorePageState extends State<ExplorePage> {
               [
                 DropdownButtonFormField<String>(
                   value: skillLevel,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
+                  dropdownColor: themeProvider.isGamified ? Colors.black87 : null,
+                  decoration: InputDecoration(
                     labelText: 'Skill Level',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : Colors.grey),
+                    ),
                   ),
                   items: skillLevels.map((level) => DropdownMenuItem(
                     value: level,
@@ -98,32 +148,63 @@ class _ExplorePageState extends State<ExplorePage> {
                   onChanged: (value) => setState(() => skillLevel = value),
                 ),
                 const SizedBox(height: 16),
-                Text('Fitness Level: $fitnessLevel/10'),
+                Text(
+                  'Fitness Level: $fitnessLevel/10',
+                  style: TextStyle(
+                    color: themeProvider.isGamified ? Colors.white : null,
+                  ),
+                ),
                 Slider(
                   value: fitnessLevel.toDouble(),
                   min: 1,
                   max: 10,
                   divisions: 9,
+                  activeColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                  inactiveColor: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : null,
                   onChanged: (value) => setState(() => fitnessLevel = value.round()),
                 ),
                 const SizedBox(height: 16),
-                Text('Weekly Availability: $weeklyAvailability hours'),
+                Text(
+                  'Weekly Availability: $weeklyAvailability hours',
+                  style: TextStyle(
+                    color: themeProvider.isGamified ? Colors.white : null,
+                  ),
+                ),
                 Slider(
                   value: weeklyAvailability.toDouble(),
                   min: 1,
                   max: 20,
                   divisions: 19,
+                  activeColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                  inactiveColor: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : null,
                   onChanged: (value) => setState(() => weeklyAvailability = value.round()),
                 ),
                 const SizedBox(height: 16),
-                const Text('Favorite Sports:', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(
+                  'Favorite Sports:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: themeProvider.isGamified ? Colors.white : null,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: sportsOptions.map((sport) => FilterChip(
-                    label: Text(sport),
+                    label: Text(
+                      sport,
+                      style: TextStyle(
+                        color: favoritesSports.contains(sport)
+                            ? (themeProvider.isGamified ? Colors.black : Colors.white)
+                            : (themeProvider.isGamified ? Colors.white : null),
+                      ),
+                    ),
                     selected: favoritesSports.contains(sport),
+                    selectedColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                    backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : null,
+                    checkmarkColor: themeProvider.isGamified ? Colors.black : Colors.white,
+                    side: themeProvider.isGamified ? BorderSide(color: Colors.white.withOpacity(0.3)) : null,
                     onSelected: (selected) {
                       setState(() {
                         if (selected) {
@@ -147,9 +228,17 @@ class _ExplorePageState extends State<ExplorePage> {
               [
                 DropdownButtonFormField<String>(
                   value: trainingType,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
+                  dropdownColor: themeProvider.isGamified ? Colors.black87 : null,
+                  decoration: InputDecoration(
                     labelText: 'Training Type',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : Colors.grey),
+                    ),
                   ),
                   items: trainingTypes.map((type) => DropdownMenuItem(
                     value: type,
@@ -160,9 +249,17 @@ class _ExplorePageState extends State<ExplorePage> {
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
                   value: dietPreference,
-                  decoration: const InputDecoration(
+                  style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
+                  dropdownColor: themeProvider.isGamified ? Colors.black87 : null,
+                  decoration: InputDecoration(
                     labelText: 'Diet Preference',
-                    border: OutlineInputBorder(),
+                    labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : Colors.grey),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : Colors.grey),
+                    ),
                   ),
                   items: dietPreferences.map((diet) => DropdownMenuItem(
                     value: diet,
@@ -171,24 +268,47 @@ class _ExplorePageState extends State<ExplorePage> {
                   onChanged: (value) => setState(() => dietPreference = value),
                 ),
                 const SizedBox(height: 16),
-                Text('Budget: \$${budget}/month'),
+                Text(
+                  'Budget: \$${budget}/month',
+                  style: TextStyle(
+                    color: themeProvider.isGamified ? Colors.white : null,
+                  ),
+                ),
                 Slider(
                   value: budget.toDouble(),
                   min: 50,
                   max: 500,
                   divisions: 45,
+                  activeColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                  inactiveColor: themeProvider.isGamified ? Colors.white.withOpacity(0.3) : null,
                   onChanged: (value) => setState(() => budget = value.round()),
                 ),
                 const SizedBox(height: 16),
-                const Text('Training Environment:', style: TextStyle(fontWeight: FontWeight.w500)),
+                Text(
+                  'Training Environment:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: themeProvider.isGamified ? Colors.white : null,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: ['indoor', 'outdoor', 'both'].map((option) => Expanded(
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: ChoiceChip(
-                        label: Text(option.toUpperCase()),
+                        label: Text(
+                          option.toUpperCase(),
+                          style: TextStyle(
+                            color: indoorOutdoor == option
+                                ? (themeProvider.isGamified ? Colors.black : Colors.white)
+                                : (themeProvider.isGamified ? Colors.white : null),
+                          ),
+                        ),
                         selected: indoorOutdoor == option,
+                        selectedColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                        backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : null,
+                        side: themeProvider.isGamified ? BorderSide(color: Colors.white.withOpacity(0.3)) : null,
                         onSelected: (selected) {
                           if (selected) setState(() => indoorOutdoor = option);
                         },
@@ -242,16 +362,19 @@ class _ExplorePageState extends State<ExplorePage> {
           ],
         ),
       ),
+      ),
     );
   }
 
   Widget _buildSection(String title, IconData icon, List<Widget> children) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
+        border: themeProvider.isGamified ? Border.all(color: Colors.white.withOpacity(0.2)) : null,
+        boxShadow: themeProvider.isGamified ? null : [
           BoxShadow(
             color: Theme.of(context).shadowColor.withOpacity(0.05),
             blurRadius: 10,
@@ -264,14 +387,14 @@ class _ExplorePageState extends State<ExplorePage> {
         children: [
           Row(
             children: [
-              Icon(icon, color: Theme.of(context).primaryColor),
+              Icon(icon, color: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor),
               const SizedBox(width: 8),
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                  color: Provider.of<ThemeProvider>(context).isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ],

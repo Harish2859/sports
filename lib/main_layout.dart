@@ -358,15 +358,15 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       ),
       appBar: AppBar(
         backgroundColor: Provider.of<ThemeProvider>(context).isGamified 
-            ? null 
-            : Theme.of(context).appBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
+            ? Colors.transparent 
+            : null,
         flexibleSpace: Provider.of<ThemeProvider>(context).isGamified
             ? Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                    colors: [Color(0xFF1a237e), Color(0xFF000000)],
                   ),
                 ),
               )
@@ -381,14 +381,18 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).textTheme.titleLarge?.color,
+                color: Provider.of<ThemeProvider>(context).isGamified 
+                    ? Colors.white 
+                    : Theme.of(context).textTheme.titleLarge?.color,
               ),
             ),
             Text(
               'Empowering Your Fair Quest for Talent',
               style: TextStyle(
                 fontSize: 12,
-                color: Theme.of(context).textTheme.bodyMedium?.color,
+                color: Provider.of<ThemeProvider>(context).isGamified 
+                    ? Colors.white70 
+                    : Theme.of(context).textTheme.bodyMedium?.color,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -408,7 +412,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                 },
                 icon: Icon(
                   Icons.notifications_outlined,
-                  color: Theme.of(context).iconTheme.color,
+                  color: Provider.of<ThemeProvider>(context).isGamified 
+                      ? Colors.white 
+                      : Theme.of(context).iconTheme.color,
                   size: 24,
                 ),
               ),
@@ -452,7 +458,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
             },
             icon: Icon(
               Icons.message_outlined,
-              color: Theme.of(context).iconTheme.color,
+              color: Provider.of<ThemeProvider>(context).isGamified 
+                  ? Colors.white 
+                  : Theme.of(context).iconTheme.color,
               size: 24,
             ),
           ),
@@ -463,7 +471,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               },
               icon: Icon(
                 Icons.menu,
-                color: Theme.of(context).iconTheme.color,
+                color: Provider.of<ThemeProvider>(context).isGamified 
+                    ? Colors.white 
+                    : Theme.of(context).iconTheme.color,
                 size: 24,
               ),
             ),
@@ -472,66 +482,84 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
         ],
       ),
       body: widget.child,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          gradient: Provider.of<ThemeProvider>(context).isGamified
-              ? const LinearGradient(
+      bottomNavigationBar: Provider.of<ThemeProvider>(context).isGamified
+          ? Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                )
-              : null,
-          color: Provider.of<ThemeProvider>(context).isGamified 
-              ? null 
-              : Theme.of(context).bottomNavigationBarTheme.backgroundColor ?? Theme.of(context).colorScheme.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).shadowColor.withOpacity(0.1),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
+                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                ),
+              ),
+              child: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
+                backgroundColor: Colors.transparent,
+                selectedItemColor: Colors.white,
+                unselectedItemColor: Colors.white.withOpacity(0.7),
+                elevation: 0,
+                currentIndex: _currentIndex < 0 ? 0 : _currentIndex,
+                onTap: _handleTabChanged,
+                items: const [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.home_outlined),
+                    activeIcon: Icon(Icons.home),
+                    label: 'Home',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.explore_outlined),
+                    activeIcon: Icon(Icons.explore),
+                    label: 'Explore',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.event_outlined),
+                    activeIcon: Icon(Icons.event),
+                    label: 'Events',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.school_outlined),
+                    activeIcon: Icon(Icons.school),
+                    label: 'Course',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.person_outline),
+                    activeIcon: Icon(Icons.person),
+                    label: 'Profile',
+                  ),
+                ],
+              ),
+            )
+          : BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: _currentIndex < 0 ? 0 : _currentIndex,
+              onTap: _handleTabChanged,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.home_outlined),
+                  activeIcon: Icon(Icons.home),
+                  label: 'Home',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.explore_outlined),
+                  activeIcon: Icon(Icons.explore),
+                  label: 'Explore',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.event_outlined),
+                  activeIcon: Icon(Icons.event),
+                  label: 'Events',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.school_outlined),
+                  activeIcon: Icon(Icons.school),
+                  label: 'Course',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.person_outline),
+                  activeIcon: Icon(Icons.person),
+                  label: 'Profile',
+                ),
+              ],
             ),
-          ],
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          selectedItemColor: Provider.of<ThemeProvider>(context).isGamified 
-              ? Colors.white 
-              : Theme.of(context).bottomNavigationBarTheme.selectedItemColor ?? Theme.of(context).primaryColor,
-          unselectedItemColor: Provider.of<ThemeProvider>(context).isGamified
-              ? Colors.white.withOpacity(0.7)
-              : Theme.of(context).bottomNavigationBarTheme.unselectedItemColor ?? Theme.of(context).textTheme.bodyMedium?.color,
-          currentIndex: _currentIndex < 0 ? 0 : _currentIndex,
-          onTap: _handleTabChanged,
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.explore_outlined),
-              activeIcon: Icon(Icons.explore),
-              label: 'Explore',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.event_outlined),
-              activeIcon: Icon(Icons.event),
-              label: 'Events',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.school_outlined),
-              activeIcon: Icon(Icons.school),
-              label: 'Course',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

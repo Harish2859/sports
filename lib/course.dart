@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'coursedetails.dart';
 import 'course_data_manager.dart';
+import 'theme_provider.dart';
 
 // Model class for Course
 class Course {
@@ -106,13 +108,22 @@ class _CoursePageState extends State<CoursePage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
-      color: Theme.of(context).scaffoldBackgroundColor,
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
       child: Column(
         children: [
           // Search and Filter Section
           Container(
-            color: Theme.of(context).cardColor,
+            color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
@@ -122,16 +133,21 @@ class _CoursePageState extends State<CoursePage> {
                   onChanged: (value) => _filterCourses(),
                   decoration: InputDecoration(
                     hintText: 'Search courses, instructors, or categories...',
-                    prefixIcon: Icon(Icons.search, color: Theme.of(context).iconTheme.color),
+                    hintStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
+                    prefixIcon: Icon(Icons.search, color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).iconTheme.color),
                     filled: true,
-                    fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+                    fillColor: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).inputDecorationTheme.fillColor,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                      borderSide: themeProvider.isGamified ? BorderSide(color: Colors.white.withOpacity(0.3)) : BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: themeProvider.isGamified ? BorderSide(color: Colors.white.withOpacity(0.3)) : BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
-                  style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+                  style: TextStyle(color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color),
                 ),
                 const SizedBox(height: 12),
                 
@@ -180,7 +196,7 @@ class _CoursePageState extends State<CoursePage> {
               '${_filteredCourses.length} courses found',
               style: TextStyle(
                 fontSize: 14,
-                color: Theme.of(context).textTheme.bodySmall?.color,
+                color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodySmall?.color,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -206,6 +222,7 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   Widget _buildCourseCard(Course course) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -217,9 +234,10 @@ class _CoursePageState extends State<CoursePage> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
+          color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
+          border: themeProvider.isGamified ? Border.all(color: Colors.white.withOpacity(0.2)) : null,
+          boxShadow: themeProvider.isGamified ? null : [
             BoxShadow(
               color: Theme.of(context).shadowColor.withOpacity(0.04),
               blurRadius: 8,
@@ -264,7 +282,7 @@ class _CoursePageState extends State<CoursePage> {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.headlineSmall?.color,
+                            color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.headlineSmall?.color,
                           ),
                         ),
                       ),
@@ -293,7 +311,7 @@ class _CoursePageState extends State<CoursePage> {
                     'by ${course.instructor}',
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                      color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -305,7 +323,7 @@ class _CoursePageState extends State<CoursePage> {
                     course.summary,
                     style: TextStyle(
                       fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                      color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
                       height: 1.4,
                     ),
                     maxLines: 2,
@@ -331,7 +349,7 @@ class _CoursePageState extends State<CoursePage> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: themeProvider.isGamified ? Colors.white : Theme.of(context).colorScheme.onSurface,
                             ),
                           ),
                         ],
@@ -364,14 +382,14 @@ class _CoursePageState extends State<CoursePage> {
                           Icon(
                             Icons.people_outline,
                             size: 16,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                            color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             '${course.enrolledCount}',
                             style: TextStyle(
                               fontSize: 12,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                             ),
                           ),
                         ],
