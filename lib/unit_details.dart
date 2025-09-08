@@ -6,6 +6,8 @@ import 'analysis_results.dart';
 import 'theme_provider.dart';
 import 'simple_video_recorder.dart';
 import 'performance_videos_manager.dart';
+import 'gamified_icons.dart';
+import 'main_layout.dart';
 
 class UnitDetailsPage extends StatefulWidget {
   final String unitName;
@@ -91,6 +93,50 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
+
+    if (isGamified) {
+      return MainLayout(
+        currentIndex: 3,
+        onTabChanged: (index) {
+          if (index != 3) {
+            Navigator.pop(context);
+          }
+        },
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            ),
+            child: SafeArea(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildGamifiedHeader(),
+                    _buildUnitHeader(),
+                    SizedBox(height: 24),
+                    _buildVideoSection(),
+                    SizedBox(height: 24),
+                    _buildObjectives(),
+                    SizedBox(height: 24),
+                    _buildRecordingSection(),
+                    SizedBox(height: 32),
+                    _buildNavigationButtons(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
@@ -119,18 +165,62 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
     );
   }
 
+  Widget _buildGamifiedHeader() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 20),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.arrow_back, color: Colors.white, size: 24),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              'Quest Details',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(
+                    offset: Offset(0, 2),
+                    blurRadius: 4,
+                    color: Colors.black.withOpacity(0.3),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
+
   Widget _buildUnitHeader() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: isGamified 
+            ? Colors.white.withOpacity(0.15)
+            : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
+        border: isGamified ? Border.all(color: Colors.white.withOpacity(0.3), width: 2) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(isGamified ? 0.2 : 0.1),
             blurRadius: 8,
             offset: Offset(0, 4),
           ),
@@ -140,10 +230,10 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Welcome to',
+            isGamified ? '🏆 Quest Briefing' : 'Welcome to',
             style: TextStyle(
               fontSize: 16,
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              color: isGamified ? Colors.white.withOpacity(0.9) : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
             ),
           ),
           SizedBox(height: 8),
@@ -152,7 +242,14 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              shadows: isGamified ? [
+                Shadow(
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ] : null,
             ),
           ),
           SizedBox(height: 16),
@@ -160,19 +257,23 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             widget.unitDescription,
             style: TextStyle(
               fontSize: 16,
-              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              color: isGamified ? Colors.white.withOpacity(0.8) : (isDarkMode ? Colors.grey[300] : Colors.grey[700]),
               height: 1.5,
             ),
           ),
           SizedBox(height: 16),
           Row(
             children: [
-              Icon(Icons.access_time, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB), size: 20),
+              Icon(
+                isGamified ? Icons.timer : Icons.access_time, 
+                color: isGamified ? Colors.yellow[300] : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)), 
+                size: 20
+              ),
               SizedBox(width: 8),
               Text(
-                'Estimated time: 15-20 minutes',
+                isGamified ? '⏱️ Quest Duration: 15-20 minutes' : 'Estimated time: 15-20 minutes',
                 style: TextStyle(
-                  color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
+                  color: isGamified ? Colors.yellow[300] : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -186,15 +287,19 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   Widget _buildVideoSection() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: isGamified 
+            ? Colors.white.withOpacity(0.15)
+            : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
+        border: isGamified ? Border.all(color: Colors.white.withOpacity(0.3), width: 2) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(isGamified ? 0.2 : 0.1),
             blurRadius: 8,
             offset: Offset(0, 4),
           ),
@@ -204,11 +309,18 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Instructional Video',
+            isGamified ? '📹 Training Scroll' : 'Instructional Video',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              shadows: isGamified ? [
+                Shadow(
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ] : null,
             ),
           ),
           SizedBox(height: 16),
@@ -269,9 +381,11 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
           ),
           SizedBox(height: 12),
           Text(
-            'Watch this video for an overview and demonstration of key concepts for ${widget.unitName}.',
+            isGamified 
+                ? '🎯 Study this ancient scroll to master the techniques of ${widget.unitName}.' 
+                : 'Watch this video for an overview and demonstration of key concepts for ${widget.unitName}.',
             style: TextStyle(
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              color: isGamified ? Colors.white.withOpacity(0.8) : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
               fontSize: 14,
             ),
           ),
@@ -283,15 +397,19 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   Widget _buildObjectives() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: isGamified 
+            ? Colors.white.withOpacity(0.15)
+            : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
+        border: isGamified ? Border.all(color: Colors.white.withOpacity(0.3), width: 2) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(isGamified ? 0.2 : 0.1),
             blurRadius: 8,
             offset: Offset(0, 4),
           ),
@@ -301,11 +419,18 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Learning Objectives',
+            isGamified ? '🎯 Quest Objectives' : 'Learning Objectives',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              shadows: isGamified ? [
+                Shadow(
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ] : null,
             ),
           ),
           SizedBox(height: 16),
@@ -321,19 +446,24 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   Widget _buildObjectiveItem(String objective) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
 
     return Padding(
       padding: EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(Icons.check_circle_outline, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB), size: 20),
+          Icon(
+            isGamified ? Icons.star_outline : Icons.check_circle_outline, 
+            color: isGamified ? Colors.yellow[300] : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)), 
+            size: 20
+          ),
           SizedBox(width: 12),
           Expanded(
             child: Text(
               objective,
               style: TextStyle(
                 fontSize: 16,
-                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                color: isGamified ? Colors.white.withOpacity(0.9) : (isDarkMode ? Colors.grey[300] : Colors.grey[700]),
               ),
             ),
           ),
@@ -345,15 +475,19 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   Widget _buildRecordingSection() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: isGamified 
+            ? Colors.white.withOpacity(0.15)
+            : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
+        border: isGamified ? Border.all(color: Colors.white.withOpacity(0.3), width: 2) : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withOpacity(isGamified ? 0.2 : 0.1),
             blurRadius: 8,
             offset: Offset(0, 4),
           ),
@@ -363,11 +497,18 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Record Your Performance',
+            isGamified ? '🎥 Prove Your Skills' : 'Record Your Performance',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              shadows: isGamified ? [
+                Shadow(
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ] : null,
             ),
           ),
           SizedBox(height: 16),
@@ -416,8 +557,8 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                         Icon(Icons.videocam, size: 48, color: isDarkMode ? Colors.grey[400] : Colors.grey[500]),
                         SizedBox(height: 8),
                         Text(
-                          'Tap to record your performance',
-                          style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+                          isGamified ? '🎥 Tap to capture your prowess' : 'Tap to record your performance',
+                          style: TextStyle(color: isGamified ? Colors.white.withOpacity(0.8) : (isDarkMode ? Colors.grey[400] : Colors.grey[600])),
                         ),
                       ],
                     ),
@@ -429,7 +570,10 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
               children: [
                 CircularProgressIndicator(color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                 SizedBox(height: 12),
-                Text('AI is recognizing your facial marks...', style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600])),
+                Text(
+                  isGamified ? '🤖 AI Oracle is reading your essence...' : 'AI is recognizing your facial marks...', 
+                  style: TextStyle(color: isGamified ? Colors.white.withOpacity(0.8) : (isDarkMode ? Colors.grey[400] : Colors.grey[600]))
+                ),
               ],
             )
           else if (_hasRecording && !_isAnalyzing)
@@ -439,9 +583,14 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.red[900] : Colors.red[50],
+                      color: isGamified 
+                          ? Colors.red.withOpacity(0.2)
+                          : (isDarkMode ? Colors.red[900] : Colors.red[50]),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red[200]!),
+                      border: Border.all(
+                        color: isGamified ? Colors.red : Colors.red[200]!, 
+                        width: isGamified ? 2 : 1
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -453,7 +602,10 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                           ],
                         ),
                         SizedBox(height: 8),
-                        Text(_analysisResult ?? '', style: TextStyle(color: isDarkMode ? Colors.white : Colors.red[700])),
+                        Text(
+                          _analysisResult ?? '', 
+                          style: TextStyle(color: isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.red[700]))
+                        ),
                         SizedBox(height: 12),
                         ElevatedButton(
                           onPressed: _retakeRecording,
@@ -467,9 +619,14 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                   Container(
                     padding: EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.green[900] : Colors.green[50],
+                      color: isGamified 
+                          ? Colors.green.withOpacity(0.2)
+                          : (isDarkMode ? Colors.green[900] : Colors.green[50]),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green[200]!),
+                      border: Border.all(
+                        color: isGamified ? Colors.green : Colors.green[200]!, 
+                        width: isGamified ? 2 : 1
+                      ),
                     ),
                     child: Column(
                       children: [
@@ -477,11 +634,17 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                           children: [
                             Icon(Icons.check_circle, color: Colors.green),
                             SizedBox(width: 8),
-                            Text('Face Matched Successfully!', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                            Text(
+                              isGamified ? '✨ Essence Recognized!' : 'Face Matched Successfully!', 
+                              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)
+                            ),
                           ],
                         ),
                         SizedBox(height: 8),
-                        Text(_analysisResult ?? '', style: TextStyle(color: isDarkMode ? Colors.white : Colors.green[700])),
+                        Text(
+                          _analysisResult ?? '', 
+                          style: TextStyle(color: isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.green[700]))
+                        ),
                       ],
                     ),
                   ),

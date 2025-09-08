@@ -20,6 +20,8 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
     
     return MainLayout(
       currentIndex: 4, // Profile tab
@@ -29,36 +31,22 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
         }
       },
       child: Container(
-        decoration: themeProvider.isGamified
+        decoration: isGamified
             ? const BoxDecoration(
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                   colors: [Color(0xFF1a237e), Color(0xFF000000)],
                 ),
               )
             : null,
         child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-          appBar: AppBar(
-            title: const Text('Performance Videos'),
-            backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-            elevation: 0,
-            actions: [
-              IconButton(
-                onPressed: _recordNewVideo,
-                icon: const Icon(Icons.add),
-              ),
-            ],
-          ),
+          backgroundColor: isGamified 
+              ? Colors.transparent 
+              : (isDarkMode ? Colors.grey[900] : null),
           body: _videosManager.hasVideos()
               ? _buildVideosList()
               : _buildEmptyState(),
-          floatingActionButton: FloatingActionButton(
-            onPressed: _recordNewVideo,
-            backgroundColor: Colors.red,
-            child: const Icon(Icons.videocam, color: Colors.white),
-          ),
         ),
       ),
     );
@@ -66,6 +54,8 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
 
   Widget _buildVideosList() {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
     
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -75,13 +65,14 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: themeProvider.isGamified 
-                ? Colors.white.withOpacity(0.1) 
-                : Theme.of(context).cardColor,
+            color: isGamified 
+                ? Colors.white.withOpacity(0.15)
+                : (isDarkMode ? Colors.grey[800] : Theme.of(context).cardColor),
             borderRadius: BorderRadius.circular(16),
+            border: isGamified ? Border.all(color: Colors.white.withOpacity(0.3), width: 1) : null,
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withOpacity(isGamified ? 0.2 : 0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -93,34 +84,48 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
               width: 60,
               height: 60,
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: isGamified 
+                    ? Colors.red.withOpacity(0.2)
+                    : Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
+                border: isGamified ? Border.all(color: Colors.red.withOpacity(0.5), width: 1) : null,
               ),
-              child: const Icon(Icons.play_circle_filled, color: Colors.red, size: 32),
+              child: Icon(
+                Icons.play_circle_filled, 
+                color: isGamified ? Colors.red[300] : Colors.red, 
+                size: 32
+              ),
             ),
             title: Text(
               video.title,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: themeProvider.isGamified 
+                color: isGamified 
                     ? Colors.white 
-                    : Theme.of(context).textTheme.bodyLarge?.color,
+                    : (isDarkMode ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color),
+                shadows: isGamified ? [
+                  Shadow(
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                    color: Colors.black.withOpacity(0.3),
+                  ),
+                ] : null,
               ),
             ),
             subtitle: Text(
               'Recorded: ${_formatDate(video.recordedAt)}',
               style: TextStyle(
-                color: themeProvider.isGamified 
-                    ? Colors.white70 
-                    : Theme.of(context).textTheme.bodyMedium?.color,
+                color: isGamified 
+                    ? Colors.white.withOpacity(0.8)
+                    : (isDarkMode ? Colors.grey[400] : Theme.of(context).textTheme.bodyMedium?.color),
               ),
             ),
             trailing: PopupMenuButton(
               icon: Icon(
                 Icons.more_vert,
-                color: themeProvider.isGamified 
+                color: isGamified 
                     ? Colors.white 
-                    : Theme.of(context).iconTheme.color,
+                    : (isDarkMode ? Colors.white : Theme.of(context).iconTheme.color),
               ),
               itemBuilder: (context) => [
                 const PopupMenuItem(
@@ -149,6 +154,8 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
 
   Widget _buildEmptyState() {
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
     
     return Center(
       child: Column(
@@ -157,36 +164,42 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
           Icon(
             Icons.videocam_off,
             size: 64,
-            color: themeProvider.isGamified ? Colors.white54 : Colors.grey[400],
+            color: isGamified 
+                ? Colors.white.withOpacity(0.6)
+                : (isDarkMode ? Colors.grey[400] : Colors.grey[400]),
           ),
           const SizedBox(height: 16),
           Text(
-            'No performance videos yet',
+            isGamified ? '🎥 No Quest Recordings Yet' : 'No performance videos yet',
             style: TextStyle(
               fontSize: 18,
-              color: themeProvider.isGamified ? Colors.white70 : Colors.grey[600],
+              fontWeight: isGamified ? FontWeight.bold : FontWeight.normal,
+              color: isGamified 
+                  ? Colors.white
+                  : (isDarkMode ? Colors.grey[300] : Colors.grey[600]),
+              shadows: isGamified ? [
+                Shadow(
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                  color: Colors.black.withOpacity(0.3),
+                ),
+              ] : null,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Tap the camera button to record your first video',
+            isGamified 
+                ? 'Begin your journey by capturing your first performance'
+                : 'Tap the camera button to record your first video',
             style: TextStyle(
               fontSize: 14,
-              color: themeProvider.isGamified ? Colors.white54 : Colors.grey[500],
+              color: isGamified 
+                  ? Colors.white.withOpacity(0.8)
+                  : (isDarkMode ? Colors.grey[400] : Colors.grey[500]),
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _recordNewVideo,
-            icon: const Icon(Icons.videocam),
-            label: const Text('Start Recording'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
+
         ],
       ),
     );
@@ -217,15 +230,39 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
   }
 
   void _deleteVideo(PerformanceVideo video) {
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Video'),
-        content: const Text('Are you sure you want to delete this video?'),
+        backgroundColor: isGamified 
+            ? Colors.grey[900]
+            : (isDarkMode ? Colors.grey[800] : null),
+        title: Text(
+          isGamified ? 'Delete Quest Recording?' : 'Delete Video',
+          style: TextStyle(
+            color: isGamified ? Colors.white : (isDarkMode ? Colors.white : null),
+          ),
+        ),
+        content: Text(
+          isGamified 
+              ? 'Are you sure you want to remove this quest recording from your collection?'
+              : 'Are you sure you want to delete this video?',
+          style: TextStyle(
+            color: isGamified ? Colors.white.withOpacity(0.8) : (isDarkMode ? Colors.white : null),
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: isGamified ? Colors.white : (isDarkMode ? Colors.white : null),
+              ),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -233,7 +270,9 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
               setState(() {});
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Video deleted')),
+                SnackBar(
+                  content: Text(isGamified ? 'Quest recording removed' : 'Video deleted'),
+                ),
               );
             },
             child: const Text('Delete', style: TextStyle(color: Colors.red)),

@@ -499,10 +499,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          // Record Performance Card - Featured
-          _buildRecordPerformanceCard(isDarkMode, videosManager.hasVideos()),
-          const SizedBox(height: 16),
-          
           Row(
             children: [
               Expanded(
@@ -517,10 +513,34 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               const SizedBox(width: 12),
               Expanded(
                 child: _buildActionButton(
+                  'Your Performance',
+                  Icons.videocam_outlined,
+                  Colors.red[600]!,
+                  () => _navigateToPerformanceVideos(),
+                  isDarkMode,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionButton(
                   'My Certificates',
                   Icons.card_membership_outlined,
                   Colors.purple[600]!,
                   () => _navigateToCertificates(),
+                  isDarkMode,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildActionButton(
+                  'Leaderboard',
+                  Icons.leaderboard,
+                  Colors.orange[600]!,
+                  () => _navigateToLeaderboard(),
                   isDarkMode,
                 ),
               ),
@@ -559,89 +579,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget _buildRecordPerformanceCard(bool isDarkMode, bool hasVideos) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     
-    return GestureDetector(
-      onTap: () => _navigateToPerformanceVideos(),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFF5722), Color(0xFFE91E63)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.red.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.videocam,
-                color: Colors.white,
-                size: 32,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Record Your Performance',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    hasVideos ? 'View & record new videos' : 'Start recording your first video',
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (hasVideos)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'NEW',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.white,
-              size: 16,
-            ),
-          ],
-        ),
-      ),
+    return _buildActionButton(
+      'Your Performance',
+      Icons.videocam_outlined,
+      Colors.red[600]!,
+      () => _navigateToPerformanceVideos(),
+      isDarkMode,
     );
   }
 
