@@ -573,15 +573,18 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
 
     if (result != null) {
       PerformanceVideosManager().addVideo(result);
-      setState(() {
-        _recordedVideoPath = result;
-      });
+      if (mounted) {
+        setState(() {
+          _recordedVideoPath = result;
+        });
+      }
       _initializeRecordedVideo();
       _startAnalysis();
     }
   }
 
   void _startAnalysis() async {
+    if (!mounted) return;
     setState(() {
       _isAnalyzing = true;
       _hasRecording = true;
@@ -591,6 +594,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
 
     bool hasMalpractice = DateTime.now().millisecond % 3 == 0;
     
+    if (!mounted) return;
     setState(() {
       _isAnalyzing = false;
       _hasMalpractice = hasMalpractice;
@@ -601,6 +605,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   void _retakeRecording() {
+    if (!mounted) return;
     setState(() {
       _hasRecording = false;
       _hasMalpractice = false;
