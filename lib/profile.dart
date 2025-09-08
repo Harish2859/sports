@@ -54,23 +54,34 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              _buildProfileHeader(isDarkMode),
-              const SizedBox(height: 20),
-              _buildStatsCards(isDarkMode),
-              const SizedBox(height: 20),
-              _buildXPCard(),
-              const SizedBox(height: 20),
-              _buildActionButtons(isDarkMode),
-              const SizedBox(height: 20),
-            ],
+    return Container(
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: Scaffold(
+        backgroundColor: themeProvider.isGamified ? Colors.transparent : Theme.of(context).scaffoldBackgroundColor,
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                _buildProfileHeader(isDarkMode),
+                const SizedBox(height: 20),
+                _buildStatsCards(isDarkMode),
+                const SizedBox(height: 20),
+                _buildXPCard(),
+                const SizedBox(height: 20),
+                _buildActionButtons(isDarkMode),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -78,11 +89,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildProfileHeader(bool isDarkMode) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -130,14 +142,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Text(
             '@alex_sports_pro',
             style: TextStyle(
               fontSize: 16,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
+              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
             ),
           ),
           const SizedBox(height: 8),
@@ -375,10 +387,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color, bool isDarkMode) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -397,14 +410,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Text(
             title,
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
+              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
             ),
             textAlign: TextAlign.center,
           ),
@@ -414,10 +427,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildBadgeStatCard(bool isDarkMode) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -460,14 +474,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Text(
             'Achievements',
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
+              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
             ),
             textAlign: TextAlign.center,
           ),
@@ -636,10 +650,33 @@ class MyCoursesPage extends StatelessWidget {
           Navigator.pop(context);
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('My Courses'),
-        ),
+      child: Container(
+        decoration: themeProvider.isGamified
+            ? const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                ),
+              )
+            : null,
+        child: Scaffold(
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
+          appBar: AppBar(
+            title: const Text('My Courses'),
+            backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
+            flexibleSpace: themeProvider.isGamified
+                ? Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                      ),
+                    ),
+                  )
+                : null,
+          ),
         body: appState.enrolledCourses.isEmpty
             ? Center(
                 child: Column(
@@ -666,7 +703,7 @@ class MyCoursesPage extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                      color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -684,18 +721,18 @@ class MyCoursesPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.bodyLarge?.color,
+                            color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           course.summary,
-                          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+                          style: TextStyle(color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color),
                         ),
                         const SizedBox(height: 12),
                         LinearProgressIndicator(
                           value: 0.3,
-                          backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+                          backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
                         ),
                         const SizedBox(height: 12),
@@ -735,6 +772,7 @@ class MyCoursesPage extends StatelessWidget {
                 },
               ),
       )
+      ),
     );
   }
 }
@@ -756,10 +794,33 @@ class FavoritesPage extends StatelessWidget {
           Navigator.pop(context);
         }
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Favorites'),
-        ),
+      child: Container(
+        decoration: themeProvider.isGamified
+            ? const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                ),
+              )
+            : null,
+        child: Scaffold(
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
+          appBar: AppBar(
+            title: const Text('Favorites'),
+            backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
+            flexibleSpace: themeProvider.isGamified
+                ? Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                      ),
+                    ),
+                  )
+                : null,
+          ),
         body: appState.favoriteCourses.isEmpty
             ? Center(
                 child: Column(
@@ -786,7 +847,7 @@ class FavoritesPage extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).cardColor,
+                      color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -817,13 +878,13 @@ class FavoritesPage extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                                  color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 course.instructor,
-                                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
+                                style: TextStyle(color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color),
                               ),
                             ],
                           ),
@@ -843,6 +904,7 @@ class FavoritesPage extends StatelessWidget {
                 },
               ),
       )
+      ),
     );
   }
 }

@@ -137,13 +137,34 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
     return MainLayout(
       currentIndex: -1,
       onTabChanged: (index) {},
-      child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          title: const Text('Leaderboard'),
-          backgroundColor: theme.appBarTheme.backgroundColor,
-          foregroundColor: theme.appBarTheme.foregroundColor,
-          elevation: 0,
+      child: Container(
+        decoration: themeProvider.isGamified
+            ? const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                ),
+              )
+            : null,
+        child: Scaffold(
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : theme.scaffoldBackgroundColor,
+          appBar: AppBar(
+            title: const Text('Leaderboard'),
+            backgroundColor: themeProvider.isGamified ? Colors.transparent : theme.appBarTheme.backgroundColor,
+            flexibleSpace: themeProvider.isGamified
+                ? Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                      ),
+                    ),
+                  )
+                : null,
+            foregroundColor: theme.appBarTheme.foregroundColor,
+            elevation: 0,
           actions: [
             IconButton(
               icon: Icon(
@@ -160,14 +181,17 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
             children: [
               // Header with tabs
               Container(
-                color: theme.colorScheme.surface,
+                color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : theme.colorScheme.surface,
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Text(
                       activeTab == 'league' ? 'My League Leaderboard' :
                       'Sports Champions Leaderboard',
-                      style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: themeProvider.isGamified ? Colors.white : null,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     SingleChildScrollView(
@@ -302,7 +326,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                     children: [
                       Text(
                         'League Rankings',
-                        style: theme.textTheme.headlineSmall,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: themeProvider.isGamified ? Colors.white : null,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       ...filteredUsers.asMap().entries.map((entry) {
@@ -324,7 +350,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                     children: [
                       Text(
                         '🏆 Champions Podium 🏆',
-                        style: theme.textTheme.headlineSmall,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: themeProvider.isGamified ? Colors.white : null,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       SingleChildScrollView(
@@ -354,7 +382,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                     children: [
                       Text(
                         'Full Rankings',
-                        style: theme.textTheme.headlineSmall,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          color: themeProvider.isGamified ? Colors.white : null,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       ...filteredUsers.asMap().entries.map((entry) {
@@ -372,6 +402,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
             ],
           ),
         ),
+      ),
       ),
     );
   }
@@ -519,11 +550,14 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
     final leagueInfo = _getLeagueInfo(league);
     final isCurrentUser = user['isCurrentUser'] ?? false;
 
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isCurrentUser ? theme.primaryColor.withOpacity(0.1) : theme.colorScheme.surface,
+        color: themeProvider.isGamified 
+            ? (isCurrentUser ? Colors.white.withOpacity(0.2) : Colors.white.withOpacity(0.1))
+            : (isCurrentUser ? theme.primaryColor.withOpacity(0.1) : theme.colorScheme.surface),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCurrentUser
@@ -618,7 +652,10 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                     Expanded(
                       child: Text(
                         user['username'],
-                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: themeProvider.isGamified ? Colors.white : null,
+                        ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -665,7 +702,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                           const SizedBox(width: 4),
                           Text(
                             league,
-                            style: theme.textTheme.bodySmall,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: themeProvider.isGamified ? Colors.white70 : null,
+                            ),
                           ),
                         ],
                       ),
@@ -681,7 +720,9 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                         const SizedBox(width: 4),
                         Text(
                           '${user['totalXP']} XP',
-                          style: theme.textTheme.bodyMedium,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: themeProvider.isGamified ? Colors.white : null,
+                          ),
                         ),
                       ],
                     ),
