@@ -429,7 +429,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
               children: [
                 CircularProgressIndicator(color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
                 SizedBox(height: 12),
-                Text('AI is recognizing your facial marks...', style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600])),
+                Text('AI analyzing your performance...', style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600])),
               ],
             )
           else if (_hasRecording && !_isAnalyzing)
@@ -477,7 +477,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
                           children: [
                             Icon(Icons.check_circle, color: Colors.green),
                             SizedBox(width: 8),
-                            Text('Face Matched Successfully!', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                            Text('Great Performance!', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
                           ],
                         ),
                         SizedBox(height: 8),
@@ -595,8 +595,8 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
       _isAnalyzing = false;
       _hasMalpractice = hasMalpractice;
       _analysisResult = hasMalpractice 
-        ? 'Face not clearly visible or video quality issues detected. Please ensure good lighting and face is clearly visible throughout the recording.'
-        : 'Face successfully recognized with clear visibility. AI analysis completed successfully.';
+        ? 'Improper form detected. Please maintain proper posture and follow the demonstrated technique.'
+        : 'Excellent form and technique! Your movement patterns are correct.';
     });
   }
 

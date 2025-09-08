@@ -1347,7 +1347,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => EnhancedUnitDetailsPage(
+          builder: (context) => UnitDetailsPage(
             unitName: unit.title,
             unitDescription: unit.description,
             sectionName: sections[currentSectionIndex].title,
