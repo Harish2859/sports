@@ -240,11 +240,12 @@ class _SportsEventPageState extends State<SportsEventPage>
     return DropdownButtonFormField<String>(
       isExpanded: true,
       style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
+      dropdownColor: themeProvider.isGamified ? Colors.grey[800] : null,
       decoration: InputDecoration(
         labelText: 'Filter by Gender',
         labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
-        border: themeProvider.isGamified ? InputBorder.none : const OutlineInputBorder(),
-        enabledBorder: themeProvider.isGamified ? InputBorder.none : const OutlineInputBorder(),
+        border: themeProvider.isGamified ? OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))) : const OutlineInputBorder(),
+        enabledBorder: themeProvider.isGamified ? OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))) : const OutlineInputBorder(),
         prefixIcon: Icon(Icons.people, color: themeProvider.isGamified ? Colors.white70 : null),
       ),
       value: _genderFilter,
@@ -270,11 +271,12 @@ class _SportsEventPageState extends State<SportsEventPage>
     return DropdownButtonFormField<String>(
       isExpanded: true,
       style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
+      dropdownColor: themeProvider.isGamified ? Colors.grey[800] : null,
       decoration: InputDecoration(
         labelText: 'Filter by Sport',
         labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
-        border: themeProvider.isGamified ? InputBorder.none : const OutlineInputBorder(),
-        enabledBorder: themeProvider.isGamified ? InputBorder.none : const OutlineInputBorder(),
+        border: themeProvider.isGamified ? OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))) : const OutlineInputBorder(),
+        enabledBorder: themeProvider.isGamified ? OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))) : const OutlineInputBorder(),
         prefixIcon: Icon(Icons.sports, color: themeProvider.isGamified ? Colors.white70 : null),
       ),
       value: _sportFilter,

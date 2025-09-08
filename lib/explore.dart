@@ -130,7 +130,7 @@ class _ExplorePageState extends State<ExplorePage> {
                 DropdownButtonFormField<String>(
                   value: skillLevel,
                   style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
-                  dropdownColor: themeProvider.isGamified ? Colors.black87 : null,
+                  dropdownColor: themeProvider.isGamified ? Colors.grey[800] : null,
                   decoration: InputDecoration(
                     labelText: 'Skill Level',
                     labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
@@ -229,7 +229,7 @@ class _ExplorePageState extends State<ExplorePage> {
                 DropdownButtonFormField<String>(
                   value: trainingType,
                   style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
-                  dropdownColor: themeProvider.isGamified ? Colors.black87 : null,
+                  dropdownColor: themeProvider.isGamified ? Colors.grey[800] : null,
                   decoration: InputDecoration(
                     labelText: 'Training Type',
                     labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
@@ -250,7 +250,7 @@ class _ExplorePageState extends State<ExplorePage> {
                 DropdownButtonFormField<String>(
                   value: dietPreference,
                   style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
-                  dropdownColor: themeProvider.isGamified ? Colors.black87 : null,
+                  dropdownColor: themeProvider.isGamified ? Colors.grey[800] : null,
                   decoration: InputDecoration(
                     labelText: 'Diet Preference',
                     labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
@@ -333,8 +333,8 @@ class _ExplorePageState extends State<ExplorePage> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      backgroundColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                      foregroundColor: themeProvider.isGamified ? Colors.black : Theme.of(context).colorScheme.onPrimary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: const Text('Find My Course'),
@@ -350,8 +350,8 @@ class _ExplorePageState extends State<ExplorePage> {
                       );
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).primaryColor,
-                      side: BorderSide(color: Theme.of(context).primaryColor),
+                      foregroundColor: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor,
+                      side: BorderSide(color: themeProvider.isGamified ? Colors.white : Theme.of(context).primaryColor),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                     child: const Text('Save & Continue'),
@@ -394,7 +394,7 @@ class _ExplorePageState extends State<ExplorePage> {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Provider.of<ThemeProvider>(context).isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                  color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
             ],
