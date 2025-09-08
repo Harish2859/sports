@@ -80,25 +80,47 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-      appBar: AppBar(
-        title: Text('AI Analysis', style: TextStyle(color: Colors.white)),
-        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: Colors.white,
+    return Container(
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: Scaffold(
+        backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE)),
+        appBar: AppBar(
+          title: Text('AI Analysis', style: TextStyle(color: Colors.white)),
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[800] : Color(0xFF2563EB)),
+          flexibleSpace: themeProvider.isGamified
+              ? Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                    ),
+                  ),
+                )
+              : null,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: Icon(
+                isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+              },
             ),
-            onPressed: () {
-              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-            },
-          ),
-        ],
+          ],
+        ),
+        body: _showResults ? _buildResults() : _buildAnalysisAnimation(),
       ),
-      body: _showResults ? _buildResults() : _buildAnalysisAnimation(),
     );
   }
 
@@ -119,7 +141,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                   width: 120,
                   height: 120,
                   decoration: BoxDecoration(
-                    color: (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)).withOpacity(0.1),
+                    color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Stack(
@@ -127,12 +149,12 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                     children: [
                       CircularProgressIndicator(
                         strokeWidth: 6,
-                        color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
+                        color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)),
                       ),
                       Icon(
                         Icons.psychology,
                         size: 40,
-                        color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
+                        color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)),
                       ),
                     ],
                   ),
@@ -146,7 +168,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
             ),
           ),
           SizedBox(height: 16),
@@ -155,7 +177,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
               height: 1.5,
             ),
           ),
@@ -252,7 +274,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -273,7 +295,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black87,
+                    color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -294,7 +316,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             child: CircularProgressIndicator(
               value: score / 100,
               strokeWidth: 8,
-              backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+              backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
               valueColor: AlwaysStoppedAnimation<Color>(
                 widget.hasMalpractice ? Colors.red : Colors.green,
               ),
@@ -312,7 +334,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -330,7 +352,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
             ),
           ),
           SizedBox(height: 16),
@@ -338,7 +360,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             widget.analysisResult,
             style: TextStyle(
               fontSize: 16,
-              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+              color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[300] : Colors.grey[700]),
               height: 1.5,
             ),
           ),
@@ -375,14 +397,14 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(metric['label'], style: TextStyle(fontWeight: FontWeight.w600, color: isDarkMode ? Colors.white : Colors.black87)),
-                  Text('${(metric['value'] * 100).toInt()}%', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+                  Text(metric['label'], style: TextStyle(fontWeight: FontWeight.w600, color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87))),
+                  Text('${(metric['value'] * 100).toInt()}%', style: TextStyle(color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87))),
                 ],
               ),
               SizedBox(height: 4),
               LinearProgressIndicator(
                 value: metric['value'],
-                backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+                backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
                 valueColor: AlwaysStoppedAnimation<Color>(metric['color']),
               ),
             ],
@@ -411,7 +433,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -429,7 +451,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
             ),
           ),
           SizedBox(height: 16),
@@ -440,7 +462,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                   children: [
                     Icon(
                       Icons.lightbulb_outline,
-                      color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
+                      color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)),
                       size: 20,
                     ),
                     SizedBox(width: 12),
@@ -449,7 +471,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                         rec,
                         style: TextStyle(
                           fontSize: 16,
-                          color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                          color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[300] : Colors.grey[700]),
                         ),
                       ),
                     ),

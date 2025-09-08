@@ -78,24 +78,45 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-      appBar: AppBar(
-        title: Text('Performance Summary', style: TextStyle(color: Colors.white)),
-        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: Colors.white,
+    return Container(
+      decoration: themeProvider.isGamified
+          ? const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Color(0xFF1a237e), Color(0xFF000000)],
+              ),
+            )
+          : null,
+      child: Scaffold(
+        backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE)),
+        appBar: AppBar(
+          title: Text('Performance Summary', style: TextStyle(color: Colors.white)),
+          backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[800] : Color(0xFF2563EB)),
+          flexibleSpace: themeProvider.isGamified
+              ? Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                    ),
+                  ),
+                )
+              : null,
+          elevation: 0,
+          actions: [
+            IconButton(
+              icon: Icon(
+                isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: Colors.white,
+              ),
+              onPressed: () {
+                Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+              },
             ),
-            onPressed: () {
-              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-            },
-          ),
-        ],
-      ),
+          ],
+        ),
       body: AnimatedBuilder(
         animation: _fadeAnimation,
         builder: (context, child) {
@@ -120,6 +141,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             ),
           );
         },
+      ),
       ),
     );
   }
@@ -192,7 +214,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -211,7 +233,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
             ),
           ),
           SizedBox(height: 8),
@@ -228,7 +250,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             '$_performancePercentage%',
             style: TextStyle(
               fontSize: 14,
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
             ),
           ),
         ],
@@ -243,7 +265,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -255,14 +277,14 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
       ),
       child: Column(
         children: [
-          Icon(Icons.timer, size: 40, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
+          Icon(Icons.timer, size: 40, color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB))),
           SizedBox(height: 12),
           Text(
             'Speed',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
+              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
             ),
           ),
           SizedBox(height: 8),
@@ -271,7 +293,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
+              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
             ),
           ),
           SizedBox(height: 4),
@@ -279,7 +301,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             'minutes',
             style: TextStyle(
               fontSize: 14,
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
             ),
           ),
         ],
@@ -294,7 +316,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -317,7 +339,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black87,
+                    color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
                   ),
                 ),
                 SizedBox(height: 8),
@@ -326,7 +348,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
                     Expanded(
                       child: LinearProgressIndicator(
                         value: _performancePercentage / 100,
-                        backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+                        backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
                         minHeight: 8,
                       ),
