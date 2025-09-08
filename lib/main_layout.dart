@@ -77,86 +77,144 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     widget.onTabChanged(index);
   }
 
+  Widget _buildDrawerItem(BuildContext context, IconData icon, String title, VoidCallback onTap) {
+    final isGamified = Provider.of<ThemeProvider>(context).isGamified;
+    
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isGamified ? Colors.white : null,
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: isGamified ? Colors.white : null,
+          fontWeight: isGamified ? FontWeight.w500 : null,
+        ),
+      ),
+      onTap: onTap,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor, // Sports theme color
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.sports_soccer,
-                    size: 48,
-                    color: Theme.of(context).colorScheme.onPrimary,
+        backgroundColor: Provider.of<ThemeProvider>(context).isGamified 
+            ? Colors.grey[900] 
+            : null,
+        child: Container(
+          decoration: Provider.of<ThemeProvider>(context).isGamified
+              ? const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Color(0xFF1a237e), Color(0xFF000000)],
                   ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Sports Hub',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                )
+              : null,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Provider.of<ThemeProvider>(context).isGamified 
+                      ? Colors.transparent
+                      : Theme.of(context).primaryColor,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Provider.of<ThemeProvider>(context).isGamified 
+                          ? Icons.castle
+                          : Icons.sports_soccer,
+                      size: 48,
+                      color: Provider.of<ThemeProvider>(context).isGamified 
+                          ? Colors.white
+                          : Theme.of(context).colorScheme.onPrimary,
                     ),
-                  ),
-                  Text(
-                    'Findrly - Empowering Talent',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
-                      fontSize: 14,
+                    const SizedBox(height: 10),
+                    Text(
+                      Provider.of<ThemeProvider>(context).isGamified 
+                          ? '🏆 Quest Hub'
+                          : 'Sports Hub',
+                      style: TextStyle(
+                        color: Provider.of<ThemeProvider>(context).isGamified 
+                            ? Colors.white
+                            : Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        shadows: Provider.of<ThemeProvider>(context).isGamified ? [
+                          Shadow(
+                            offset: Offset(0, 1),
+                            blurRadius: 2,
+                            color: Colors.black.withOpacity(0.3),
+                          ),
+                        ] : null,
+                      ),
                     ),
-                  ),
-                ],
+                    Text(
+                      Provider.of<ThemeProvider>(context).isGamified 
+                          ? 'Findrly - Your Adventure Awaits'
+                          : 'Findrly - Empowering Talent',
+                      style: TextStyle(
+                        color: Provider.of<ThemeProvider>(context).isGamified 
+                            ? Colors.white.withOpacity(0.8)
+                            : Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.sports_soccer),
-              title: const Text('Leagues'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Leagues page
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sports_basketball),
-              title: const Text('Teams'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Teams page
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.sports_baseball),
-              title: const Text('Matches'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Matches page
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bar_chart),
-              title: const Text('Statistics'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Statistics page
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
-              },
-            ),
+              const Divider(color: Colors.white24),
+              _buildDrawerItem(
+                context,
+                Icons.sports_soccer,
+                Provider.of<ThemeProvider>(context).isGamified ? 'Tournaments' : 'Leagues',
+                () {
+                  Navigator.pop(context);
+                  // TODO: Navigate to Leagues page
+                },
+              ),
+              _buildDrawerItem(
+                context,
+                Icons.sports_basketball,
+                Provider.of<ThemeProvider>(context).isGamified ? 'Guilds' : 'Teams',
+                () {
+                  Navigator.pop(context);
+                  // TODO: Navigate to Teams page
+                },
+              ),
+              _buildDrawerItem(
+                context,
+                Icons.sports_baseball,
+                Provider.of<ThemeProvider>(context).isGamified ? 'Battles' : 'Matches',
+                () {
+                  Navigator.pop(context);
+                  // TODO: Navigate to Matches page
+                },
+              ),
+              _buildDrawerItem(
+                context,
+                Icons.bar_chart,
+                Provider.of<ThemeProvider>(context).isGamified ? 'Quest Stats' : 'Statistics',
+                () {
+                  Navigator.pop(context);
+                  // TODO: Navigate to Statistics page
+                },
+              ),
+              _buildDrawerItem(
+                context,
+                Icons.logout,
+                Provider.of<ThemeProvider>(context).isGamified ? 'Exit Realm' : 'Logout',
+                () {
+                  Navigator.pop(context);
+                  Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+                },
+              ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: SizedBox(
@@ -345,15 +403,17 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                 ),
               ),
             ),
-             ListTile(
-               leading: const Icon(Icons.settings),
-               title: const Text('Settings'),
-               onTap: () {
-                 Navigator.pop(context);
-                 // TODO: Navigate to Settings page
-               },
-             ),
-          ],
+              _buildDrawerItem(
+                context,
+                Icons.settings,
+                Provider.of<ThemeProvider>(context).isGamified ? 'Quest Settings' : 'Settings',
+                () {
+                  Navigator.pop(context);
+                  // TODO: Navigate to Settings page
+                },
+              ),
+            ],
+          ),
         ),
       ),
       appBar: AppBar(
