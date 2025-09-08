@@ -208,7 +208,7 @@ class _SportsEventPageState extends State<SportsEventPage>
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.transparent : Theme.of(context).colorScheme.surface,
+        color: Colors.transparent,
       ),
       child: Column(
         children: [

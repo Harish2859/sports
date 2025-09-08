@@ -123,7 +123,7 @@ class _CoursePageState extends State<CoursePage> {
         children: [
           // Search and Filter Section
           Container(
-            color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+            color: Colors.transparent,
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
@@ -136,7 +136,7 @@ class _CoursePageState extends State<CoursePage> {
                     hintStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
                     prefixIcon: Icon(Icons.search, color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).iconTheme.color),
                     filled: true,
-                    fillColor: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).inputDecorationTheme.fillColor,
+                    fillColor: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100]),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: themeProvider.isGamified ? BorderSide(color: Colors.white.withOpacity(0.3)) : BorderSide.none,

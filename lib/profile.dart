@@ -110,7 +110,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+        color: Colors.transparent,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
