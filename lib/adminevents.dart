@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import 'notification_manager.dart';
 import 'app_state.dart';
 
@@ -20,6 +22,7 @@ class Event {
   final String description;
   final String? bannerPath;
   final EventStatus status;
+  final String? requiredCertificate;
 
   Event({
     required this.id,
@@ -31,6 +34,7 @@ class Event {
     required this.description,
     this.bannerPath,
     required this.status,
+    this.requiredCertificate,
   });
 
   Event copyWith({
@@ -43,6 +47,7 @@ class Event {
     String? description,
     String? bannerPath,
     EventStatus? status,
+    String? requiredCertificate,
   }) {
     return Event(
       id: id ?? this.id,
@@ -54,6 +59,7 @@ class Event {
       description: description ?? this.description,
       bannerPath: bannerPath ?? this.bannerPath,
       status: status ?? this.status,
+      requiredCertificate: requiredCertificate ?? this.requiredCertificate,
     );
   }
 }
@@ -80,11 +86,24 @@ class _AddEventScreenState extends State<AddEventScreen> {
   TimeOfDay? _selectedTime;
   String? _selectedSportType;
   String? _bannerPath;
+  String? _selectedCertificate;
   bool _isLoading = false;
 
   final List<String> _sportTypes = [
     'Football', 'Cricket', 'Athletics', 'Basketball', 'Tennis',
     'Swimming', 'Volleyball', 'Badminton', 'Table Tennis', 'Hockey',
+  ];
+
+  final List<String> _certificateTypes = [
+    'None Required',
+    'Javelin Certificate',
+    'Athletics Certificate',
+    'Swimming Certificate',
+    'Football Certificate',
+    'Cricket Certificate',
+    'Basketball Certificate',
+    'Tennis Certificate',
+    'General Sports Certificate',
   ];
 
   final Map<String, IconData> _sportIcons = {
@@ -117,6 +136,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
     _selectedTime = event.time;
     _selectedSportType = event.sportType;
     _bannerPath = event.bannerPath;
+    _selectedCertificate = event.requiredCertificate ?? 'None Required';
   }
 
   @override
@@ -163,6 +183,8 @@ class _AddEventScreenState extends State<AddEventScreen> {
               ),
               const SizedBox(height: 16),
               _buildDropdownField(),
+              const SizedBox(height: 16),
+              _buildCertificateDropdown(),
               const SizedBox(height: 20),
               _buildSectionTitle('Schedule'),
               const SizedBox(height: 16),
@@ -343,6 +365,54 @@ class _AddEventScreenState extends State<AddEventScreen> {
     );
   }
 
+  Widget _buildCertificateDropdown() {
+    return DropdownButtonFormField<String>(
+      value: _selectedCertificate ?? 'None Required',
+      decoration: InputDecoration(
+        labelText: 'Required Qualification Certificate',
+        prefixIcon: Icon(
+          Icons.verified,
+          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+        ),
+        filled: true,
+        fillColor: Theme.of(context).cardColor,
+      ),
+      items: _certificateTypes.map((certificate) {
+        return DropdownMenuItem<String>(
+          value: certificate,
+          child: Row(
+            children: [
+              Icon(
+                certificate == 'None Required' ? Icons.block : Icons.verified,
+                size: 20,
+                color: certificate == 'None Required' ? Colors.grey : const Color(0xFF10B981),
+              ),
+              const SizedBox(width: 12),
+              Text(certificate),
+            ],
+          ),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedCertificate = value;
+        });
+      },
+    );
+  }
+
   Widget _buildDatePicker() {
     return GestureDetector(
       onTap: () async {
@@ -474,12 +544,35 @@ class _AddEventScreenState extends State<AddEventScreen> {
                     Container(
                       width: double.infinity,
                       height: double.infinity,
-                      color: const Color(0xFFF3F4F6),
-                      child: const Icon(
-                        Icons.image,
-                        size: 40,
-                        color: Color(0xFF9CA3AF),
-                      ),
+                      child: _bannerPath!.startsWith('assets/')
+                          ? Image.asset(
+                              _bannerPath!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: const Color(0xFFF3F4F6),
+                                  child: const Icon(
+                                    Icons.image,
+                                    size: 40,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                );
+                              },
+                            )
+                          : Image.file(
+                              File(_bannerPath!),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: const Color(0xFFF3F4F6),
+                                  child: const Icon(
+                                    Icons.image,
+                                    size: 40,
+                                    color: Color(0xFF9CA3AF),
+                                  ),
+                                );
+                              },
+                            ),
                     ),
                     Positioned(
                       top: 8,
@@ -545,16 +638,30 @@ class _AddEventScreenState extends State<AddEventScreen> {
   }
 
   void _pickImage() async {
-    setState(() {
-      _bannerPath = 'assets/sample_banner.jpg';
-    });
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Image selected successfully!'),
-        backgroundColor: Colors.green,
-      ),
-    );
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      
+      if (image != null) {
+        setState(() {
+          _bannerPath = image.path;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Image selected successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error selecting image: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _handleSaveEvent() async {
@@ -589,6 +696,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
         sportType: _selectedSportType!,
         description: _descriptionController.text,
         bannerPath: _bannerPath,
+        requiredCertificate: _selectedCertificate == 'None Required' ? null : _selectedCertificate,
       );
       AppState.instance.updateEvent(updatedEvent);
     } else {
@@ -602,6 +710,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
         description: _descriptionController.text,
         bannerPath: _bannerPath,
         status: EventStatus.upcoming,
+        requiredCertificate: _selectedCertificate == 'None Required' ? null : _selectedCertificate,
       );
       AppState.instance.addEvent(newEvent);
     }

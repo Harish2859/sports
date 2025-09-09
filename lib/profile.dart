@@ -917,6 +917,36 @@ class MyCertificatesPage extends StatelessWidget {
     final certificates = certificateManager.certificates;
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    
+    // Add dummy certificates if none exist
+    final dummyCertificates = [
+      {
+        'id': 'CERT-JAV-001',
+        'courseTitle': 'Javelin Certificate',
+        'completionDate': DateTime.now().subtract(const Duration(days: 30)),
+        'issuer': 'Athletics Federation',
+      },
+      {
+        'id': 'CERT-ATH-002', 
+        'courseTitle': 'Athletics Certificate',
+        'completionDate': DateTime.now().subtract(const Duration(days: 60)),
+        'issuer': 'Sports Authority',
+      },
+      {
+        'id': 'CERT-SWM-003',
+        'courseTitle': 'Swimming Certificate',
+        'completionDate': DateTime.now().subtract(const Duration(days: 90)),
+        'issuer': 'Aquatic Sports Board',
+      },
+      {
+        'id': 'CERT-GEN-004',
+        'courseTitle': 'General Sports Certificate',
+        'completionDate': DateTime.now().subtract(const Duration(days: 120)),
+        'issuer': 'National Sports Council',
+      },
+    ];
+    
+    final allCertificates = certificates.isEmpty ? dummyCertificates : certificates;
 
     return MainLayout(
       currentIndex: 4, // Profile tab
@@ -937,7 +967,7 @@ class MyCertificatesPage extends StatelessWidget {
             : null,
         child: Scaffold(
           backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-          body: certificates.isEmpty
+          body: allCertificates.isEmpty
           ? Center(
               child: Text(
                 'No certificates earned yet.',
@@ -946,9 +976,9 @@ class MyCertificatesPage extends StatelessWidget {
             )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: certificates.length,
+              itemCount: allCertificates.length,
               itemBuilder: (context, index) {
-                final cert = certificates[index];
+                final cert = allCertificates[index];
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   padding: const EdgeInsets.all(20),
@@ -976,7 +1006,7 @@ class MyCertificatesPage extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              cert.courseTitle,
+                              cert is Map ? cert['courseTitle'] : (cert as dynamic).courseTitle,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
@@ -987,13 +1017,13 @@ class MyCertificatesPage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'Issued by Fair Play Academy',
-                        style: TextStyle(color: Colors.white70),
+                      Text(
+                        'Issued by ${cert is Map ? cert['issuer'] : 'Fair Play Academy'}',
+                        style: const TextStyle(color: Colors.white70),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Completed on: ${cert.completionDate.day}/${cert.completionDate.month}/${cert.completionDate.year}',
+                        'Completed on: ${cert is Map ? '${(cert['completionDate'] as DateTime).day}/${(cert['completionDate'] as DateTime).month}/${(cert['completionDate'] as DateTime).year}' : '${(cert as dynamic).completionDate.day}/${(cert as dynamic).completionDate.month}/${(cert as dynamic).completionDate.year}'}',
                         style: const TextStyle(color: Colors.white70),
                       ),
                       const SizedBox(height: 16),
@@ -1001,7 +1031,7 @@ class MyCertificatesPage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Certificate ID: ${cert.id}',
+                            'Certificate ID: ${cert is Map ? cert['id'] : (cert as dynamic).id}',
                             style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w500,

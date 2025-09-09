@@ -714,117 +714,106 @@ class _VerificationPageState extends State<VerificationPage> {
   }
 
   Widget _buildSportsIdCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2563EB), // Solid color instead of gradient
-        borderRadius: BorderRadius.circular(16),
-        // Removed boxShadow
-      ),
+    return SingleChildScrollView(
       child: Column(
         children: [
-          Row(
-            children: [
-              // Profile Image
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: Colors.white, width: 2),
-                  image: _profileImage != null
-                      ? DecorationImage(
+          // Card Front
+          Container(
+            width: double.infinity,
+            height: 250,
+            margin: const EdgeInsets.only(bottom: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // Card Front Background
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.asset(
+                    'assets/images/card front.jpg',
+                    width: double.infinity,
+                    height: 250,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: double.infinity,
+                        height: 250,
+                        color: const Color(0xFF2563EB),
+                        child: const Center(
+                          child: Text(
+                            'Card Front',
+                            style: TextStyle(color: Colors.white, fontSize: 18),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                // Profile Image Overlay
+                if (_profileImage != null)
+                  Positioned(
+                    right: 7,
+                    top: 110,
+                    child: Container(
+                      width: 65,
+                      height: 85,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: Colors.white, width: 0.5),
+                        image: DecorationImage(
                           image: FileImage(_profileImage!),
                           fit: BoxFit.cover,
-                        )
-                      : null,
-                ),
-                child: _profileImage == null
-                    ? const Icon(
-                        Icons.person,
-                        color: Color(0xFF9CA3AF),
-                        size: 30,
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 16),
-              // User Info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _fullNameController.text,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'DOB: ${_selectedDob != null ? "${_selectedDob!.day}/${_selectedDob!.month}/${_selectedDob!.year}" : ""}',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    Text(
-                      'Gender: $_selectedGender',
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
-          const Divider(color: Colors.white30),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Sports ID',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
+          // Card Back
+          Container(
+            width: double.infinity,
+            height: 250,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.asset(
+                'assets/images/card back.jpg',
+                width: double.infinity,
+                height: 250,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: double.infinity,
+                    height: 250,
+                    color: const Color(0xFF10B981),
+                    child: const Center(
+                      child: Text(
+                        'Card Back',
+                        style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
                     ),
-                    Text(
-                      _generatedSportsId,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
-              // QR Code placeholder
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.qr_code,
-                  size: 40,
-                  color: Color(0xFF2563EB),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

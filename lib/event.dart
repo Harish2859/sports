@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'app_state.dart' as app_state;
 import 'theme_provider.dart';
 
@@ -13,6 +15,7 @@ class Event {
   final String gender;
   final String image;
   final int registeredCount;
+  final String? requiredCertificate;
 
   Event({
     required this.id,
@@ -24,6 +27,7 @@ class Event {
     required this.gender,
     required this.image,
     required this.registeredCount,
+    this.requiredCertificate,
   });
 }
 
@@ -83,6 +87,7 @@ class _SportsEventPageState extends State<SportsEventPage>
         gender: 'mixed', // Default to mixed since admin events don't have gender
         image: adminEvent.bannerPath ?? 'assets/images/default_event.png',
         registeredCount: 0, // Admin events don't track registration count
+        requiredCertificate: adminEvent.requiredCertificate,
       );
     }).toList();
   }
@@ -551,18 +556,19 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
         Container(
           height: 250,
           width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue.shade400, Colors.blue.shade600],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: const Icon(
-            Icons.sports,
-            size: 80,
-            color: Colors.white54,
-          ),
+          child: widget.event.image.isNotEmpty && widget.event.image != 'assets/images/default_event.png'
+              ? (widget.event.image.startsWith('assets/')
+                  ? Image.asset(
+                      widget.event.image,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => _buildDefaultImage(),
+                    )
+                  : Image.file(
+                      File(widget.event.image),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => _buildDefaultImage(),
+                    ))
+              : _buildDefaultImage(),
         ),
         Positioned(
           top: 12,
@@ -592,6 +598,23 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
     );
   }
 
+  Widget _buildDefaultImage() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade400, Colors.blue.shade600],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: const Icon(
+        Icons.sports,
+        size: 80,
+        color: Colors.white54,
+      ),
+    );
+  }
+
   Widget _buildCardContent() {
     return Padding(
       padding: const EdgeInsets.all(20.0),
@@ -612,6 +635,8 @@ class _AnimatedEventCardState extends State<AnimatedEventCard>
           _buildInfoRow(Icons.location_on, widget.event.location ?? 'N/A'),
           const SizedBox(height: 8.0),
           _buildInfoRow(Icons.people, '${widget.event.registeredCount ?? 0} registered'),
+          if (widget.event.requiredCertificate != null) const SizedBox(height: 8.0),
+          if (widget.event.requiredCertificate != null) _buildInfoRow(Icons.verified, 'Required: ${widget.event.requiredCertificate}'),
           const SizedBox(height: 20.0),
           _buildActionButtons(),
         ],
@@ -689,6 +714,7 @@ class RegistrationModal extends StatefulWidget {
 class _RegistrationModalState extends State<RegistrationModal> {
   final _formKey = GlobalKey<FormState>();
   final RegistrationForm _form = RegistrationForm();
+  String? _certificatePath;
 
   @override
   Widget build(BuildContext context) {
@@ -762,7 +788,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email';
                   }
-                  if (!RegExp(r'^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$')
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                       .hasMatch(value)) {
                     return 'Please enter a valid email';
                   }
@@ -831,12 +857,23 @@ class _RegistrationModalState extends State<RegistrationModal> {
                   ),
                 ],
               ),
+              if (widget.event.requiredCertificate != null) const SizedBox(height: 16),
+              if (widget.event.requiredCertificate != null) _buildCertificateUpload(),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
+                      if (widget.event.requiredCertificate != null && _certificatePath == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Please select the required certificate'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
                       _formKey.currentState!.save();
                       _submitRegistration();
                     }
@@ -859,6 +896,130 @@ class _RegistrationModalState extends State<RegistrationModal> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCertificateUpload() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Select ${widget.event.requiredCertificate}',
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: _pickCertificate,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.grey[50],
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  _certificatePath != null ? Icons.check_circle : Icons.upload_file,
+                  size: 40,
+                  color: _certificatePath != null ? Colors.green : Colors.grey,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _certificatePath != null ? 'Certificate selected' : 'Tap to select certificate',
+                  style: TextStyle(
+                    color: _certificatePath != null ? Colors.green : Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (_certificatePath != null)
+                  Text(
+                    'ID: $_certificatePath',
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 12,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _pickCertificate() async {
+    final dummyCertificates = [
+      {
+        'id': 'CERT-JAV-001',
+        'courseTitle': 'Javelin Certificate',
+        'completionDate': DateTime.now().subtract(const Duration(days: 30)),
+        'issuer': 'Athletics Federation',
+      },
+      {
+        'id': 'CERT-ATH-002', 
+        'courseTitle': 'Athletics Certificate',
+        'completionDate': DateTime.now().subtract(const Duration(days: 60)),
+        'issuer': 'Sports Authority',
+      },
+      {
+        'id': 'CERT-SWM-003',
+        'courseTitle': 'Swimming Certificate',
+        'completionDate': DateTime.now().subtract(const Duration(days: 90)),
+        'issuer': 'Aquatic Sports Board',
+      },
+      {
+        'id': 'CERT-GEN-004',
+        'courseTitle': 'General Sports Certificate',
+        'completionDate': DateTime.now().subtract(const Duration(days: 120)),
+        'issuer': 'National Sports Council',
+      },
+    ];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Select Certificate'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: dummyCertificates.length,
+              itemBuilder: (context, index) {
+                final cert = dummyCertificates[index];
+                return ListTile(
+                  leading: const Icon(Icons.verified, color: Colors.green),
+                  title: Text(cert['courseTitle'] as String),
+                  subtitle: Text('ID: ${cert['id']}'),
+                  onTap: () {
+                    setState(() {
+                      _certificatePath = cert['id'] as String;
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Selected: ${cert['courseTitle']}'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
     );
   }
 
