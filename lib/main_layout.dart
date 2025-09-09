@@ -5,6 +5,10 @@ import 'notification_manager.dart';
 import 'notifications_page.dart';
 import 'theme_provider.dart';
 import 'app_state.dart';
+import 'my_courses_page.dart';
+import 'performance_videos_page.dart';
+import 'my_certificates_page.dart';
+import 'leaderboard.dart';
 
 class MainLayout extends StatefulWidget {
   final int currentIndex;
@@ -186,41 +190,53 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   },
                 ),
               ),
-              const Divider(color: Colors.white24),
+              
               _buildDrawerItem(
                 context,
-                Icons.sports_soccer,
-                Provider.of<ThemeProvider>(context).isGamified ? 'Tournaments' : 'Leagues',
+                Icons.school,
+                'My Modules',
                 () {
                   Navigator.pop(context);
-                  // TODO: Navigate to Leagues page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MyCoursesPage()),
+                  );
                 },
               ),
               _buildDrawerItem(
                 context,
-                Icons.sports_basketball,
-                Provider.of<ThemeProvider>(context).isGamified ? 'Guilds' : 'Teams',
+                Icons.videocam_outlined,
+                'Your Performance',
                 () {
                   Navigator.pop(context);
-                  // TODO: Navigate to Teams page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PerformanceVideosPage()),
+                  );
                 },
               ),
               _buildDrawerItem(
                 context,
-                Icons.sports_baseball,
-                Provider.of<ThemeProvider>(context).isGamified ? 'Battles' : 'Matches',
+                Icons.card_membership_outlined,
+                'My Certificate',
                 () {
                   Navigator.pop(context);
-                  // TODO: Navigate to Matches page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => MyCertificatesPage()),
+                  );
                 },
               ),
               _buildDrawerItem(
                 context,
-                Icons.bar_chart,
-                Provider.of<ThemeProvider>(context).isGamified ? 'Quest Stats' : 'Statistics',
+                Icons.leaderboard,
+                'Leaderboard',
                 () {
                   Navigator.pop(context);
-                  // TODO: Navigate to Statistics page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LeaderboardPage()),
+                  );
                 },
               ),
               _buildDrawerItem(

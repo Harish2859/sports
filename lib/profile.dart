@@ -12,6 +12,11 @@ import 'certificate_manager.dart';
 import 'theme_provider.dart';
 import 'performance_videos_page.dart';
 import 'performance_videos_manager.dart';
+import 'my_certificates_page.dart';
+import 'favorites_page.dart';
+import 'post_manager.dart';
+import 'post_upload_page.dart';
+import 'performance_upload_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -26,6 +31,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   late Animation<double> _fadeAnimation;
   late Animation<double> _breathingAnimation;
   final AppState _appState = AppState.instance;
+  final PostManager _postManager = PostManager();
+  final PerformanceVideosManager _videosManager = PerformanceVideosManager();
 
   // Lifecycle Methods
   @override
@@ -102,17 +109,52 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildProfileContent(bool isDarkMode) {
-    return Column(
-      children: [
-        _buildProfileHeader(isDarkMode),
-        const SizedBox(height: 20),
-        _buildStatsCards(isDarkMode),
-        const SizedBox(height: 20),
-        _buildXPCard(),
-        const SizedBox(height: 20),
-        _buildActionButtons(isDarkMode),
-        const SizedBox(height: 20),
-      ],
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isGamified = themeProvider.isGamified;
+
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          _buildProfileHeader(isDarkMode),
+          const SizedBox(height: 20),
+          _buildStatsCards(isDarkMode),
+          const SizedBox(height: 20),
+          _buildXPCard(),
+          const SizedBox(height: 20),
+          _buildActionButtons(isDarkMode),
+          const SizedBox(height: 20),
+          TabBar(
+            tabs: [
+              Tab(
+                child: Text(
+                  'Posts',
+                  style: TextStyle(
+                    color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+              ),
+              Tab(
+                child: Text(
+                  'Performance',
+                  style: TextStyle(
+                    color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 2000, // Increased height to support up to 10 rows of posts
+            child: TabBarView(
+              children: [
+                _buildPostSection(),
+                _buildPerformanceSection(),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -537,43 +579,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildActionButtons(bool isDarkMode) {
-    final videosManager = PerformanceVideosManager();
-    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          _buildActionButton(
-            'My Modules',
-            Icons.school_outlined,
-            Colors.blue[600]!,
-            () => _navigateToCourses(),
-            isDarkMode,
-          ),
-          const SizedBox(height: 12),
-          _buildActionButton(
-            'Your Performance',
-            Icons.videocam_outlined,
-            Colors.red[600]!,
-            () => _navigateToPerformanceVideos(),
-            isDarkMode,
-          ),
-          const SizedBox(height: 12),
-          _buildActionButton(
-            'My Certificate',
-            Icons.card_membership_outlined,
-            Colors.purple[600]!,
-            () => _navigateToCertificates(),
-            isDarkMode,
-          ),
-          const SizedBox(height: 12),
-          _buildActionButton(
-            'Leaderboard',
-            Icons.leaderboard,
-            Colors.orange[600]!,
-            () => _navigateToLeaderboard(),
-            isDarkMode,
-          ),
+          // 'My Certificate' moved to drawer
+          // 'Leaderboard' moved to drawer
         ],
       ),
     );
@@ -619,24 +630,19 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  void _navigateToCourses() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const MyCoursesPage()),
-    );
-  }
+  
 
   void _navigateToCertificates() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const MyCertificatesPage()),
+      MaterialPageRoute(builder: (context) => MyCertificatesPage()),
     );
   }
 
   void _navigateToFavorites() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const FavoritesPage()),
+      MaterialPageRoute(builder: (context) => FavoritesPage()),
     );
   }
 
@@ -660,398 +666,316 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       MaterialPageRoute(builder: (context) => AchievementsPage()),
     );
   }
-}
 
-// Enrolled courses page
-class MyCoursesPage extends StatelessWidget {
-  const MyCoursesPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final AppState appState = AppState.instance;
+  Widget _buildPostSection() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    
-    return MainLayout(
-      currentIndex: 4, // Profile tab
-      onTabChanged: (index) {
-        if (index != 4) {
-          Navigator.pop(context);
-        }
-      },
-      child: Container(
-        decoration: themeProvider.isGamified
-            ? const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
+    final isGamified = themeProvider.isGamified;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Posts',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                 ),
-              )
-            : null,
-        child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-        body: appState.enrolledCourses.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.school_outlined, size: 64, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No enrolled modules yet',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: appState.enrolledCourses.length,
-                itemBuilder: (context, index) {
-                  final course = appState.enrolledCourses[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          course.title,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          course.summary,
-                          style: TextStyle(color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color),
-                        ),
-                        const SizedBox(height: 12),
-                        LinearProgressIndicator(
-                          value: 0.3,
-                          backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '30% Complete',
-                              style: TextStyle(
-                                color: Colors.blue[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => GotoCoursePage(courseName: course.title),
-                                  ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue[600],
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              child: const Text('Go to module'),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+              ),
+              IconButton(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PostUploadPage()),
                   );
+                  setState(() {});
                 },
-              ),
-      )
-      ),
-    );
-  }
-}
-
-// Favorites page
-class FavoritesPage extends StatelessWidget {
-  const FavoritesPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final AppState appState = AppState.instance;
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    
-    return MainLayout(
-      currentIndex: 4, // Profile tab
-      onTabChanged: (index) {
-        if (index != 4) {
-          Navigator.pop(context);
-        }
-      },
-      child: Container(
-        decoration: themeProvider.isGamified
-            ? const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
+                icon: Icon(
+                  Icons.add,
+                  color: isGamified ? Colors.white : Theme.of(context).iconTheme.color,
                 ),
-              )
-            : null,
-        child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-        body: appState.favoriteCourses.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.favorite_outline, size: 64, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No favorite modules yet',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: appState.favoriteCourses.length,
-                itemBuilder: (context, index) {
-                  final course = appState.favoriteCourses[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.blue[100],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(Icons.school, color: Colors.blue[600]),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                course.title,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                course.instructor,
-                                style: TextStyle(color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color),
-                              ),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.favorite, color: Colors.red[600]),
-                          onPressed: () {
-                            appState.removeFromFavorites(course);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Removed from favorites')),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                },
               ),
-      )
-      ),
-    );
-  }
-}
-
-class MyCertificatesPage extends StatelessWidget {
-  const MyCertificatesPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final certificateManager = CertificateManager();
-    final certificates = certificateManager.certificates;
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    
-    // Add dummy certificates if none exist
-    final dummyCertificates = [
-      {
-        'id': 'CERT-JAV-001',
-        'courseTitle': 'Javelin Certificate',
-        'completionDate': DateTime.now().subtract(const Duration(days: 30)),
-        'issuer': 'Athletics Federation',
-      },
-      {
-        'id': 'CERT-ATH-002', 
-        'courseTitle': 'Athletics Certificate',
-        'completionDate': DateTime.now().subtract(const Duration(days: 60)),
-        'issuer': 'Sports Authority',
-      },
-      {
-        'id': 'CERT-SWM-003',
-        'courseTitle': 'Swimming Certificate',
-        'completionDate': DateTime.now().subtract(const Duration(days: 90)),
-        'issuer': 'Aquatic Sports Board',
-      },
-      {
-        'id': 'CERT-GEN-004',
-        'courseTitle': 'General Sports Certificate',
-        'completionDate': DateTime.now().subtract(const Duration(days: 120)),
-        'issuer': 'National Sports Council',
-      },
-    ];
-    
-    final allCertificates = certificates.isEmpty ? dummyCertificates : certificates;
-
-    return MainLayout(
-      currentIndex: 4, // Profile tab
-      onTabChanged: (index) {
-        if (index != 4) {
-          Navigator.pop(context);
-        }
-      },
-      child: Container(
-        decoration: themeProvider.isGamified
-            ? const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                ),
-              )
-            : null,
-        child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
-          body: allCertificates.isEmpty
-          ? Center(
-              child: Text(
-                'No certificates earned yet.',
-                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ],
+          ),
+          if (_postManager.hasPosts())
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.75,
               ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: allCertificates.length,
+              itemCount: _postManager.posts.length,
               itemBuilder: (context, index) {
-                final cert = allCertificates[index];
+                final post = _postManager.posts[index];
                 return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Colors.purple, Colors.deepPurple],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                    color: isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.purple.withOpacity(0.3),
+                        color: Colors.black.withOpacity(0.05),
                         blurRadius: 8,
-                        offset: const Offset(0, 4),
+                        offset: const Offset(0, 2),
                       ),
                     ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.card_membership, color: Colors.white, size: 32),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              cert is Map ? cert['courseTitle'] : (cert as dynamic).courseTitle,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          child: Image.file(
+                            File(post.imagePath),
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Container(
+                              color: Colors.grey,
+                              child: const Center(child: Text('Image not found')),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post.description,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
                               ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Issued by ${cert is Map ? cert['issuer'] : 'Fair Play Academy'}',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Completed on: ${cert is Map ? '${(cert['completionDate'] as DateTime).day}/${(cert['completionDate'] as DateTime).month}/${(cert['completionDate'] as DateTime).year}' : '${(cert as dynamic).completionDate.day}/${(cert as dynamic).completionDate.month}/${(cert as dynamic).completionDate.year}'}',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Certificate ID: ${cert is Map ? cert['id'] : (cert as dynamic).id}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w500,
+                            const SizedBox(height: 4),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        _postManager.likePost(post.id);
+                                        setState(() {});
+                                      },
+                                      icon: Icon(
+                                        Icons.favorite_border,
+                                        color: isGamified ? Colors.white : Theme.of(context).iconTheme.color,
+                                        size: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${post.likes}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () => _addComment(post.id),
+                                      icon: Icon(
+                                        Icons.comment,
+                                        color: isGamified ? Colors.white : Theme.of(context).iconTheme.color,
+                                        size: 16,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${post.comments.length}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              // TODO: Implement share functionality
-                            },
-                            icon: const Icon(Icons.share, color: Colors.white),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
                   ),
                 );
               },
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(32),
+              alignment: Alignment.center,
+              child: Text(
+                'No posts yet',
+                style: TextStyle(
+                  color: isGamified ? Colors.white.withOpacity(0.6) : Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              ),
             ),
-        ),
+        ],
       ),
     );
   }
+
+  Widget _buildPerformanceSection() {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isGamified = themeProvider.isGamified;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Performance Videos',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+              IconButton(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PerformanceUploadPage()),
+                  );
+                  setState(() {});
+                },
+                icon: Icon(
+                  Icons.add,
+                  color: isGamified ? Colors.white : Theme.of(context).iconTheme.color,
+                ),
+              ),
+            ],
+          ),
+          if (_videosManager.hasVideos())
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _videosManager.videos.length,
+              itemBuilder: (context, index) {
+                final video = _videosManager.videos[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        color: isGamified ? Colors.red.withOpacity(0.2) : Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.play_circle_filled,
+                        color: isGamified ? Colors.red[300] : Colors.red,
+                        size: 32,
+                      ),
+                    ),
+                    title: Text(
+                      video.title,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Recorded: ${_formatDate(video.recordedAt)}',
+                      style: TextStyle(
+                        color: isGamified ? Colors.white.withOpacity(0.8) : Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                    onTap: () => _playVideo(video),
+                  ),
+                );
+              },
+            )
+          else
+            Container(
+              padding: const EdgeInsets.all(32),
+              alignment: Alignment.center,
+              child: Text(
+                'No performance videos yet',
+                style: TextStyle(
+                  color: isGamified ? Colors.white.withOpacity(0.6) : Theme.of(context).textTheme.bodyMedium?.color,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  void _addComment(String postId) {
+    final TextEditingController commentController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Add Comment'),
+        content: TextField(
+          controller: commentController,
+          decoration: const InputDecoration(hintText: 'Write a comment...'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (commentController.text.isNotEmpty) {
+                _postManager.addComment(postId, commentController.text);
+                setState(() {});
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _playVideo(PerformanceVideo video) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VideoPlayerScreen(videoPath: video.filePath, title: video.title),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
 }
+
