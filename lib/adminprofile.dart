@@ -536,7 +536,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> with TickerProvider
       margin: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          Expanded(child: _buildStatCard('Active Courses', '12', Icons.school, const Color(0xFF059669))),
+          Expanded(child: _buildStatCard('Active Modules', '12', Icons.school, const Color(0xFF059669))),
           const SizedBox(width: 12),
           Expanded(child: _buildStatCard('Total Athletes', '284', Icons.people, const Color(0xFF7C3AED))),
           const SizedBox(width: 12),
@@ -618,7 +618,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> with TickerProvider
             mainAxisSpacing: 12,
             childAspectRatio: 1.4,
             children: [
-              _buildActionCard('Courses Provided', Icons.library_books, const Color(0xFF059669), () {
+              _buildActionCard('modules Provided', Icons.library_books, const Color(0xFF059669), () {
                 // Navigate to courses list
               }),
               _buildActionCard('Events Posted', Icons.calendar_month, const Color(0xFFDC2626), () {

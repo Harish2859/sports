@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'notification_manager.dart';
 import 'notifications_page.dart';
 import 'theme_provider.dart';
+import 'app_state.dart';
 
 class MainLayout extends StatefulWidget {
   final int currentIndex;
@@ -123,50 +124,66 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                       ? Colors.transparent
                       : Theme.of(context).primaryColor,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Provider.of<ThemeProvider>(context).isGamified 
-                          ? Icons.castle
-                          : Icons.sports_soccer,
-                      size: 48,
-                      color: Provider.of<ThemeProvider>(context).isGamified 
-                          ? Colors.white
-                          : Theme.of(context).colorScheme.onPrimary,
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      Provider.of<ThemeProvider>(context).isGamified 
-                          ? '🏆 Quest Hub'
-                          : 'Sports Hub',
-                      style: TextStyle(
-                        color: Provider.of<ThemeProvider>(context).isGamified 
-                            ? Colors.white
-                            : Theme.of(context).colorScheme.onPrimary,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        shadows: Provider.of<ThemeProvider>(context).isGamified ? [
-                          Shadow(
-                            offset: Offset(0, 1),
-                            blurRadius: 2,
-                            color: Colors.black.withOpacity(0.3),
+                child: Consumer<AppState>(
+                  builder: (context, appState, child) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CircleAvatar(
+                          radius: 24,
+                          backgroundColor: Provider.of<ThemeProvider>(context).isGamified 
+                              ? Colors.white.withOpacity(0.2)
+                              : Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+                          child: Icon(
+                            Icons.person,
+                            size: 32,
+                            color: Provider.of<ThemeProvider>(context).isGamified 
+                                ? Colors.white
+                                : Theme.of(context).colorScheme.onPrimary,
                           ),
-                        ] : null,
-                      ),
-                    ),
-                    Text(
-                      Provider.of<ThemeProvider>(context).isGamified 
-                          ? 'Findrly - Your Adventure Awaits'
-                          : 'Findrly - Empowering Talent',
-                      style: TextStyle(
-                        color: Provider.of<ThemeProvider>(context).isGamified 
-                            ? Colors.white.withOpacity(0.8)
-                            : Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          appState.userName,
+                          style: TextStyle(
+                            color: Provider.of<ThemeProvider>(context).isGamified 
+                                ? Colors.white
+                                : Theme.of(context).colorScheme.onPrimary,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            shadows: Provider.of<ThemeProvider>(context).isGamified ? [
+                              Shadow(
+                                offset: Offset(0, 1),
+                                blurRadius: 2,
+                                color: Colors.black.withOpacity(0.3),
+                              ),
+                            ] : null,
+                          ),
+                        ),
+                        Text(
+                          Provider.of<ThemeProvider>(context).isGamified 
+                              ? 'Findrly - Your Adventure Awaits'
+                              : 'Findrly - Empowering Talent',
+                          style: TextStyle(
+                            color: Provider.of<ThemeProvider>(context).isGamified 
+                                ? Colors.white.withOpacity(0.8)
+                                : Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Gender: ${appState.userGender}',
+                          style: TextStyle(
+                            color: Provider.of<ThemeProvider>(context).isGamified 
+                                ? Colors.white.withOpacity(0.6)
+                                : Theme.of(context).colorScheme.onPrimary.withOpacity(0.6),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
               const Divider(color: Colors.white24),
@@ -578,7 +595,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.school_outlined),
                     activeIcon: Icon(Icons.school),
-                    label: 'Course',
+                    label: 'Modules',
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.person_outline),
@@ -611,7 +628,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.school_outlined),
                   activeIcon: Icon(Icons.school),
-                  label: 'Course',
+                  label: 'Modules',
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),

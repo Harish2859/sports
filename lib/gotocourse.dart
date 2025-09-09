@@ -409,7 +409,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
             child: GestureDetector(
               onTap: _toggleSectionOverlay,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
                 child: Row(
                   children: [
                     Expanded(

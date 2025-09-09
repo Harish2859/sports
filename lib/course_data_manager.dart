@@ -15,7 +15,7 @@ class CourseDataManager {
       rating: 4.9,
       difficulty: 'Advanced',
       enrolledCount: 520,
-      duration: '16 weeks',
+      duration: '10 days',
       category: 'Track & Field',
       prerequisites: ['Athletic background', 'Shoulder mobility', 'Core strength'],
       description: 'Comprehensive javelin throwing course covering biomechanics, power development, and competition strategies. Transform your technique with scientific training methods.',
@@ -28,7 +28,7 @@ class CourseDataManager {
       rating: 4.8,
       difficulty: 'Advanced',
       enrolledCount: 285,
-      duration: '14 weeks',
+      duration: '10 days',
       category: 'Track & Field',
       prerequisites: ['Sub-12 second 100m', 'Flexibility training', 'Sprint experience'],
       description: 'Advanced hurdle training focusing on race strategy, technical precision, and speed endurance. Master 110m and 100m hurdle events with professional coaching methods.',
@@ -101,13 +101,11 @@ class CourseDataManager {
     final details = _courseDetails[courseId];
     if (details != null) {
       return {
-        'Language': details.language,
         'Last Updated': details.lastUpdated,
         'Release Date': details.releaseDate,
       };
     }
     return {
-      'Language': 'English',
       'Last Updated': 'January 2025',
       'Release Date': 'March 2024',
     };

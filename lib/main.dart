@@ -6,13 +6,17 @@ import 'adminlogin.dart';
 import 'verification.dart';
 import 'signup.dart';
 import 'theme_provider.dart';
+import 'app_state.dart';
 
 
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => AppState()),
+      ],
       child: const MyApp(),
     ),
   );

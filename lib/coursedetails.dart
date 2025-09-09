@@ -391,7 +391,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'About this course',
+                        'About this Module',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -476,7 +476,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Course Sessions',
+                        'Module Sessions',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -517,7 +517,8 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                                           ? Colors.white.withOpacity(0.3)
                                           : themeProvider.themeMode == ThemeMode.dark
                                               ? Colors.grey[700]!
-                                              : const Color(0xFFE5E7EB)),
+                                              : const Color(0xFFE5E7EB),
+                                      width: 1),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -616,7 +617,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            _appState.isEnrolled(_course.id) ? 'Join Now' : 'Enroll for the course',
+                            _appState.isEnrolled(_course.id) ? 'Join Now' : 'Enroll for the Module',
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
@@ -766,7 +767,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Course Information',
+                        'Module Information',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -793,7 +794,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Course Leaderboard',
+                        'Module Leaderboard',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,

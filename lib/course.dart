@@ -236,12 +236,13 @@ class _CoursePageState extends State<CoursePage> {
         decoration: BoxDecoration(
           color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: themeProvider.isGamified ? Border.all(color: Colors.white.withOpacity(0.2)) : null,
-          boxShadow: themeProvider.isGamified ? null : [
+          border: themeProvider.isGamified ? Border.all(color: Colors.white.withOpacity(0.2), width: 1) : Border.all(color: Colors.transparent, width: 0),
+          boxShadow: themeProvider.isGamified ? [] : [
             BoxShadow(
-              color: Theme.of(context).shadowColor.withOpacity(0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Theme.of(context).shadowColor.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
             ),
           ],
         ),

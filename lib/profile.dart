@@ -21,7 +21,9 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
+  late AnimationController _breathingController;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _breathingAnimation;
   final AppState _appState = AppState.instance;
 
   // Lifecycle Methods
@@ -36,6 +38,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   void dispose() {
     _appState.removeListener(_onAppStateChanged);
     _animationController.dispose();
+    _breathingController.dispose();
     super.dispose();
   }
 
@@ -49,6 +52,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+    
+    _breathingController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _breathingAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
+      CurvedAnimation(parent: _breathingController, curve: Curves.easeInOut),
+    );
   }
 
   void _onAppStateChanged() {
@@ -119,8 +130,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ),
         ],
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Profile Picture with Badge Overlay
           Stack(
             children: [
               CircleAvatar(
@@ -128,6 +141,31 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 backgroundColor: Colors.blue[100],
                 child: Icon(Icons.person, size: 50, color: Colors.blue[800]),
               ),
+              // Animated Badge at top right
+              Positioned(
+                top: 0,
+                right: 0,
+                child: AnimatedBuilder(
+                  animation: _breathingAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: _breathingAnimation.value,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        child: Image.asset(
+                          'assets/images/champ.png',
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Icon(Icons.emoji_events, color: Colors.amber, size: 30);
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              // Edit button at bottom right
               Positioned(
                 bottom: 0,
                 right: 0,
@@ -152,54 +190,47 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            _appState.userName,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-          Text(
-            '@alex_sports_pro',
-            style: TextStyle(
-              fontSize: 16,
-              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.blue[100],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Gender: ${_appState.userGender}',
-              style: TextStyle(
-                color: Colors.blue[800],
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.amber[100],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+          const SizedBox(width: 24),
+          // User Info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.star, color: Colors.amber[800], size: 16),
-                const SizedBox(width: 4),
                 Text(
-                  'Pro Level',
+                  _appState.userName,
                   style: TextStyle(
-                    color: Colors.amber[800],
-                    fontWeight: FontWeight.w600,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                Text(
+                  '@alex_sports_pro',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.amber[100],
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star, color: Colors.amber[800], size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Pro Level',
+                        style: TextStyle(
+                          color: Colors.amber[800],
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -220,8 +251,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         children: [
           Expanded(
             child: _buildStatCard(
-              'Videos Watched', 
-              '127', 
+              'test taken', 
+              '5', 
               Icons.play_circle_outline, 
               Colors.blue, 
               isDarkMode
@@ -243,7 +274,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               onTap: () => _navigateToAchievements(),
               child: hasBeginnerBadge 
                   ? _buildBadgeStatCard(isDarkMode) 
-                  : _buildStatCard('Achievements', '0', Icons.emoji_events, Colors.orange, isDarkMode),
+                  : _buildStatCard('Achievement', '0', Icons.emoji_events, Colors.orange, isDarkMode),
             ),
           ),
         ],
@@ -476,31 +507,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       ),
       child: Column(
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.emoji_events,
-                color: Colors.orange,
-                size: 24,
-              ),
-            ),
-          ),
+          Icon(Icons.emoji_events, color: Colors.orange, size: 32),
           const SizedBox(height: 8),
           Text(
             '1',
@@ -511,7 +518,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ),
           ),
           Text(
-            'Achievements',
+            'Achievement',
             style: TextStyle(
               fontSize: 12,
               color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
@@ -530,54 +537,38 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  'My Courses',
-                  Icons.school_outlined,
-                  Colors.blue[600]!,
-                  () => _navigateToCourses(),
-                  isDarkMode,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  'Your Performance',
-                  Icons.videocam_outlined,
-                  Colors.red[600]!,
-                  () => _navigateToPerformanceVideos(),
-                  isDarkMode,
-                ),
-              ),
-            ],
+          _buildActionButton(
+            'My Modules',
+            Icons.school_outlined,
+            Colors.blue[600]!,
+            () => _navigateToCourses(),
+            isDarkMode,
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  'My Certificates',
-                  Icons.card_membership_outlined,
-                  Colors.purple[600]!,
-                  () => _navigateToCertificates(),
-                  isDarkMode,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  'Leaderboard',
-                  Icons.leaderboard,
-                  Colors.orange[600]!,
-                  () => _navigateToLeaderboard(),
-                  isDarkMode,
-                ),
-              ),
-            ],
+          _buildActionButton(
+            'Your Performance',
+            Icons.videocam_outlined,
+            Colors.red[600]!,
+            () => _navigateToPerformanceVideos(),
+            isDarkMode,
           ),
-          ],
+          const SizedBox(height: 12),
+          _buildActionButton(
+            'My Certificate',
+            Icons.card_membership_outlined,
+            Colors.purple[600]!,
+            () => _navigateToCertificates(),
+            isDarkMode,
+          ),
+          const SizedBox(height: 12),
+          _buildActionButton(
+            'Leaderboard',
+            Icons.leaderboard,
+            Colors.orange[600]!,
+            () => _navigateToLeaderboard(),
+            isDarkMode,
+          ),
+        ],
       ),
     );
   }
@@ -702,7 +693,7 @@ class MyCoursesPage extends StatelessWidget {
                     Icon(Icons.school_outlined, size: 64, color: Colors.grey[400]),
                     const SizedBox(height: 16),
                     Text(
-                      'No enrolled courses yet',
+                      'No enrolled modules yet',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.grey[600],
@@ -779,7 +770,7 @@ class MyCoursesPage extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                               ),
-                              child: const Text('Go to Course'),
+                              child: const Text('Go to module'),
                             ),
                           ],
                         ),
@@ -831,7 +822,7 @@ class FavoritesPage extends StatelessWidget {
                     Icon(Icons.favorite_outline, size: 64, color: Colors.grey[400]),
                     const SizedBox(height: 16),
                     Text(
-                      'No favorite courses yet',
+                      'No favorite modules yet',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.grey[600],

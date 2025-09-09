@@ -64,180 +64,88 @@ class HomeContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          // Welcome Section
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+            // Sports News Header
+            Text(
+              'Sports News',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
               ),
-              borderRadius: BorderRadius.circular(16),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome Back!',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: themeProvider.isGamified ? Colors.white : Theme.of(context).colorScheme.onPrimary,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Find the perfect talent for your needs',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
-                  ),
-                ),
-              ],
+            
+            const SizedBox(height: 16),
+            
+            // Featured News
+            _buildNewsCard(
+              context,
+              'Champions League Final Set for This Weekend',
+              'The biggest match of the season approaches as two powerhouse teams prepare for the ultimate showdown.',
+              '2 hours ago',
+              Icons.sports_soccer,
             ),
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Quick Actions Section
-          Text(
-            'Quick Actions',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+
+            const SizedBox(height: 12),
+
+            _buildNewsCard(
+              context,
+              'Olympic Training Camp Opens',
+              'Athletes from around the world gather for intensive preparation ahead of the upcoming games.',
+              '4 hours ago',
+              Icons.sports_gymnastics,
             ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionCard(
-                  context,
-                  icon: Icons.search,
-                  title: 'Find Talent',
-                  subtitle: 'Search for professionals',
-                  color: const Color(0xFF10B981),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildActionCard(
-                  context,
-                  icon: Icons.work_outline,
-                  title: 'Post Job',
-                  subtitle: 'Create job posting',
-                  color: const Color(0xFF8B5CF6),
-                ),
-              ),
-            ],
-          ),
-          
-          const SizedBox(height: 24),
-          
-          // Recent Activity Section
-          Text(
-            'Recent Activity',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+
+            const SizedBox(height: 12),
+
+            _buildNewsCard(
+              context,
+              'Basketball Season Playoffs Begin',
+              'Top teams advance to the playoff rounds with exciting matchups scheduled throughout the month.',
+              '6 hours ago',
+              Icons.sports_basketball,
             ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          _buildActivityCard(
-            context,
-            'New application received',
-            'John Doe applied for Frontend Developer position',
-            '2 hours ago',
-          ),
 
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-          _buildActivityCard(
-            context,
-            'Interview scheduled',
-            'Meeting with Sarah Johnson tomorrow at 2 PM',
-            '1 day ago',
-          ),
+            _buildNewsCard(
+              context,
+              'Tennis Championship Results',
+              'Surprising upsets and stellar performances mark the latest tournament rounds.',
+              '8 hours ago',
+              Icons.sports_tennis,
+            ),
 
-          const SizedBox(height: 12),
+            const SizedBox(height: 12),
 
-          _buildActivityCard(
-            context,
-            'Profile view',
-            'Your profile was viewed by 5 recruiters',
-            '2 days ago',
-          ),
+            _buildNewsCard(
+              context,
+              'Swimming Records Broken',
+              'New world records set at the international swimming competition this week.',
+              '1 day ago',
+              Icons.pool,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionCard(BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-  }) {
+  Widget _buildNewsCard(BuildContext context, String title, String description, String time, IconData icon) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).textTheme.bodyMedium?.color,
-            ),
+        border: themeProvider.isGamified ? Border.all(color: Colors.white.withOpacity(0.2), width: 1) : Border.all(color: Colors.transparent, width: 0),
+        boxShadow: themeProvider.isGamified ? [] : [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildActivityCard(BuildContext context, String title, String description, String time) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Row(
         children: [
@@ -249,7 +157,7 @@ class HomeContent extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Icon(
-              Icons.notifications_outlined,
+              icon,
               color: Theme.of(context).primaryColor,
               size: 20,
             ),
@@ -264,7 +172,9 @@ class HomeContent extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    color: themeProvider.isGamified 
+                        ? Colors.white 
+                        : Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -272,7 +182,9 @@ class HomeContent extends StatelessWidget {
                   description,
                   style: TextStyle(
                     fontSize: 12,
-                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                    color: themeProvider.isGamified 
+                        ? Colors.white70 
+                        : Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),
               ],
@@ -282,7 +194,9 @@ class HomeContent extends StatelessWidget {
             time,
             style: TextStyle(
               fontSize: 12,
-              color: Theme.of(context).textTheme.bodySmall?.color,
+              color: themeProvider.isGamified 
+                  ? Colors.white70 
+                  : Theme.of(context).textTheme.bodySmall?.color,
             ),
           ),
         ],

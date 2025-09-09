@@ -27,7 +27,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
       'id': 1,
       'username': 'Alex Champion',
       'avatar': 'assets/images/champ.png',
-      'totalXP': 15420,
+      'totalXP': 5420,
       'strength': 95,
       'stamina': 88,
       'agility': 92,
@@ -39,7 +39,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
       'id': 2,
       'username': 'Sarah Runner',
       'avatar': 'assets/images/intermediate.png',
-      'totalXP': 14850,
+      'totalXP': 5200,
       'strength': 85,
       'stamina': 98,
       'agility': 89,
@@ -51,7 +51,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
       'id': 3,
       'username': 'Mike Strong',
       'avatar': 'assets/images/beginner.png',
-      'totalXP': 14200,
+      'totalXP': 5100,
       'strength': 99,
       'stamina': 82,
       'agility': 85,
@@ -63,7 +63,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
       'id': 4,
       'username': 'You',
       'avatar': 'assets/images/silver.png',
-      'totalXP': 8750,
+      'totalXP': 5000,
       'strength': 75,
       'stamina': 80,
       'agility': 78,
@@ -524,8 +524,8 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
 
     final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: themeProvider.isGamified 
             ? (isCurrentUser ? Colors.white.withOpacity(0.2) : Colors.white.withOpacity(0.1))
@@ -549,8 +549,8 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
         children: [
           // Rank Display
           Container(
-            width: 48,
-            height: 48,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: rank <= 3
                   ? _getRankColor(rank)
@@ -584,7 +584,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
             ),
           ),
 
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
 
           // Avatar
           AnimatedBuilder(
@@ -593,11 +593,11 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
               return Transform.scale(
                 scale: _scaleAnimation.value,
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(10),
                   child: Image.asset(
-                    user['badgeImage'],
-                    width: 56,
-                    height: 56,
+                    activeTab == 'league' ? 'assets/images/champ.png' : user['badgeImage'],
+                    width: 40,
+                    height: 40,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return Icon(
@@ -612,7 +612,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
             },
           ),
 
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
 
           // User Info
           Expanded(
