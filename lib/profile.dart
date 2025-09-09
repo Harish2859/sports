@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
 import 'app_state.dart';
 import 'course.dart';
 import 'main_layout.dart';
@@ -139,7 +140,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.blue[100],
-                child: Icon(Icons.person, size: 50, color: Colors.blue[800]),
+                backgroundImage: _appState.profileImagePath != null
+                    ? FileImage(File(_appState.profileImagePath!))
+                    : null,
+                child: _appState.profileImagePath == null
+                    ? Icon(Icons.person, size: 50, color: Colors.blue[800])
+                    : null,
               ),
               // Animated Badge at top right
               Positioned(

@@ -19,6 +19,7 @@ class AppState extends ChangeNotifier {
   // User profile data
   String _userName = 'Alex Rodriguez';
   String _userGender = 'Male'; // Default gender
+  String? _profileImagePath;
 
   // Course enrollments by gender: courseId -> gender -> list of usernames
   final Map<String, Map<String, List<String>>> _courseEnrollmentsByGender = {};
@@ -28,6 +29,7 @@ class AppState extends ChangeNotifier {
   int get totalXP => _totalXP;
   String get userName => _userName;
   String get userGender => _userGender;
+  String? get profileImagePath => _profileImagePath;
 
   void enrollInCourse(Course course) {
     if (!_enrolledCourses.any((c) => c.id == course.id)) {
@@ -89,6 +91,11 @@ class AppState extends ChangeNotifier {
   void updateUserProfile(String name, String gender) {
     _userName = name;
     _userGender = gender;
+    notifyListeners();
+  }
+
+  void updateProfileImage(String imagePath) {
+    _profileImagePath = imagePath;
     notifyListeners();
   }
 

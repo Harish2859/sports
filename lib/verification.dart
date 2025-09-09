@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
+import 'dart:io';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'home.dart';
 import 'app_state.dart';
 import 'theme_provider.dart';
@@ -31,6 +33,8 @@ class _VerificationPageState extends State<VerificationPage> {
   int _otpCountdown = 60;
   String _generatedSportsId = '';
   Timer? _otpTimer;
+  File? _profileImage;
+  final ImagePicker _picker = ImagePicker();
 
   final List<String> _genderOptions = ['Male', 'Female', 'Transgender'];
 
@@ -202,31 +206,42 @@ class _VerificationPageState extends State<VerificationPage> {
           ),
           const SizedBox(height: 32),
           
-          // Profile Photo Section (Dummy)
+          // Profile Photo Section
           Center(
             child: Column(
               children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
-                    borderRadius: BorderRadius.circular(60),
-                    border: Border.all(
-                      color: const Color(0xFFE5E7EB),
-                      width: 2,
+                GestureDetector(
+                  onTap: _takePicture,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(60),
+                      border: Border.all(
+                        color: const Color(0xFFE5E7EB),
+                        width: 2,
+                      ),
+                      image: _profileImage != null
+                          ? DecorationImage(
+                              image: FileImage(_profileImage!),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.person,
-                    color: Color(0xFF9CA3AF),
-                    size: 40,
+                    child: _profileImage == null
+                        ? const Icon(
+                            Icons.camera_alt,
+                            color: Color(0xFF9CA3AF),
+                            size: 40,
+                          )
+                        : null,
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Profile Photo (Demo)',
-                  style: TextStyle(
+                Text(
+                  _profileImage == null ? 'Tap to take photo' : 'Tap to retake photo',
+                  style: const TextStyle(
                     fontSize: 14,
                     color: Color(0xFF6B7280),
                   ),
@@ -666,25 +681,14 @@ class _VerificationPageState extends State<VerificationPage> {
               width: double.infinity,
               child: OutlinedButton(
                 onPressed: () {
-                  try {
-                    // Update user profile in AppState
-                    final appState = AppState.instance;
-                    appState.updateUserProfile(_fullNameController.text, _selectedGender);
+                  // Update user profile in AppState
+                  AppState.instance.updateUserProfile(_fullNameController.text, _selectedGender);
 
-                    // Navigate to dashboard
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                      (Route<dynamic> route) => false,
-                    );
-                  } catch (e) {
-                    // Handle any navigation errors
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Error navigating to dashboard: $e'),
-                        backgroundColor: Colors.red,
-                      ),
-                    );
-                  }
+                  // Navigate to dashboard
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const HomePage()),
+                    (Route<dynamic> route) => false,
+                  );
                 },
                 style: OutlinedButton.styleFrom(
                   foregroundColor: const Color(0xFF2563EB),
@@ -730,12 +734,20 @@ class _VerificationPageState extends State<VerificationPage> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                   border: Border.all(color: Colors.white, width: 2),
+                  image: _profileImage != null
+                      ? DecorationImage(
+                          image: FileImage(_profileImage!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
                 ),
-                child: const Icon(
-                  Icons.person,
-                  color: Color(0xFF9CA3AF),
-                  size: 30,
-                ),
+                child: _profileImage == null
+                    ? const Icon(
+                        Icons.person,
+                        color: Color(0xFF9CA3AF),
+                        size: 30,
+                      )
+                    : null,
               ),
               const SizedBox(width: 16),
               // User Info
@@ -987,6 +999,17 @@ class _VerificationPageState extends State<VerificationPage> {
         backgroundColor: Color(0xFF10B981),
       ),
     );
+  }
+
+  Future<void> _takePicture() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    if (image != null) {
+      setState(() {
+        _profileImage = File(image.path);
+      });
+      // Save to AppState
+      AppState.instance.updateProfileImage(image.path);
+    }
   }
 }
 
