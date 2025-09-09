@@ -44,6 +44,7 @@ dependencies:
   path_provider: ^2.1.1
   path: ^1.8.3
   permission_handler: ^11.0.1
+  lottie: ^3.1.2
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
   assets:
     - assets/images/
     - assets/videos/
+    - assets/animations/
     - assets/gamified_background.html
   #   - images/a_dot_ham.jpeg
 

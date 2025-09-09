@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 import 'app_state.dart';
 import 'theme_provider.dart';
+import 'spinning_claim_xp_widget.dart';
 
 class PerformanceSummaryPage extends StatefulWidget {
   final String unitName;
@@ -28,6 +30,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
   late Animation<double> _fadeAnimation;
+  late AnimationController _confettiController;
   bool _xpClaimed = false;
   int _xpEarned = 0;
   String _performanceLevel = '';
@@ -39,6 +42,10 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
     super.initState();
     _animationController = AnimationController(
       duration: Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    _confettiController = AnimationController(
+      duration: Duration(seconds: 2),
       vsync: this,
     );
 
@@ -70,6 +77,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   @override
   void dispose() {
     _animationController.dispose();
+    _confettiController.dispose();
     super.dispose();
   }
 
@@ -117,30 +125,61 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             ),
           ],
         ),
-      body: AnimatedBuilder(
-        animation: _fadeAnimation,
-        builder: (context, child) {
-          return Opacity(
-            opacity: _fadeAnimation.value,
-            child: Transform.translate(
-              offset: Offset(0, _slideAnimation.value),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildHeader(),
-                    SizedBox(height: 24),
-                    _buildPerformanceCards(),
-                    SizedBox(height: 24),
-                    _buildXPCard(),
-                    SizedBox(height: 32),
-                    _buildActionButtons(),
-                  ],
+      body: Stack(
+        children: [
+          AnimatedBuilder(
+            animation: _fadeAnimation,
+            builder: (context, child) {
+              return Opacity(
+                opacity: _fadeAnimation.value,
+                child: Transform.translate(
+                  offset: Offset(0, _slideAnimation.value),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        _buildHeader(),
+                        SizedBox(height: 24),
+                        _buildPerformanceCards(),
+                        SizedBox(height: 24),
+                        Consumer<ThemeProvider>(
+                    builder: (context, themeProvider, child) {
+                      return themeProvider.isGamified
+                          ? Center(
+                              child: SpinningClaimXPWidget(
+                                onPressed: _claimXP,
+                                claimed: _xpClaimed,
+                              ),
+                            )
+                          : _buildXPCard();
+                    },
+                  ),
+                        SizedBox(height: 32),
+                        _buildActionButtons(),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
+              );
+            },
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: AnimatedBuilder(
+              animation: _confettiController,
+              builder: (context, child) {
+                return _confettiController.isAnimating
+                    ? Lottie.asset(
+                        'assets/animations/Confetti - Animation.json',
+                        width: 300,
+                        height: 300,
+                        repeat: false,
+                      )
+                    : SizedBox.shrink();
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
       ),
     );
@@ -412,17 +451,38 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             ),
           ),
           SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _xpClaimed ? null : _claimXP,
-            child: Text(_xpClaimed ? 'XP Claimed!' : 'Claim XP'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _xpClaimed ? Colors.grey : Colors.white,
-              foregroundColor: _xpClaimed ? Colors.white : Colors.orange,
-              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
+          Consumer<ThemeProvider>(
+            builder: (context, themeProvider, child) {
+              return themeProvider.isGamified
+                  ? Column(
+                      children: [
+                        SpinningClaimXPWidget(
+                          onPressed: _claimXP,
+                          claimed: _xpClaimed,
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          _xpClaimed ? 'XP Claimed!' : 'Claim 100 XP',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    )
+                  : ElevatedButton(
+                      onPressed: _xpClaimed ? null : _claimXP,
+                      child: Text(_xpClaimed ? 'XP Claimed!' : 'Claim XP'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _xpClaimed ? Colors.grey : Colors.white,
+                        foregroundColor: _xpClaimed ? Colors.white : Colors.orange,
+                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                      ),
+                    );
+            },
           ),
         ],
       ),
@@ -469,16 +529,21 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   void _claimXP() {
-    final appState = AppState.instance;
-    appState.addXP(_xpEarned);
+    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
+    
+    int xpToAdd = themeProvider.isGamified ? 100 : _xpEarned;
     
     setState(() {
       _xpClaimed = true;
     });
     
+    if (themeProvider.isGamified) {
+      _confettiController.forward().then((_) => _confettiController.reset());
+    }
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('🎉 $_xpEarned XP added to your account! Total: ${appState.totalXP} XP'),
+        content: Text('🎉 $xpToAdd XP claimed!'),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 3),

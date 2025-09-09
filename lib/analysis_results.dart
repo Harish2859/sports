@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:lottie/lottie.dart';
 import 'performance_summary.dart';
 import 'theme_provider.dart';
 
@@ -137,28 +138,36 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             builder: (context, child) {
               return Transform.scale(
                 scale: _scaleAnimation.value,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      CircularProgressIndicator(
-                        strokeWidth: 6,
-                        color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)),
+                child: themeProvider.isGamified
+                    ? Lottie.asset(
+                        'assets/animations/Ai-powered marketing tools abstract.json',
+                        width: 200,
+                        height: 200,
+                        repeat: true,
+                        animate: true,
+                      )
+                    : Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                              strokeWidth: 6,
+                              color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
+                            ),
+                            Icon(
+                              Icons.psychology,
+                              size: 40,
+                              color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
+                            ),
+                          ],
+                        ),
                       ),
-                      Icon(
-                        Icons.psychology,
-                        size: 40,
-                        color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)),
-                      ),
-                    ],
-                  ),
-                ),
               );
             },
           ),
@@ -530,22 +539,26 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   void _goToNextUnit() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PerformanceSummaryPage(
-          unitName: widget.unitName,
-          unitIndex: widget.unitIndex,
-          sectionIndex: widget.sectionIndex,
-          totalUnitsInSection: widget.totalUnitsInSection,
-          hasMalpractice: widget.hasMalpractice,
+    try {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PerformanceSummaryPage(
+            unitName: widget.unitName,
+            unitIndex: widget.unitIndex,
+            sectionIndex: widget.sectionIndex,
+            totalUnitsInSection: widget.totalUnitsInSection,
+            hasMalpractice: widget.hasMalpractice,
+          ),
         ),
-      ),
-    );
-    
-    // Pass the result back to the unit details page
-    if (result != null) {
-      Navigator.pop(context, result);
+      );
+      if (mounted) {
+        Navigator.pop(context, 'next');
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context, 'next');
+      }
     }
   }
 }
