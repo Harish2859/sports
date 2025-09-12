@@ -686,7 +686,7 @@ class _VerificationPageState extends State<VerificationPage> {
 
                   // Navigate to dashboard
                   Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(builder: (context) => const HomePage()),
+                    MaterialPageRoute(builder: (context) => HomePage()),
                     (Route<dynamic> route) => false,
                   );
                 },

@@ -9,6 +9,7 @@ import 'my_courses_page.dart';
 import 'performance_videos_page.dart';
 import 'my_certificates_page.dart';
 import 'leaderboard.dart';
+import 'community_page.dart';
 
 class MainLayout extends StatefulWidget {
   final int currentIndex;
@@ -76,10 +77,12 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   }
 
   void _handleTabChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-    widget.onTabChanged(index);
+    if (index >= 0 && index < 5) {
+      setState(() {
+        _currentIndex = index;
+      });
+      widget.onTabChanged(index);
+    }
   }
 
   Widget _buildDrawerItem(BuildContext context, IconData icon, String title, VoidCallback onTap) {
@@ -236,6 +239,18 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const LeaderboardPage()),
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                context,
+                Icons.people,
+                'Community',
+                () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CommunityPage()),
                   );
                 },
               ),
@@ -590,7 +605,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                 selectedItemColor: Colors.white,
                 unselectedItemColor: Colors.white.withOpacity(0.7),
                 elevation: 0,
-                currentIndex: _currentIndex < 0 ? 0 : _currentIndex,
+                currentIndex: _currentIndex.clamp(0, 4),
                 onTap: _handleTabChanged,
                 items: const [
                   BottomNavigationBarItem(
@@ -623,7 +638,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
             )
           : BottomNavigationBar(
               type: BottomNavigationBarType.fixed,
-              currentIndex: _currentIndex < 0 ? 0 : _currentIndex,
+              currentIndex: _currentIndex.clamp(0, 4),
               onTap: _handleTabChanged,
               items: const [
                 BottomNavigationBarItem(
