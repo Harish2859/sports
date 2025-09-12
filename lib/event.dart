@@ -16,6 +16,7 @@ class Event {
   final String image;
   final int registeredCount;
   final String? requiredCertificate;
+  final String description;
 
   Event({
     required this.id,
@@ -28,6 +29,7 @@ class Event {
     required this.image,
     required this.registeredCount,
     this.requiredCertificate,
+    this.description = '',
   });
 }
 
@@ -72,49 +74,118 @@ class _SportsEventPageState extends State<SportsEventPage>
     with TickerProviderStateMixin {
   late PageController _pageController;
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
+  late AnimationController _swipeAnimationController;
+  late Animation<double> _swipeAnimation;
+  bool _isAnimating = false;
 
   // Convert admin events to user event format
   List<Event> _getEventsFromAppState(BuildContext context) {
-    return app_state.AppState.instance.events.map((adminEvent) {
-      return Event(
-        id: adminEvent.id,
-        title: adminEvent.name,
-        sport: adminEvent.sportType,
-        date: '${adminEvent.date.year}-${adminEvent.date.month.toString().padLeft(2, '0')}-${adminEvent.date.day.toString().padLeft(2, '0')}',
-        time: adminEvent.time.format(context),
-        location: adminEvent.location,
-        gender: 'mixed', // Default to mixed since admin events don't have gender
-        image: adminEvent.bannerPath ?? 'assets/images/default_event.png',
-        registeredCount: 0, // Admin events don't track registration count
-        requiredCertificate: adminEvent.requiredCertificate,
-      );
-    }).toList();
+    final adminEvents = app_state.AppState.instance.events;
+    
+    if (adminEvents.isNotEmpty) {
+      return adminEvents.map((adminEvent) {
+        return Event(
+          id: adminEvent.id,
+          title: adminEvent.name,
+          sport: adminEvent.sportType,
+          date: '${adminEvent.date.year}-${adminEvent.date.month.toString().padLeft(2, '0')}-${adminEvent.date.day.toString().padLeft(2, '0')}',
+          time: adminEvent.time.format(context),
+          location: adminEvent.location,
+          gender: 'mixed',
+          image: adminEvent.bannerPath ?? 'assets/images/default_event.png',
+          registeredCount: 0,
+          requiredCertificate: adminEvent.requiredCertificate,
+          description: adminEvent.description ?? 'Join us for this exciting ${adminEvent.sportType} event at ${adminEvent.location}. Whether you\'re a beginner or experienced athlete, this event welcomes all skill levels. Come and be part of an amazing sporting experience with fellow enthusiasts!',
+        );
+      }).toList();
+    }
+    
+    // Return prebuilt events if no admin events exist
+    return [
+      Event(
+        id: '1',
+        title: 'National Swimming event',
+        sport: 'Swimming',
+        date: '2024-02-15',
+        time: '09:00 AM',
+        location: 'Olympic Aquatic Center',
+        gender: 'mixed',
+        image: 'assets/images/event 1.jpg',
+        registeredCount: 45,
+        description: 'Join the most prestigious swimming competition of the year. Open to all skill levels with separate categories for beginners and professionals. Experience world-class facilities and compete with the best swimmers .',
+      ),
+      Event(
+        id: '2',
+        title: 'City Marathon 2024',
+        sport: 'Running',
+        date: '2024-03-10',
+        time: '06:00 AM',
+        location: 'Central Park',
+        gender: 'mixed',
+        image: 'assets/images/event 2.jpg',
+        registeredCount: 120,
+        description: 'Challenge yourself in our annual city marathon. Choose from 5K, 10K, or full marathon distances. Professional timing, medical support, and refreshment stations available throughout the course.',
+      ),
+      Event(
+        id: '3',
+        title: 'Basketball Tournament',
+        sport: 'Basketball',
+        date: '2024-02-28',
+        time: '02:00 PM',
+        location: 'Sports Complex Arena',
+        gender: 'mixed',
+        image: 'assets/images/event 3.jpg',
+        registeredCount: 32,
+        description: 'Competitive basketball tournament featuring teams from across the city. 3v3 and 5v5 formats available. Prizes for winners and participation certificates for all players.',
+      ),
+      Event(
+        id: '4',
+        title: 'Tennis Open Championship',
+        sport: 'Tennis',
+        date: '2024-03-05',
+        time: '10:00 AM',
+        location: 'Tennis Club Courts',
+        gender: 'mixed',
+        image: 'assets/images/event 4.jpg',
+        registeredCount: 28,
+        requiredCertificate: 'Tennis Proficiency Certificate',
+        description: 'Annual tennis championship open to intermediate and advanced players. Singles and doubles categories available. Professional umpires and high-quality courts ensure fair competition.',
+      ),
+      Event(
+        id: '5',
+        title: 'Football League Finals',
+        sport: 'Football',
+        date: '2024-03-20',
+        time: '04:00 PM',
+        location: 'Stadium Ground',
+        gender: 'mixed',
+        image: 'assets/images/event 5.jpg',
+        registeredCount: 88,
+        description: 'The ultimate football showdown featuring the top 8 teams from our seasonal league. Witness intense matches, skilled gameplay, and crown the champion team of the year.',
+      ),
+    ];
   }
 
-  String _genderFilter = 'all';
-  String _sportFilter = 'all';
-  bool _showAll = false;
   int _currentPage = 0;
+  int _targetPage = 0;
 
   @override
   void initState() {
     super.initState();
+    _targetPage = _currentPage;
     _pageController = PageController();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    _animationController.forward();
+    _swipeAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _swipeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _swipeAnimationController, curve: Curves.easeInOut),
+    );
 
-    // Listen to AppState changes to update when events are added
     app_state.AppState.instance.addListener(_onAppStateChanged);
   }
 
@@ -123,31 +194,12 @@ class _SportsEventPageState extends State<SportsEventPage>
     app_state.AppState.instance.removeListener(_onAppStateChanged);
     _pageController.dispose();
     _animationController.dispose();
+    _swipeAnimationController.dispose();
     super.dispose();
   }
 
   void _onAppStateChanged() {
-    // Rebuild the widget when events change
     setState(() {});
-  }
-
-  List<Event> _getFilteredEvents(BuildContext context) {
-    final events = _getEventsFromAppState(context);
-    return events.where((event) {
-      final genderMatch = _genderFilter == 'all' ||
-          event.gender == _genderFilter ||
-          event.gender == 'mixed';
-      final sportMatch = _sportFilter == 'all' || event.sport == _sportFilter;
-      return genderMatch && sportMatch;
-    }).toList();
-  }
-
-  List<Event> _getDisplayedEvents(BuildContext context) {
-    final filtered = _getFilteredEvents(context);
-    if (_showAll || filtered.length <= 3) {
-      return filtered;
-    }
-    return filtered.take(3).toList();
   }
 
   void _showRegistrationModal(Event event) {
@@ -161,26 +213,11 @@ class _SportsEventPageState extends State<SportsEventPage>
     );
   }
 
-  void _shareEvent(Event event) {
-    final text = '${event.title ?? 'Event'}\n'
-        'Sport: ${event.sport ?? 'Sport'}\n'
-        'Date: ${event.date ?? 'N/A'} at ${event.time ?? 'N/A'}\n'
-        'Location: ${event.location ?? 'N/A'}\n'
-        'Join us for this amazing event!';
-
-    // Share functionality removed - package not available
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share functionality not available'),
-        duration: Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final events = _getEventsFromAppState(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Container(
       decoration: themeProvider.isGamified
           ? const BoxDecoration(
@@ -194,514 +231,420 @@ class _SportsEventPageState extends State<SportsEventPage>
       child: Scaffold(
         backgroundColor: themeProvider.isGamified ? Colors.transparent : Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildFilterBar(),
-                _buildSwipeableEventCards(),
-              ],
-            ),
+          child: Column(
+            children: [
+              _buildTopBar(),
+              Expanded(
+                child: events.isEmpty
+                    ? _buildEmptyState()
+                    : _buildSwipeableCards(events),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFilterBar() {
+  String _selectedSport = 'All Sports';
+
+  Widget _buildTopBar() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      height: 80,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.transparent,
+        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Colors.grey[100],
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
       ),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: _buildGenderDropdown(),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildSportDropdown(),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _buildSeeAllButton(),
-            ],
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : Colors.grey[300],
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: DropdownButton<String>(
+              value: _selectedSport,
+              underline: const SizedBox(),
+              dropdownColor: themeProvider.isGamified ? Colors.black87 : Colors.white,
+              items: ['All Sports', 'Swimming', 'Running', 'Basketball', 'Tennis', 'Football']
+                  .map((sport) => DropdownMenuItem(
+                        value: sport,
+                        child: Text(
+                          sport,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: themeProvider.isGamified ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedSport = value!;
+                });
+              },
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGenderDropdown() {
+  Widget _buildEmptyState() {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    return DropdownButtonFormField<String>(
-      isExpanded: true,
-      style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
-      dropdownColor: themeProvider.isGamified ? Colors.grey[800] : null,
-      decoration: InputDecoration(
-        labelText: 'Filter by Gender',
-        labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
-        border: themeProvider.isGamified ? OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))) : const OutlineInputBorder(),
-        enabledBorder: themeProvider.isGamified ? OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))) : const OutlineInputBorder(),
-        prefixIcon: Icon(Icons.people, color: themeProvider.isGamified ? Colors.white70 : null),
-      ),
-      value: _genderFilter,
-      items: const [
-        DropdownMenuItem(value: 'all', child: Text('All Genders')),
-        DropdownMenuItem(value: 'male', child: Text('Male')),
-        DropdownMenuItem(value: 'female', child: Text('Female')),
-        DropdownMenuItem(value: 'mixed', child: Text('Mixed')),
-      ],
-      onChanged: (value) {
-        setState(() {
-          _genderFilter = value!;
-          _animationController.reset();
-          _animationController.forward();
-        });
-      },
-    );
-  }
-
-  Widget _buildSportDropdown() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final sports = ['all', 'Running', 'Basketball', 'Soccer', 'Tennis', 'Swimming'];
-    return DropdownButtonFormField<String>(
-      isExpanded: true,
-      style: TextStyle(color: themeProvider.isGamified ? Colors.white : null),
-      dropdownColor: themeProvider.isGamified ? Colors.grey[800] : null,
-      decoration: InputDecoration(
-        labelText: 'Filter by Sport',
-        labelStyle: TextStyle(color: themeProvider.isGamified ? Colors.white70 : null),
-        border: themeProvider.isGamified ? OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))) : const OutlineInputBorder(),
-        enabledBorder: themeProvider.isGamified ? OutlineInputBorder(borderSide: BorderSide(color: Colors.white.withOpacity(0.3))) : const OutlineInputBorder(),
-        prefixIcon: Icon(Icons.sports, color: themeProvider.isGamified ? Colors.white70 : null),
-      ),
-      value: _sportFilter,
-      items: sports.map((sport) {
-        return DropdownMenuItem(
-          value: sport,
-          child: Text(sport == 'all' ? 'All Sports' : sport),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _sportFilter = value!;
-          _animationController.reset();
-          _animationController.forward();
-        });
-      },
-    );
-  }
-
-  Widget _buildSwipeableEventCards() {
-    final events = _getDisplayedEvents(context);
-    if (events.isEmpty) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    return Flexible(
-      child: Center(
-        child: Text(
-          'No events match your filters',
-          style: TextStyle(
-            fontSize: 18, 
-            color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.event_busy,
+            size: 80,
+            color: themeProvider.isGamified ? Colors.white30 : Colors.grey[400],
           ),
-        ),
+          const SizedBox(height: 16),
+          Text(
+            'No events available',
+            style: TextStyle(
+              fontSize: 18,
+              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+            ),
+          ),
+        ],
       ),
     );
-    }
+  }
 
-    // If showing all events, use ListView for single page display
-    if (_showAll) {
-      return Flexible(
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: events.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: AnimatedEventCard(
-                event: events[index],
-                onRegister: () => _showRegistrationModal(events[index]),
-                onShare: () => _shareEvent(events[index]),
+  Widget _buildSwipeableCards(List<Event> events) {
+    return Column(
+      children: [
+        // Top Section - Name and Description (Full Width)
+        AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(_animationController.value * 50, 0),
+              child: Opacity(
+                opacity: 1 - _animationController.value,
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: _buildTopSection(events[_currentPage]),
+                ),
               ),
             );
           },
         ),
-      );
-    }
-
-    // Default swipeable view for limited events
-    return Flexible(
-      child: PageView.builder(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentPage = index;
-          });
-        },
-        itemCount: events.length,
-        itemBuilder: (context, index) {
-          return AnimatedBuilder(
-            animation: _pageController,
-            builder: (context, child) {
-              double value = 1.0;
-              if (_pageController.position.haveDimensions) {
-                value = (_pageController.page ?? 0.0) - index;
-                value = (1 - (value.abs() * 0.3)).clamp(0.0, 1.0);
-              }
-              return Transform.scale(
-                scale: Curves.easeOut.transform(value),
-                child: AnimatedEventCard(
-                  event: events[index],
-                  onRegister: () => _showRegistrationModal(events[index]),
-                  onShare: () => _shareEvent(events[index]),
+        // Middle Row - Split into Left and Right (Equal)
+        Expanded(
+          child: Row(
+            children: [
+              // Left Section - Event Details (50%)
+              Expanded(
+                flex: 50,
+                child: AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(-_animationController.value * 30, 0),
+                      child: Opacity(
+                        opacity: 1 - _animationController.value,
+                        child: Container(
+                          margin: const EdgeInsets.only(left: 16, right: 8, top: 60),
+                          height: 200,
+                          child: _buildEventDetailsSection(events[_currentPage]),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSeeAllButton() {
-    if (_getFilteredEvents(context).length <= 3) return const SizedBox.shrink();
-
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 300),
-      child: ElevatedButton.icon(
-        key: ValueKey(_showAll),
-        onPressed: () {
-          setState(() {
-            _showAll = !_showAll;
-            if (!_showAll) {
-              if (_pageController.hasClients) {
-                _pageController.jumpToPage(0);
-              }
-              _currentPage = 0;
-            }
-          });
-        },
-        icon: Icon(_showAll ? Icons.expand_less : Icons.expand_more),
-        label: Text(_showAll ? 'Show Less' : 'See All (${_getFilteredEvents(context).length})'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Theme.of(context).colorScheme.onPrimary,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
+              ),
+              // Right Section - Image Stack (50%)
+              Expanded(
+                flex: 50,
+                child: AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return Transform.translate(
+                      offset: Offset(_animationController.value * 30, 0),
+                      child: Container(
+                        margin: const EdgeInsets.only(left: 8),
+                        height: 200,
+                        child: _buildCardStack(events),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class AnimatedEventCard extends StatefulWidget {
-  final Event event;
-  final VoidCallback onRegister;
-  final VoidCallback onShare;
-
-  const AnimatedEventCard({
-    super.key,
-    required this.event,
-    required this.onRegister,
-    required this.onShare,
-  });
-
-  @override
-  State<AnimatedEventCard> createState() => _AnimatedEventCardState();
-}
-
-class _AnimatedEventCardState extends State<AnimatedEventCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _hoverController;
-  late Animation<double> _scaleAnimation;
-  bool _isHovered = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _hoverController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _hoverController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _hoverController.dispose();
-    super.dispose();
-  }
-
-  Widget _buildGenderBadge() {
-    Color badgeColor;
-    IconData badgeIcon;
-
-    switch ((widget.event.gender ?? 'mixed').toLowerCase()) {
-      case 'male':
-        badgeColor = Colors.blue;
-        badgeIcon = Icons.male;
-        break;
-      case 'female':
-        badgeColor = Colors.pink;
-        badgeIcon = Icons.female;
-        break;
-      case 'mixed':
-        badgeColor = Colors.green;
-        badgeIcon = Icons.group;
-        break;
-      default:
-        badgeColor = Colors.grey;
-        badgeIcon = Icons.group;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: badgeColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(badgeIcon, color: Colors.white, size: 14),
-          const SizedBox(width: 4),
-          Text(
-            widget.event.gender.toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) {
-        _hoverController.forward();
-        setState(() => _isHovered = true);
-      },
-      onTapUp: (_) {
-        _hoverController.reverse();
-        setState(() => _isHovered = false);
-      },
-      onTapCancel: () {
-        _hoverController.reverse();
-        setState(() => _isHovered = false);
-      },
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: Container(
-              margin: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                height: 450,
-                child: Card(
-                  elevation: _isHovered ? 12 : 8,
-                  shadowColor: null,
-                  color: Provider.of<ThemeProvider>(context).isGamified ? Colors.white.withOpacity(0.1) : null,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: Provider.of<ThemeProvider>(context).isGamified ? BorderSide(color: Colors.white.withOpacity(0.2)) : BorderSide.none,
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildImageHeader(),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: _buildCardContent(),
-                          ),
-                        ),
-                      ],
+        // Bottom Section - Register Button (Full Width)
+        AnimatedBuilder(
+          animation: _animationController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: 1 - (_animationController.value * 0.1),
+              child: Opacity(
+                opacity: 1 - _animationController.value,
+                child: Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.all(16),
+                  child: ElevatedButton(
+                    onPressed: () => _showRegistrationModal(events[_currentPage]),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        ),
+        // Page Indicator
+        _buildPageIndicator(events.length),
+      ],
     );
   }
 
-  Widget _buildImageHeader() {
-    return Stack(
+  Widget _buildTopSection(Event event) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
+        // Sport Type Badge
         Container(
-          height: 250,
-          width: double.infinity,
-          child: widget.event.image.isNotEmpty && widget.event.image != 'assets/images/default_event.png'
-              ? (widget.event.image.startsWith('assets/')
-                  ? Image.asset(
-                      widget.event.image,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildDefaultImage(),
-                    )
-                  : Image.file(
-                      File(widget.event.image),
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => _buildDefaultImage(),
-                    ))
-              : _buildDefaultImage(),
-        ),
-        Positioned(
-          top: 12,
-          right: 12,
-          child: _buildGenderBadge(),
-        ),
-        Positioned(
-          bottom: 12,
-          left: 12,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.black54,
-              borderRadius: BorderRadius.circular(20),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : Colors.grey[300],
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            event.sport,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: themeProvider.isGamified ? Colors.white : Colors.black87,
             ),
-            child: Text(
-              widget.event.sport ?? 'Sport',
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Event Title
+        SizedBox(
+          width: double.infinity,
+          child: Text(
+            event.title,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: themeProvider.isGamified ? Colors.white : Colors.black87,
+            ),
+            softWrap: true,
+            overflow: TextOverflow.visible,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Event Description
+        SizedBox(
+          width: double.infinity,
+          child: Text(
+            event.description,
+            style: TextStyle(
+              fontSize: 14,
+              color: themeProvider.isGamified ? Colors.white70 : Colors.black54,
+              height: 1.5,
+            ),
+            softWrap: true,
+            overflow: TextOverflow.visible,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEventDetailsSection(Event event) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Event Details',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: themeProvider.isGamified ? Colors.white : Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildDetailRow(Icons.calendar_today, 'Date', event.date, themeProvider),
+        const SizedBox(height: 12),
+        _buildDetailRow(Icons.access_time, 'Time', event.time, themeProvider),
+        const SizedBox(height: 12),
+        _buildDetailRow(Icons.location_on, 'Location', event.location, themeProvider),
+      ],
+    );
+  }
+  
+  Widget _buildDetailRow(IconData icon, String label, String value, ThemeProvider themeProvider) {
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 16,
+          color: themeProvider.isGamified ? Colors.white70 : Colors.black54,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: themeProvider.isGamified ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 12,
+              color: themeProvider.isGamified ? Colors.white : Colors.black87,
             ),
           ),
         ),
       ],
     );
+  }
+  
+  Widget _buildCardStack(List<Event> events) {
+    return GestureDetector(
+      onPanUpdate: (details) {
+        if (!_isAnimating && details.delta.dx < -10) {
+          _nextCard(events);
+        }
+      },
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const NeverScrollableScrollPhysics(),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            // Current card (tall)
+            Container(
+              width: 120,
+              height: 170,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              child: _buildImageCard(events[_currentPage]),
+            ),
+            // Upcoming card (short)
+            Container(
+              width: 80,
+              height: 120,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              child: _buildImageCard(events[(_currentPage + 1) % events.length]),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildImageCard(Event event) {
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.asset(
+          event.image,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) => _buildDefaultImage(),
+        ),
+      ),
+    );
+  }
+  
+  void _nextCard(List<Event> events) {
+    if (!_isAnimating) {
+      _isAnimating = true;
+      setState(() {
+        _currentPage = (_currentPage + 1) % events.length;
+      });
+      Future.delayed(const Duration(milliseconds: 100), () {
+        _isAnimating = false;
+      });
+    }
   }
 
   Widget _buildDefaultImage() {
     return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue.shade400, Colors.blue.shade600],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+      decoration: const BoxDecoration(
+        color: Colors.black,
+      ),
+      child: Center(
+        child: Image.asset(
+          'assets/images/indian_emblem.png', // You can replace this with your emblem asset
+          height: 120,
+          width: 120,
+          errorBuilder: (context, error, stackTrace) => const Icon(
+            Icons.sports,
+            size: 80,
+            color: Colors.white54,
+          ),
         ),
       ),
-      child: const Icon(
-        Icons.sports,
-        size: 80,
-        color: Colors.white54,
-      ),
     );
   }
 
-  Widget _buildCardContent() {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.event.title ?? 'Event',
-            style: TextStyle(
-              fontSize: 22.0,
-              fontWeight: FontWeight.bold,
-              color: Provider.of<ThemeProvider>(context).isGamified ? Colors.white : null,
-            ),
-          ),
-          const SizedBox(height: 16.0),
-          _buildInfoRow(Icons.calendar_today, '${widget.event.date ?? 'N/A'} at ${widget.event.time ?? 'N/A'}'),
-          const SizedBox(height: 8.0),
-          _buildInfoRow(Icons.location_on, widget.event.location ?? 'N/A'),
-          const SizedBox(height: 8.0),
-          _buildInfoRow(Icons.people, '${widget.event.registeredCount ?? 0} registered'),
-          if (widget.event.requiredCertificate != null) const SizedBox(height: 8.0),
-          if (widget.event.requiredCertificate != null) _buildInfoRow(Icons.verified, 'Required: ${widget.event.requiredCertificate}'),
-          const SizedBox(height: 20.0),
-          _buildActionButtons(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(IconData icon, String text) {
+  Widget _buildPageIndicator(int itemCount) {
+    if (itemCount <= 1) return const SizedBox.shrink();
+    
     final themeProvider = Provider.of<ThemeProvider>(context);
-    return Row(
-      children: [
-        Icon(
-          icon, 
-          size: 18.0, 
-          color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.6)
-        ),
-        const SizedBox(width: 12.0),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 14.0,
-              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+    return Container(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(itemCount, (index) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            height: 8,
+            width: 8,
+            decoration: BoxDecoration(
+              color: _currentPage == index
+                  ? (themeProvider.isGamified ? Colors.white : Colors.black)
+                  : (themeProvider.isGamified ? Colors.white30 : Colors.grey),
+              shape: BoxShape.circle,
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
-      children: [
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: widget.onRegister,
-            icon: const Icon(Icons.how_to_reg),
-            label: const Text('Register'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Container(
-          decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).colorScheme.primary),
-            borderRadius: BorderRadius.circular(25),
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.share),
-            color: Theme.of(context).colorScheme.primary,
-            onPressed: widget.onShare,
-          ),
-        ),
-      ],
+          );
+        }),
+      ),
     );
   }
 }
 
+// Registration Modal
 class RegistrationModal extends StatefulWidget {
   final Event event;
 
@@ -737,7 +680,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
             children: [
               Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Register for Event',
                       style: TextStyle(
@@ -748,22 +691,22 @@ class _RegistrationModalState extends State<RegistrationModal> {
                   ),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: Icon(Icons.close),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Text(
-                widget.event.title ?? 'Event',
+                widget.event.title,
                 style: TextStyle(
                   fontSize: 16,
                   color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               TextFormField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Full Name',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.person),
@@ -776,9 +719,9 @@ class _RegistrationModalState extends State<RegistrationModal> {
                 },
                 onSaved: (value) => _form.name = value!,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               TextFormField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.email),
@@ -788,17 +731,16 @@ class _RegistrationModalState extends State<RegistrationModal> {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email';
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                      .hasMatch(value)) {
+                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
                     return 'Please enter a valid email';
                   }
                   return null;
                 },
                 onSaved: (value) => _form.email = value!,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               TextFormField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Phone Number',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.phone),
@@ -812,19 +754,19 @@ class _RegistrationModalState extends State<RegistrationModal> {
                 },
                 onSaved: (value) => _form.phone = value!,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
                       isExpanded: true,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Gender',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                       value: _form.gender,
-                      items: const [
+                      items: [
                         DropdownMenuItem(value: 'male', child: Text('Male')),
                         DropdownMenuItem(value: 'female', child: Text('Female')),
                         DropdownMenuItem(value: 'other', child: Text('Other')),
@@ -832,10 +774,10 @@ class _RegistrationModalState extends State<RegistrationModal> {
                       onChanged: (value) => _form.gender = value!,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   Expanded(
                     child: TextFormField(
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Age',
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.cake),
@@ -857,9 +799,9 @@ class _RegistrationModalState extends State<RegistrationModal> {
                   ),
                 ],
               ),
-              if (widget.event.requiredCertificate != null) const SizedBox(height: 16),
+              if (widget.event.requiredCertificate != null) SizedBox(height: 16),
               if (widget.event.requiredCertificate != null) _buildCertificateUpload(),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -867,7 +809,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
                     if (_formKey.currentState!.validate()) {
                       if (widget.event.requiredCertificate != null && _certificatePath == null) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
+                          SnackBar(
                             content: Text('Please select the required certificate'),
                             backgroundColor: Colors.red,
                           ),
@@ -881,12 +823,12 @@ class _RegistrationModalState extends State<RegistrationModal> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Complete Registration',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -905,17 +847,17 @@ class _RegistrationModalState extends State<RegistrationModal> {
       children: [
         Text(
           'Select ${widget.event.requiredCertificate}',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         GestureDetector(
           onTap: _pickCertificate,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey),
               borderRadius: BorderRadius.circular(8),
@@ -928,7 +870,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
                   size: 40,
                   color: _certificatePath != null ? Colors.green : Colors.grey,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
                 Text(
                   _certificatePath != null ? 'Certificate selected' : 'Tap to select certificate',
                   style: TextStyle(
@@ -939,7 +881,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
                 if (_certificatePath != null)
                   Text(
                     'ID: $_certificatePath',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.green,
                       fontSize: 12,
                     ),
@@ -957,25 +899,25 @@ class _RegistrationModalState extends State<RegistrationModal> {
       {
         'id': 'CERT-JAV-001',
         'courseTitle': 'Javelin Certificate',
-        'completionDate': DateTime.now().subtract(const Duration(days: 30)),
+        'completionDate': DateTime.now().subtract(Duration(days: 30)),
         'issuer': 'Athletics Federation',
       },
       {
         'id': 'CERT-ATH-002', 
         'courseTitle': 'Athletics Certificate',
-        'completionDate': DateTime.now().subtract(const Duration(days: 60)),
+        'completionDate': DateTime.now().subtract(Duration(days: 60)),
         'issuer': 'Sports Authority',
       },
       {
         'id': 'CERT-SWM-003',
         'courseTitle': 'Swimming Certificate',
-        'completionDate': DateTime.now().subtract(const Duration(days: 90)),
+        'completionDate': DateTime.now().subtract(Duration(days: 90)),
         'issuer': 'Aquatic Sports Board',
       },
       {
         'id': 'CERT-GEN-004',
         'courseTitle': 'General Sports Certificate',
-        'completionDate': DateTime.now().subtract(const Duration(days: 120)),
+        'completionDate': DateTime.now().subtract(Duration(days: 120)),
         'issuer': 'National Sports Council',
       },
     ];
@@ -984,7 +926,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Select Certificate'),
+          title: Text('Select Certificate'),
           content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
@@ -993,7 +935,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
               itemBuilder: (context, index) {
                 final cert = dummyCertificates[index];
                 return ListTile(
-                  leading: const Icon(Icons.verified, color: Colors.green),
+                  leading: Icon(Icons.verified, color: Colors.green),
                   title: Text(cert['courseTitle'] as String),
                   subtitle: Text('ID: ${cert['id']}'),
                   onTap: () {
@@ -1015,7 +957,7 @@ class _RegistrationModalState extends State<RegistrationModal> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
+              child: Text('Cancel'),
             ),
           ],
         );
@@ -1025,11 +967,9 @@ class _RegistrationModalState extends State<RegistrationModal> {
 
   void _submitRegistration() {
     try {
-      // Here you would typically send the registration data to your backend
-      // Add null checks
       if (_form.name.isEmpty || _form.email.isEmpty || _form.phone.isEmpty || widget.event.title.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Text('Please fill all required fields'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,

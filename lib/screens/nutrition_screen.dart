@@ -41,22 +41,34 @@ class _NutritionScreenState extends State<NutritionScreen> {
     _getCurrentLocation();
   }
 
+  @override
+  void dispose() {
+    _queryController.dispose();
+    super.dispose();
+  }
+
   Future<void> _getCurrentLocation() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoadingLocation = true;
     });
 
     try {
       final location = await LocationService.getCurrentLocation();
-      setState(() {
-        _location = location;
-      });
+      if (mounted) {
+        setState(() {
+          _location = location;
+        });
+      }
     } catch (e) {
       print('Error getting location: $e');
     } finally {
-      setState(() {
-        _isLoadingLocation = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoadingLocation = false;
+        });
+      }
     }
   }
 
@@ -79,7 +91,8 @@ class _NutritionScreenState extends State<NutritionScreen> {
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.grey[900] : Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
@@ -87,9 +100,10 @@ class _NutritionScreenState extends State<NutritionScreen> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('Select Location', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.white : Colors.black)),
-          const SizedBox(height: 16),
+          Text('Select Location', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.white : Colors.black)),
+          const SizedBox(height: 12),
           ListTile(
+            dense: true,
             leading: const Icon(Icons.my_location, color: Colors.blue),
             title: const Text('Use Current Location'),
             onTap: () {
@@ -97,23 +111,31 @@ class _NutritionScreenState extends State<NutritionScreen> {
               _getCurrentLocation();
             },
           ),
-          const Divider(),
-          ...locations.map((loc) => ListTile(
-            leading: const Icon(Icons.location_on),
-            title: Text('${loc['city']}, ${loc['country']}'),
-            onTap: () {
-              Navigator.pop(context);
-              setState(() {
-                _location = LocationContext(
-                  city: loc['city']!,
-                  country: loc['country']!,
-                  climate: LocationService.getClimateForCountry(loc['country']!),
-                  localFoods: LocationService.getLocalFoods(loc['country']!),
-                  isAutoDetected: false,
-                );
-              });
-            },
-          )),
+          const Divider(height: 8),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
+              children: locations.map((loc) => ListTile(
+                dense: true,
+                leading: const Icon(Icons.location_on),
+                title: Text('${loc['city']}, ${loc['country']}'),
+                onTap: () {
+                  Navigator.pop(context);
+                  if (mounted) {
+                    setState(() {
+                      _location = LocationContext(
+                        city: loc['city']!,
+                        country: loc['country']!,
+                        climate: LocationService.getClimateForCountry(loc['country']!),
+                        localFoods: LocationService.getLocalFoods(loc['country']!),
+                        isAutoDetected: false,
+                      );
+                    });
+                  }
+                },
+              )).toList(),
+            ),
+          ),
         ],
       ),
     );
@@ -128,11 +150,13 @@ class _NutritionScreenState extends State<NutritionScreen> {
     
     // Simulate AI response
     Future.delayed(const Duration(seconds: 2), () {
-      final suggestion = _generateSuggestion(_queryController.text.trim());
-      setState(() {
-        _currentSuggestion = suggestion;
-        _isLoading = false;
-      });
+      if (mounted) {
+        final suggestion = _generateSuggestion(_queryController.text.trim());
+        setState(() {
+          _currentSuggestion = suggestion;
+          _isLoading = false;
+        });
+      }
     });
   }
   
@@ -480,19 +504,18 @@ class _NutritionScreenState extends State<NutritionScreen> {
   
   Widget _buildFooter(bool isDarkMode) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Wrap(
+            alignment: WrapAlignment.spaceAround,
             children: [
-              TextButton(onPressed: () {}, child: const Text('Contact Support')),
-              TextButton(onPressed: () {}, child: const Text('Terms')),
-              TextButton(onPressed: () {}, child: const Text('Health Disclaimer')),
+              TextButton(onPressed: () {}, child: const Text('Contact Support', style: TextStyle(fontSize: 12))),
+              TextButton(onPressed: () {}, child: const Text('Terms', style: TextStyle(fontSize: 12))),
+              TextButton(onPressed: () {}, child: const Text('Health Disclaimer', style: TextStyle(fontSize: 12))),
             ],
           ),
-          const SizedBox(height: 8),
-          Text('Consult healthcare professionals for medical advice', style: TextStyle(fontSize: 10, color: isDarkMode ? Colors.white54 : Colors.grey[500])),
+          Text('Consult healthcare professionals for medical advice', style: TextStyle(fontSize: 9, color: isDarkMode ? Colors.white54 : Colors.grey[500])),
         ],
       ),
     );
