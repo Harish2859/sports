@@ -23,18 +23,7 @@ class MyCoursesPage extends StatelessWidget {
           Navigator.pop(context);
         }
       },
-      child: Container(
-        decoration: themeProvider.isGamified
-            ? const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                ),
-              )
-            : null,
-        child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
+      child: Scaffold(
         body: appState.enrolledCourses.isEmpty
             ? Center(
                 child: Column(
@@ -61,7 +50,7 @@ class MyCoursesPage extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -79,18 +68,18 @@ class MyCoursesPage extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                            color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                            color: Theme.of(context).textTheme.bodyLarge?.color,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           course.summary,
-                          style: TextStyle(color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color),
+                          style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
                         ),
                         const SizedBox(height: 12),
                         LinearProgressIndicator(
                           value: 0.3,
-                          backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
+                          backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
                         ),
                         const SizedBox(height: 12),
@@ -129,7 +118,6 @@ class MyCoursesPage extends StatelessWidget {
                   );
                 },
               ),
-      )
       ),
     );
   }

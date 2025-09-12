@@ -87,20 +87,9 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   }
 
   Widget _buildDrawerItem(BuildContext context, IconData icon, String title, VoidCallback onTap) {
-    final isGamified = Provider.of<ThemeProvider>(context).isGamified;
-    
     return ListTile(
-      leading: Icon(
-        icon,
-        color: isGamified ? Colors.white : null,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isGamified ? Colors.white : null,
-          fontWeight: isGamified ? FontWeight.w500 : null,
-        ),
-      ),
+      leading: Icon(icon),
+      title: Text(title),
       onTap: onTap,
     );
   }
@@ -110,72 +99,46 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       drawer: Drawer(
-        backgroundColor: Provider.of<ThemeProvider>(context).isGamified 
-            ? Colors.grey[900] 
-            : null,
         child: Container(
-          decoration: Provider.of<ThemeProvider>(context).isGamified
-              ? const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                  ),
-                )
-              : null,
           child: ListView(
             padding: EdgeInsets.zero,
             children: [
               DrawerHeader(
                 decoration: BoxDecoration(
-                  color: Provider.of<ThemeProvider>(context).isGamified 
-                      ? Colors.transparent
-                      : Theme.of(context).primaryColor,
+                  color: Theme.of(context).primaryColor,
                 ),
                 child: Consumer<AppState>(
                   builder: (context, appState, child) {
+                    final themeProvider = Provider.of<ThemeProvider>(context);
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 24,
-                          backgroundColor: Provider.of<ThemeProvider>(context).isGamified 
-                              ? Colors.white.withOpacity(0.2)
-                              : Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
-                          child: Icon(
-                            Icons.person,
-                            size: 32,
-                            color: Provider.of<ThemeProvider>(context).isGamified 
-                                ? Colors.white
-                                : Theme.of(context).colorScheme.onPrimary,
-                          ),
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+                              child: Icon(
+                                Icons.person,
+                                size: 32,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 10),
                         Text(
                           appState.userName,
                           style: TextStyle(
-                            color: Provider.of<ThemeProvider>(context).isGamified 
-                                ? Colors.white
-                                : Theme.of(context).colorScheme.onPrimary,
+                            color: Theme.of(context).colorScheme.onPrimary,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            shadows: Provider.of<ThemeProvider>(context).isGamified ? [
-                              Shadow(
-                                offset: Offset(0, 1),
-                                blurRadius: 2,
-                                color: Colors.black.withOpacity(0.3),
-                              ),
-                            ] : null,
                           ),
                         ),
                         Text(
-                          Provider.of<ThemeProvider>(context).isGamified 
-                              ? 'Findrly - Your Adventure Awaits'
-                              : 'Findrly - Empowering Talent',
+                          'Findrly - Empowering Talent',
                           style: TextStyle(
-                            color: Provider.of<ThemeProvider>(context).isGamified 
-                                ? Colors.white.withOpacity(0.8)
-                                : Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
                             fontSize: 14,
                           ),
                         ),
@@ -183,9 +146,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                         Text(
                           'Gender: ${appState.userGender}',
                           style: TextStyle(
-                            color: Provider.of<ThemeProvider>(context).isGamified 
-                                ? Colors.white.withOpacity(0.6)
-                                : Theme.of(context).colorScheme.onPrimary.withOpacity(0.6),
+                            color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.6),
                             fontSize: 12,
                           ),
                         ),
@@ -270,7 +231,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               _buildDrawerItem(
                 context,
                 Icons.logout,
-                Provider.of<ThemeProvider>(context).isGamified ? 'Exit Realm' : 'Logout',
+                'Logout',
                 () {
                   Navigator.pop(context);
                   Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
@@ -413,53 +374,6 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                         );
                       },
                     ),
-
-                    // Gamified Theme Button
-                    AnimatedBuilder(
-                      animation: _themeController,
-                      builder: (context, child) {
-                        final expandValue = (_themeExpandAnimation?.value ?? 0).clamp(0.0, 1.0);
-                        final offset = Offset(
-                          80 * expandValue * math.cos(-math.pi / 6),
-                          80 * expandValue * math.sin(-math.pi / 6) - 20 * (_floatingAnimation?.value ?? 0),
-                        );
-                        return Transform.translate(
-                          offset: offset,
-                          child: Transform.scale(
-                            scale: expandValue,
-                            child: Opacity(
-                              opacity: expandValue,
-                              child: GestureDetector(
-                                onTap: () {
-                                  Provider.of<ThemeProvider>(context, listen: false).setGamifiedTheme();
-                                  _toggleThemeMenu();
-                                },
-                                child: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.green,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.games,
-                                    color: Colors.white,
-                                    size: 25,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
                   ],
                 ),
               ),
@@ -467,7 +381,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               _buildDrawerItem(
                 context,
                 Icons.settings,
-                Provider.of<ThemeProvider>(context).isGamified ? 'Quest Settings' : 'Settings',
+                'Settings',
                 () {
                   Navigator.pop(context);
                   // TODO: Navigate to Settings page
@@ -478,45 +392,34 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
         ),
       ),
       appBar: AppBar(
-        backgroundColor: Provider.of<ThemeProvider>(context).isGamified 
-            ? Colors.transparent 
-            : null,
-        flexibleSpace: Provider.of<ThemeProvider>(context).isGamified
-            ? Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                  ),
-                ),
-              )
-            : null,
         elevation: 0,
         automaticallyImplyLeading: false,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Text(
-              'Findrly',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Provider.of<ThemeProvider>(context).isGamified 
-                    ? Colors.white 
-                    : Theme.of(context).textTheme.titleLarge?.color,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Findrly',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).textTheme.titleLarge?.color,
+                    ),
+                  ),
+                  Text(
+                    'Empowering Your Fair Quest for Talent',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
               ),
             ),
-            Text(
-              'Empowering Your Fair Quest for Talent',
-              style: TextStyle(
-                fontSize: 12,
-                color: Provider.of<ThemeProvider>(context).isGamified 
-                    ? Colors.white70 
-                    : Theme.of(context).textTheme.bodyMedium?.color,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+
           ],
         ),
         actions: [
@@ -533,9 +436,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                 },
                 icon: Icon(
                   Icons.notifications_outlined,
-                  color: Provider.of<ThemeProvider>(context).isGamified 
-                      ? Colors.white 
-                      : Theme.of(context).iconTheme.color,
+                  color: Theme.of(context).iconTheme.color,
                   size: 24,
                 ),
               ),
@@ -579,9 +480,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
             },
             icon: Icon(
               Icons.message_outlined,
-              color: Provider.of<ThemeProvider>(context).isGamified 
-                  ? Colors.white 
-                  : Theme.of(context).iconTheme.color,
+              color: Theme.of(context).iconTheme.color,
               size: 24,
             ),
           ),
@@ -592,9 +491,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               },
               icon: Icon(
                 Icons.menu,
-                color: Provider.of<ThemeProvider>(context).isGamified 
-                    ? Colors.white 
-                    : Theme.of(context).iconTheme.color,
+                color: Theme.of(context).iconTheme.color,
                 size: 24,
               ),
             ),
@@ -603,84 +500,38 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
         ],
       ),
       body: widget.child,
-      bottomNavigationBar: Provider.of<ThemeProvider>(context).isGamified
-          ? Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                ),
-              ),
-              child: BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
-                backgroundColor: Colors.transparent,
-                selectedItemColor: Colors.white,
-                unselectedItemColor: Colors.white.withOpacity(0.7),
-                elevation: 0,
-                currentIndex: _currentIndex.clamp(0, 4),
-                onTap: _handleTabChanged,
-                items: const [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home_outlined),
-                    activeIcon: Icon(Icons.home),
-                    label: 'Home',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.explore_outlined),
-                    activeIcon: Icon(Icons.explore),
-                    label: 'Explore',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.event_outlined),
-                    activeIcon: Icon(Icons.event),
-                    label: 'Events',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.school_outlined),
-                    activeIcon: Icon(Icons.school),
-                    label: 'Modules',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person_outline),
-                    activeIcon: Icon(Icons.person),
-                    label: 'Profile',
-                  ),
-                ],
-              ),
-            )
-          : BottomNavigationBar(
-              type: BottomNavigationBarType.fixed,
-              currentIndex: _currentIndex.clamp(0, 4),
-              onTap: _handleTabChanged,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Home',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.explore_outlined),
-                  activeIcon: Icon(Icons.explore),
-                  label: 'Explore',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.event_outlined),
-                  activeIcon: Icon(Icons.event),
-                  label: 'Events',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.school_outlined),
-                  activeIcon: Icon(Icons.school),
-                  label: 'Modules',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profile',
-                ),
-              ],
-            ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _currentIndex.clamp(0, 4),
+        onTap: _handleTabChanged,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore),
+            label: 'Explore',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.event_outlined),
+            activeIcon: Icon(Icons.event),
+            label: 'Events',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school_outlined),
+            activeIcon: Icon(Icons.school),
+            label: 'Modules',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+      ),
     );
   }
 }

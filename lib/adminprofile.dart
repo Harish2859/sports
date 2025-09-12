@@ -306,7 +306,7 @@ class _AdminProfilePageState extends State<AdminProfilePage> with TickerProvider
                               opacity: expandValue,
                               child: GestureDetector(
                                 onTap: () {
-                                  Provider.of<ThemeProvider>(context, listen: false).setGamifiedTheme();
+                                  Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
                                   _toggleThemeMenu();
                                 },
                                 child: Container(

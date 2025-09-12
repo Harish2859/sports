@@ -88,17 +88,9 @@ class _AchievementsPageState extends State<AchievementsPage>
         }
       },
       child: Container(
-        decoration: themeProvider.isGamified
-            ? const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                ),
-              )
-            : null,
+        decoration: null,
         child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFC)),
+          backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFC),
           body: GridView.builder(
           padding: EdgeInsets.all(20),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

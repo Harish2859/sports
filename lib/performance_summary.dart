@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import 'app_state.dart';
 import 'theme_provider.dart';
-import 'spinning_claim_xp_widget.dart';
 
 class PerformanceSummaryPage extends StatefulWidget {
   final String unitName;
@@ -85,46 +84,37 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final appState = Provider.of<AppState>(context);
 
-    return Container(
-      decoration: themeProvider.isGamified
-          ? const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF1a237e), Color(0xFF000000)],
-              ),
-            )
-          : null,
-      child: Scaffold(
-        backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE)),
-        appBar: AppBar(
-          title: Text('Performance Summary', style: TextStyle(color: Colors.white)),
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[800] : Color(0xFF2563EB)),
-          flexibleSpace: themeProvider.isGamified
-              ? Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                    ),
-                  ),
-                )
-              : null,
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: Icon(
-                isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-              },
+    return Scaffold(
+      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Expanded(child: Text('Performance Summary', style: TextStyle(color: Colors.white))),
+            themeProvider.buildXPBadge(appState.totalXP),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 30,
+              height: 30,
+              child: themeProvider.buildLottieAnimation(),
             ),
           ],
         ),
+        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+            },
+          ),
+        ],
+      ),
       body: Stack(
         children: [
           AnimatedBuilder(
@@ -142,18 +132,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
                         SizedBox(height: 24),
                         _buildPerformanceCards(),
                         SizedBox(height: 24),
-                        Consumer<ThemeProvider>(
-                    builder: (context, themeProvider, child) {
-                      return themeProvider.isGamified
-                          ? Center(
-                              child: SpinningClaimXPWidget(
-                                onPressed: _claimXP,
-                                claimed: _xpClaimed,
-                              ),
-                            )
-                          : _buildXPCard();
-                    },
-                  ),
+                        _buildXPCard(),
                         SizedBox(height: 32),
                         _buildActionButtons(),
                       ],
@@ -169,18 +148,16 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
               animation: _confettiController,
               builder: (context, child) {
                 return _confettiController.isAnimating
-                    ? Lottie.asset(
-                        'assets/animations/Confetti - Animation.json',
+                    ? Container(
                         width: 300,
                         height: 300,
-                        repeat: false,
+                        child: themeProvider.buildLottieAnimation(),
                       )
                     : SizedBox.shrink();
               },
             ),
           ),
         ],
-      ),
       ),
     );
   }
@@ -246,14 +223,13 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   Widget _buildPerformanceCard() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     Color cardColor = _performanceLevel == 'Excellent' ? Colors.green : Colors.orange;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -272,7 +248,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 8),
@@ -289,7 +265,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             '$_performancePercentage%',
             style: TextStyle(
               fontSize: 14,
-              color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
         ],
@@ -298,13 +274,12 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   Widget _buildSpeedCard() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -316,14 +291,14 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
       ),
       child: Column(
         children: [
-          Icon(Icons.timer, size: 40, color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB))),
+          Icon(Icons.timer, size: 40, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
           SizedBox(height: 12),
           Text(
             'Speed',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 8),
@@ -332,7 +307,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
+              color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
             ),
           ),
           SizedBox(height: 4),
@@ -340,7 +315,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             'minutes',
             style: TextStyle(
               fontSize: 14,
-              color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
             ),
           ),
         ],
@@ -349,13 +324,12 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   Widget _buildAccuracyCard() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -378,7 +352,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+                    color: isDarkMode ? Colors.white : Colors.black87,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -387,7 +361,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
                     Expanded(
                       child: LinearProgressIndicator(
                         value: _performancePercentage / 100,
-                        backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
+                        backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.purple),
                         minHeight: 8,
                       ),
@@ -451,38 +425,17 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
             ),
           ),
           SizedBox(height: 16),
-          Consumer<ThemeProvider>(
-            builder: (context, themeProvider, child) {
-              return themeProvider.isGamified
-                  ? Column(
-                      children: [
-                        SpinningClaimXPWidget(
-                          onPressed: _claimXP,
-                          claimed: _xpClaimed,
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          _xpClaimed ? 'XP Claimed!' : 'Claim 100 XP',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    )
-                  : ElevatedButton(
-                      onPressed: _xpClaimed ? null : _claimXP,
-                      child: Text(_xpClaimed ? 'XP Claimed!' : 'Claim XP'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _xpClaimed ? Colors.grey : Colors.white,
-                        foregroundColor: _xpClaimed ? Colors.white : Colors.orange,
-                        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                      ),
-                    );
-            },
+          ElevatedButton(
+            onPressed: _xpClaimed ? null : _claimXP,
+            child: Text(_xpClaimed ? 'XP Claimed!' : 'Claim XP'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _xpClaimed ? Colors.grey : Colors.white,
+              foregroundColor: _xpClaimed ? Colors.white : Colors.orange,
+              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+            ),
           ),
         ],
       ),
@@ -490,8 +443,7 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   Widget _buildActionButtons() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     bool isLastUnit = widget.unitIndex == widget.totalUnitsInSection - 1;
     
     return Row(
@@ -529,21 +481,15 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
   }
 
   void _claimXP() {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    
-    int xpToAdd = themeProvider.isGamified ? 100 : _xpEarned;
-    
     setState(() {
       _xpClaimed = true;
     });
     
-    if (themeProvider.isGamified) {
-      _confettiController.forward().then((_) => _confettiController.reset());
-    }
+    _confettiController.forward().then((_) => _confettiController.reset());
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('🎉 $xpToAdd XP claimed!'),
+        content: Text('🎉 $_xpEarned XP claimed!'),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
         duration: Duration(seconds: 3),

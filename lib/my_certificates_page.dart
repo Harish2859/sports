@@ -51,18 +51,7 @@ class MyCertificatesPage extends StatelessWidget {
           Navigator.pop(context);
         }
       },
-      child: Container(
-        decoration: themeProvider.isGamified
-            ? const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                ),
-              )
-            : null,
-        child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
+      child: Scaffold(
           body: allCertificates.isEmpty
           ? Center(
               child: Text(
@@ -126,7 +115,6 @@ class MyCertificatesPage extends StatelessWidget {
               },
             ),
           ),
-        ),
-      );
+        );
   }
 }

@@ -14,7 +14,7 @@ import 'unit_details.dart';
 import 'course_data_manager.dart';
 import 'app_state.dart';
 import 'theme_provider.dart';
-import 'gamified_icons.dart';
+
 import 'course_models.dart';
 
 class GotoCoursePage extends StatefulWidget {
@@ -341,7 +341,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    final isGamified = themeProvider.isGamified;
+
 
     return MainLayout(
       currentIndex: 3, // Course tab
@@ -352,7 +352,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       },
       child: Scaffold(
         backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-        appBar: isGamified ? null : AppBar(
+        appBar: false ? null : AppBar(
           title: Text(
             '${widget.courseName} Training',
             style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
@@ -369,7 +369,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         body: Stack(
           children: [
             // Show either gamified view or regular view with section bar
-            isGamified 
+            false 
               ? _buildGamifiedCourseView()
               : Column(
                   children: [
@@ -379,7 +379,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                     ),
                   ],
                 ),
-            if (showSectionOverlay && !isGamified) _buildSectionOverlay(),
+            if (showSectionOverlay && !false) _buildSectionOverlay(),
           ],
         ),
       ),
@@ -831,14 +831,14 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       
       Widget icon;
       if (isCompleted) {
-        icon = BreathingStarIcon(
-          size: 80,
+        icon = GestureDetector(
           onTap: () => _selectSection(i),
+          child: Icon(Icons.star, size: 80, color: Colors.yellow),
         );
       } else if (isUnlocked) {
-        icon = FloatingTreasureIcon(
-          size: 80,
+        icon = GestureDetector(
           onTap: () => _selectSection(i),
+          child: Icon(Icons.emoji_events, size: 80, color: Colors.blue),
         );
       } else {
         icon = ColorFiltered(
@@ -848,9 +848,9 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
             0.2126, 0.7152, 0.0722, 0, 0,
             0, 0, 0, 1, 0,
           ]),
-          child: FloatingTreasureIcon(
-            size: 80,
+          child: GestureDetector(
             onTap: () => _selectSection(i),
+            child: Icon(Icons.emoji_events, size: 80, color: Colors.grey),
           ),
         );
       }
@@ -932,15 +932,15 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     Widget icon;
     if (dynamicStatus == UnitStatus.completed) {
       // Use star for completed units
-      icon = BreathingStarIcon(
-        size: 60,
+      icon = GestureDetector(
         onTap: () => _openUnit(unit, index),
+        child: Icon(Icons.star, size: 60, color: Colors.yellow),
       );
     } else if (isUnlocked) {
       // Use colorful treasure for unlocked incomplete units
-      icon = FloatingTreasureIcon(
-        size: 60,
+      icon = GestureDetector(
         onTap: () => _openUnit(unit, index),
+        child: Icon(Icons.emoji_events, size: 60, color: Colors.blue),
       );
     } else {
       // Use black and white treasure for locked units
@@ -951,10 +951,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
           0.2126, 0.7152, 0.0722, 0, 0,
           0, 0, 0, 1, 0,
         ]),
-        child: FloatingTreasureIcon(
-          size: 60,
-          onTap: null, // Locked units are not tappable
-        ),
+        child: Icon(Icons.emoji_events, size: 60, color: Colors.grey),
       );
     }
     
@@ -1394,7 +1391,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         
         // In gamified mode, move to next section when "Go to Next Section" is clicked
         final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-        if (themeProvider.isGamified) {
+        if (false) {
           // For gamified mode, move to next section and show it's unlocked
           _moveToNextSection();
         } else {

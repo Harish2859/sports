@@ -22,17 +22,9 @@ class FavoritesPage extends StatelessWidget {
         }
       },
       child: Container(
-        decoration: themeProvider.isGamified
-            ? const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                ),
-              )
-            : null,
+        decoration: null,
         child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : null,
+          backgroundColor: null,
         body: appState.favoriteCourses.isEmpty
             ? Center(
                 child: Column(
@@ -59,7 +51,7 @@ class FavoritesPage extends StatelessWidget {
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+                      color: Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
@@ -90,13 +82,13 @@ class FavoritesPage extends StatelessWidget {
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                                  color: Theme.of(context).textTheme.bodyLarge?.color,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 course.instructor,
-                                style: TextStyle(color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color),
+                                style: TextStyle(color: Theme.of(context).textTheme.bodyMedium?.color),
                               ),
                             ],
                           ),

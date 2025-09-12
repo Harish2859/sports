@@ -57,18 +57,15 @@ class _PostUploadPageState extends State<PostUploadPage> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    final isGamified = themeProvider.isGamified;
 
     return Scaffold(
-      backgroundColor: isGamified
-          ? Colors.black
-          : (isDarkMode ? Colors.grey[900] : Colors.white),
+      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
       appBar: AppBar(
-        backgroundColor: isGamified ? Colors.black : null,
+        backgroundColor: null,
         title: Text(
           'New Post',
           style: TextStyle(
-            color: isGamified ? Colors.white : null,
+            color: null,
           ),
         ),
         actions: [
@@ -77,7 +74,7 @@ class _PostUploadPageState extends State<PostUploadPage> {
             child: Text(
               _isPosting ? 'Posting...' : 'Post',
               style: TextStyle(
-                color: isGamified ? Colors.blue[300] : Colors.blue,
+                color: Colors.blue,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -95,12 +92,10 @@ class _PostUploadPageState extends State<PostUploadPage> {
                 height: 300,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: isGamified
-                      ? Colors.grey[800]
-                      : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
+                  color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(
-                    color: isGamified ? Colors.white.withOpacity(0.3) : Colors.grey,
+                    color: Colors.grey,
                     width: 2,
                   ),
                 ),
@@ -118,13 +113,13 @@ class _PostUploadPageState extends State<PostUploadPage> {
                           Icon(
                             Icons.add_photo_alternate,
                             size: 64,
-                            color: isGamified ? Colors.white.withOpacity(0.6) : Colors.grey,
+                            color: Colors.grey,
                           ),
                           const SizedBox(height: 16),
                           Text(
                             'Tap to select image',
                             style: TextStyle(
-                              color: isGamified ? Colors.white.withOpacity(0.6) : Colors.grey,
+                              color: Colors.grey,
                             ),
                           ),
                         ],
@@ -142,12 +137,10 @@ class _PostUploadPageState extends State<PostUploadPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 filled: true,
-                fillColor: isGamified
-                    ? Colors.grey[800]
-                    : (isDarkMode ? Colors.grey[700] : Colors.white),
+                fillColor: isDarkMode ? Colors.grey[700] : Colors.white,
               ),
               style: TextStyle(
-                color: isGamified ? Colors.white : null,
+                color: null,
               ),
             ),
           ],

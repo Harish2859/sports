@@ -355,52 +355,7 @@ class _AdminDashboardState extends State<AdminDashboard> with TickerProviderStat
                         );
                       },
                     ),
-                    // Gamified Theme Button
-                    AnimatedBuilder(
-                      animation: _themeController,
-                      builder: (context, child) {
-                        final expandValue = (_themeExpandAnimation?.value ?? 0).clamp(0.0, 1.0);
-                        final offset = Offset(
-                          80 * expandValue * math.cos(-math.pi / 6),
-                          80 * expandValue * math.sin(-math.pi / 6) - 20 * (_floatingAnimation?.value ?? 0),
-                        );
-                        return Transform.translate(
-                          offset: offset,
-                          child: Transform.scale(
-                            scale: expandValue,
-                            child: Opacity(
-                              opacity: expandValue,
-                              child: GestureDetector(
-                                onTap: () {
-                                  Provider.of<ThemeProvider>(context, listen: false).setGamifiedTheme();
-                                  _toggleThemeMenu();
-                                },
-                                child: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.green,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.games,
-                                    color: Colors.white,
-                                    size: 25,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+
                   ],
                 ),
               ),

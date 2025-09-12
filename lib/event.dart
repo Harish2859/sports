@@ -219,17 +219,9 @@ class _SportsEventPageState extends State<SportsEventPage>
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Container(
-      decoration: themeProvider.isGamified
-          ? const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF1a237e), Color(0xFF000000)],
-              ),
-            )
-          : null,
+      decoration: null,
       child: Scaffold(
-        backgroundColor: themeProvider.isGamified ? Colors.transparent : Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: SafeArea(
           child: Column(
             children: [
@@ -254,7 +246,7 @@ class _SportsEventPageState extends State<SportsEventPage>
       height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Colors.grey[100],
+        color: Colors.grey[100],
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(16),
           bottomRight: Radius.circular(16),
@@ -265,13 +257,13 @@ class _SportsEventPageState extends State<SportsEventPage>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : Colors.grey[300],
+              color: Colors.grey[300],
               borderRadius: BorderRadius.circular(8),
             ),
             child: DropdownButton<String>(
               value: _selectedSport,
               underline: const SizedBox(),
-              dropdownColor: themeProvider.isGamified ? Colors.black87 : Colors.white,
+              dropdownColor: Colors.white,
               items: ['All Sports', 'Swimming', 'Running', 'Basketball', 'Tennis', 'Football']
                   .map((sport) => DropdownMenuItem(
                         value: sport,
@@ -280,7 +272,7 @@ class _SportsEventPageState extends State<SportsEventPage>
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
-                            color: themeProvider.isGamified ? Colors.white : Colors.black87,
+                            color: Colors.black87,
                           ),
                         ),
                       ))
@@ -306,14 +298,14 @@ class _SportsEventPageState extends State<SportsEventPage>
           Icon(
             Icons.event_busy,
             size: 80,
-            color: themeProvider.isGamified ? Colors.white30 : Colors.grey[400],
+            color: Colors.grey[400],
           ),
           const SizedBox(height: 16),
           Text(
             'No events available',
             style: TextStyle(
               fontSize: 18,
-              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
         ],
@@ -435,7 +427,7 @@ class _SportsEventPageState extends State<SportsEventPage>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : Colors.grey[300],
+            color: Colors.grey[300],
             borderRadius: BorderRadius.circular(20),
           ),
           child: Text(
@@ -443,7 +435,7 @@ class _SportsEventPageState extends State<SportsEventPage>
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
-              color: themeProvider.isGamified ? Colors.white : Colors.black87,
+              color: Colors.black87,
             ),
           ),
         ),
@@ -451,31 +443,31 @@ class _SportsEventPageState extends State<SportsEventPage>
         // Event Title
         SizedBox(
           width: double.infinity,
-          child: Text(
-            event.title,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : Colors.black87,
-            ),
-            softWrap: true,
-            overflow: TextOverflow.visible,
+        child: Text(
+          event.title,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
           ),
+          softWrap: true,
+          overflow: TextOverflow.visible,
+        ),
         ),
         const SizedBox(height: 12),
         // Event Description
         SizedBox(
           width: double.infinity,
-          child: Text(
-            event.description,
-            style: TextStyle(
-              fontSize: 14,
-              color: themeProvider.isGamified ? Colors.white70 : Colors.black54,
-              height: 1.5,
-            ),
-            softWrap: true,
-            overflow: TextOverflow.visible,
+        child: Text(
+          event.description,
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.black54,
+            height: 1.5,
           ),
+          softWrap: true,
+          overflow: TextOverflow.visible,
+        ),
         ),
       ],
     );
@@ -491,7 +483,7 @@ class _SportsEventPageState extends State<SportsEventPage>
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: themeProvider.isGamified ? Colors.white : Colors.black87,
+            color: Colors.black87,
           ),
         ),
         const SizedBox(height: 16),
@@ -510,7 +502,7 @@ class _SportsEventPageState extends State<SportsEventPage>
         Icon(
           icon,
           size: 16,
-          color: themeProvider.isGamified ? Colors.white70 : Colors.black54,
+          color: Colors.black54,
         ),
         const SizedBox(width: 8),
         Text(
@@ -518,7 +510,7 @@ class _SportsEventPageState extends State<SportsEventPage>
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: themeProvider.isGamified ? Colors.white70 : Colors.black54,
+            color: Colors.black54,
           ),
         ),
         Expanded(
@@ -526,7 +518,7 @@ class _SportsEventPageState extends State<SportsEventPage>
             value,
             style: TextStyle(
               fontSize: 12,
-              color: themeProvider.isGamified ? Colors.white : Colors.black87,
+              color: Colors.black87,
             ),
           ),
         ),
@@ -633,8 +625,8 @@ class _SportsEventPageState extends State<SportsEventPage>
             width: 8,
             decoration: BoxDecoration(
               color: _currentPage == index
-                  ? (themeProvider.isGamified ? Colors.white : Colors.black)
-                  : (themeProvider.isGamified ? Colors.white30 : Colors.grey),
+                  ? Colors.black
+                  : Colors.grey,
               shape: BoxShape.circle,
             ),
           );

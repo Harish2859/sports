@@ -122,14 +122,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
     List<Map<String, dynamic>> topThreeFiltered;
 
     if (activeTab == 'league') {
-      // Filter users to show only those in the same league as current user
       final currentUser = users.firstWhere((user) => user['isCurrentUser']);
       final currentUserLeague = _getLeague(currentUser['totalXP']);
       filteredUsers = users.where((user) => _getLeague(user['totalXP']) == currentUserLeague).toList()
         ..sort((a, b) => b['totalXP'].compareTo(a['totalXP']));
       topThreeFiltered = filteredUsers.take(3).toList();
     } else {
-      // Global tab - show all users
       filteredUsers = List.from(users)..sort((a, b) => b['totalXP'].compareTo(a['totalXP']));
       topThreeFiltered = filteredUsers.take(3).toList();
     }
@@ -137,22 +135,11 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
     return MainLayout(
       currentIndex: -1,
       onTabChanged: (index) {},
-      child: Container(
-        decoration: themeProvider.isGamified
-            ? const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                ),
-              )
-            : null,
-        child: Scaffold(
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : theme.scaffoldBackgroundColor,
-          body: SingleChildScrollView(
+      child: Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: SingleChildScrollView(
           child: Column(
             children: [
-              // Header with tabs
               Container(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -162,7 +149,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                       'Sports Champions Leaderboard',
                       style: theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: themeProvider.isGamified ? Colors.white : null,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -184,7 +170,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
               const SizedBox(height: 24),
 
               if (activeTab == 'league') ...[
-                // League Status Card
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
                   padding: const EdgeInsets.all(20),
@@ -241,66 +226,13 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
 
                 const SizedBox(height: 24),
 
-                // Progress Section
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Progress to ${_getNextLeague(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP']))}',
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: theme.dividerColor),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('${_getLeagueMinXP(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP']))} XP',
-                                  style: theme.textTheme.bodySmall),
-                                Text('${_getNextLeagueXP(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP']))} XP',
-                                  style: theme.textTheme.bodySmall),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            LinearProgressIndicator(
-                              value: 0.75,
-                              backgroundColor: theme.dividerColor,
-                              valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
-                              minHeight: 8,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '${_getNextLeagueXP(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP'])) - users.firstWhere((user) => user['isCurrentUser'])['totalXP']} XP needed to reach ${_getNextLeague(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP']))} League',
-                              style: theme.textTheme.bodyMedium,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // League Rankings
                 Container(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
                       Text(
                         'League Rankings',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: themeProvider.isGamified ? Colors.white : null,
-                        ),
+                        style: theme.textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 16),
                       ...filteredUsers.asMap().entries.map((entry) {
@@ -315,16 +247,13 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                   ),
                 ),
               ] else ...[
-                // Champions Podium
                 Container(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
                       Text(
                         '🏆 Champions Podium 🏆',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: themeProvider.isGamified ? Colors.white : null,
-                        ),
+                        style: theme.textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 24),
                       SingleChildScrollView(
@@ -347,16 +276,13 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
 
                 const SizedBox(height: 24),
 
-                // Leaderboard List
                 Container(
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
                       Text(
                         'Full Rankings',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: themeProvider.isGamified ? Colors.white : null,
-                        ),
+                        style: theme.textTheme.headlineSmall,
                       ),
                       const SizedBox(height: 16),
                       ...filteredUsers.asMap().entries.map((entry) {
@@ -374,7 +300,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
             ],
           ),
         ),
-      ),
       ),
     );
   }
@@ -522,14 +447,11 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
     final leagueInfo = _getLeagueInfo(league);
     final isCurrentUser = user['isCurrentUser'] ?? false;
 
-    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 2),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified 
-            ? (isCurrentUser ? Colors.white.withOpacity(0.2) : Colors.white.withOpacity(0.1))
-            : (isCurrentUser ? theme.primaryColor.withOpacity(0.1) : theme.colorScheme.surface),
+        color: isCurrentUser ? theme.primaryColor.withOpacity(0.1) : theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isCurrentUser
@@ -547,7 +469,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
       ),
       child: Row(
         children: [
-          // Rank Display
           Container(
             width: 36,
             height: 36,
@@ -586,7 +507,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
 
           const SizedBox(width: 12),
 
-          // Avatar
           AnimatedBuilder(
             animation: _scaleAnimation,
             builder: (context, child) {
@@ -614,7 +534,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
 
           const SizedBox(width: 12),
 
-          // User Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,7 +545,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                         user['username'],
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: themeProvider.isGamified ? Colors.white : null,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -674,9 +592,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                           const SizedBox(width: 4),
                           Text(
                             league,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: themeProvider.isGamified ? Colors.white70 : null,
-                            ),
+                            style: theme.textTheme.bodySmall,
                           ),
                         ],
                       ),
@@ -692,9 +608,7 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
                         const SizedBox(width: 4),
                         Text(
                           '${user['totalXP']} XP',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: themeProvider.isGamified ? Colors.white : null,
-                          ),
+                          style: theme.textTheme.bodyMedium,
                         ),
                       ],
                     ),
@@ -707,8 +621,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
       ),
     );
   }
-
-
 
   String _getLeague(int xp) {
     if (xp >= 5000) return 'Legend';
@@ -754,145 +666,6 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
     }
   }
 
-  void _showMyLeagueDetails() {
-    final currentUser = users.firstWhere((user) => user['isCurrentUser']);
-    final league = _getLeague(currentUser['totalXP']);
-    final leagueInfo = _getLeagueInfo(league);
-    final nextLeagueXP = _getNextLeagueXP(league);
-    final currentXP = currentUser['totalXP'];
-    final leagueUsers = users.where((u) => _getLeague(u['totalXP']) == league).length;
-    final userRankInLeague = users.where((u) => _getLeague(u['totalXP']) == league && u['totalXP'] > currentXP).length + 1;
-    
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.9,
-            maxHeight: MediaQuery.of(context).size.height * 0.8,
-          ),
-          child: Container(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: leagueInfo['colors'] as List<Color>),
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Icon(leagueInfo['icon'] as IconData, color: Colors.white, size: 40),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$league League',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          _getLeagueDescription(league),
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Current Stats
-                        _buildInfoCard(
-                          'Your Stats',
-                          Icons.person,
-                          [
-                            _buildStatRow('Current XP', '$currentXP', Icons.flash_on, Colors.orange),
-                            _buildStatRow('League Rank', '#$userRankInLeague', Icons.emoji_events, (leagueInfo['colors'] as List<Color>)[0]),
-                            _buildStatRow('League Members', '$leagueUsers players', Icons.people, Colors.blue),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // League Benefits
-                        _buildInfoCard(
-                          'League Benefits',
-                          Icons.card_giftcard,
-                          _getLeagueBenefits(league).map((benefit) => 
-                            _buildBenefitRow(benefit['title'] as String, benefit['description'] as String, benefit['icon'] as IconData)
-                          ).toList(),
-                        ),
-                        
-                        const SizedBox(height: 16),
-                        
-                        // Progress to Next League
-                        if (nextLeagueXP > 0) ...[
-                          _buildProgressCard(league, currentXP, nextLeagueXP, leagueInfo),
-                          const SizedBox(height: 16),
-                        ],
-                        
-                        // League Requirements
-                        _buildInfoCard(
-                          'League Requirements',
-                          Icons.rule,
-                          [
-                            _buildStatRow('Minimum XP', '${_getLeagueMinXP(league)}', Icons.flash_on, Colors.green),
-                            _buildStatRow('Weekly Activity', '3+ workouts', Icons.fitness_center, Colors.purple),
-                            _buildStatRow('Skill Level', _getSkillLevel(league), Icons.star, Colors.amber),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-
-
-  int _getNextLeagueXP(String currentLeague) {
-    switch (currentLeague) {
-      case 'Rookie': return 500;
-      case 'Silver': return 1000;
-      case 'Gold': return 2000;
-      case 'Diamond': return 3000;
-      case 'Champion': return 5000;
-      default: return 0;
-    }
-  }
-  
-  int _getLeagueMinXP(String league) {
-    switch (league) {
-      case 'Rookie': return 0;
-      case 'Silver': return 500;
-      case 'Gold': return 1000;
-      case 'Diamond': return 2000;
-      case 'Champion': return 3000;
-      case 'Legend': return 5000;
-      default: return 0;
-    }
-  }
-  
   String _getLeagueDescription(String league) {
     switch (league) {
       case 'Rookie': return 'Starting your fitness journey';
@@ -904,226 +677,12 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
       default: return 'Keep pushing forward!';
     }
   }
-  
-  String _getSkillLevel(String league) {
-    switch (league) {
-      case 'Rookie': return 'Beginner';
-      case 'Silver': return 'Intermediate';
-      case 'Gold': return 'Advanced';
-      case 'Diamond': return 'Expert';
-      case 'Champion': return 'Master';
-      case 'Legend': return 'Legendary';
-      default: return 'Beginner';
-    }
-  }
-  
-  List<Map<String, dynamic>> _getLeagueBenefits(String league) {
-    switch (league) {
-      case 'Rookie':
-        return [
-          {'title': 'Welcome Bonus', 'description': '+50 XP for first workout', 'icon': Icons.celebration},
-          {'title': 'Basic Tracking', 'description': 'Track your progress', 'icon': Icons.analytics},
-        ];
-      case 'Silver':
-        return [
-          {'title': 'Workout Streaks', 'description': '+10% XP bonus for 3+ day streaks', 'icon': Icons.local_fire_department},
-          {'title': 'Custom Plans', 'description': 'Access to personalized workouts', 'icon': Icons.fitness_center},
-        ];
-      case 'Gold':
-        return [
-          {'title': 'Premium Features', 'description': 'Advanced analytics & insights', 'icon': Icons.insights},
-          {'title': 'Community Access', 'description': 'Join exclusive groups', 'icon': Icons.group},
-          {'title': 'Nutrition Guide', 'description': 'Meal planning assistance', 'icon': Icons.restaurant},
-        ];
-      case 'Diamond':
-        return [
-          {'title': 'Personal Coach', 'description': 'AI-powered coaching tips', 'icon': Icons.psychology},
-          {'title': 'Priority Support', 'description': '24/7 premium support', 'icon': Icons.support_agent},
-          {'title': 'Equipment Discounts', 'description': '15% off partner stores', 'icon': Icons.discount},
-        ];
-      case 'Champion':
-        return [
-          {'title': 'VIP Status', 'description': 'Exclusive events & challenges', 'icon': Icons.star},
-          {'title': 'Mentor Program', 'description': 'Help guide other athletes', 'icon': Icons.school},
-          {'title': 'Gear Rewards', 'description': 'Free premium equipment', 'icon': Icons.card_giftcard},
-        ];
-      case 'Legend':
-        return [
-          {'title': 'Hall of Fame', 'description': 'Permanent recognition', 'icon': Icons.emoji_events},
-          {'title': 'Beta Access', 'description': 'First access to new features', 'icon': Icons.new_releases},
-          {'title': 'Ambassador Program', 'description': 'Represent our community', 'icon': Icons.campaign},
-        ];
-      default:
-        return [];
-    }
-  }
-  
-  Widget _buildInfoCard(String title, IconData icon, List<Widget> children) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.dividerColor.withOpacity(0.5),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: theme.dividerColor),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, size: 20, color: theme.textTheme.bodyLarge?.color),
-              const SizedBox(width: 8),
-              Text(
-                title,
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ...children,
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildStatRow(String label, String value, IconData icon, Color color) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: color),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: theme.textTheme.bodyMedium,
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildBenefitRow(String title, String description, IconData icon) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: theme.primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(icon, size: 16, color: theme.primaryColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  description,
-                  style: theme.textTheme.bodySmall,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildProgressCard(String league, int currentXP, int nextLeagueXP, Map<String, dynamic> leagueInfo) {
-    final theme = Theme.of(context);
-    final nextLeague = _getNextLeague(league);
-    final progress = (currentXP - _getLeagueMinXP(league)) / (nextLeagueXP - _getLeagueMinXP(league));
-    final xpNeeded = nextLeagueXP - currentXP;
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            (leagueInfo['colors'] as List<Color>)[0].withOpacity(0.1),
-            (leagueInfo['colors'] as List<Color>)[1].withOpacity(0.1)
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: (leagueInfo['colors'] as List<Color>)[0].withOpacity(0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.trending_up, color: (leagueInfo['colors'] as List<Color>)[0]),
-              const SizedBox(width: 8),
-              Text(
-                'Progress to $nextLeague',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${_getLeagueMinXP(league)} XP',
-                style: theme.textTheme.bodySmall,
-              ),
-              Text(
-                '$nextLeagueXP XP',
-                style: theme.textTheme.bodySmall,
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          LinearProgressIndicator(
-            value: progress,
-            backgroundColor: theme.dividerColor,
-            valueColor: AlwaysStoppedAnimation<Color>((leagueInfo['colors'] as List<Color>)[0]),
-            minHeight: 8,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '$xpNeeded XP needed to reach $nextLeague League',
-            style: theme.textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-  
-  String _getNextLeague(String currentLeague) {
-    switch (currentLeague) {
-      case 'Rookie': return 'Silver';
-      case 'Silver': return 'Gold';
-      case 'Gold': return 'Diamond';
-      case 'Diamond': return 'Champion';
-      case 'Champion': return 'Legend';
-      default: return 'Max Level';
-    }
-  }
 
   Color _getRankColor(int rank) {
     switch (rank) {
-      case 1: return const Color(0xFFFFD700); // Gold
-      case 2: return const Color(0xFFC0C0C0); // Silver
-      case 3: return const Color(0xFFCD7F32); // Bronze
+      case 1: return const Color(0xFFFFD700);
+      case 2: return const Color(0xFFC0C0C0);
+      case 3: return const Color(0xFFCD7F32);
       default: return Colors.transparent;
     }
   }

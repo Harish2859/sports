@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:lottie/lottie.dart';
 import 'performance_summary.dart';
 import 'theme_provider.dart';
+import 'app_state.dart';
 
 class AnalysisResultsPage extends StatefulWidget {
   final String unitName;
@@ -80,48 +81,38 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final appState = Provider.of<AppState>(context);
 
-    return Container(
-      decoration: themeProvider.isGamified
-          ? const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF1a237e), Color(0xFF000000)],
-              ),
-            )
-          : null,
-      child: Scaffold(
-        backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE)),
-        appBar: AppBar(
-          title: Text('AI Analysis', style: TextStyle(color: Colors.white)),
-          backgroundColor: themeProvider.isGamified ? Colors.transparent : (isDarkMode ? Colors.grey[800] : Color(0xFF2563EB)),
-          flexibleSpace: themeProvider.isGamified
-              ? Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                    ),
-                  ),
-                )
-              : null,
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: Icon(
-                isDarkMode ? Icons.light_mode : Icons.dark_mode,
-                color: Colors.white,
-              ),
-              onPressed: () {
-                Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-              },
+    return Scaffold(
+      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            Expanded(child: Text('AI Analysis', style: TextStyle(color: Colors.white))),
+            themeProvider.buildXPBadge(appState.totalXP),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 30,
+              height: 30,
+              child: themeProvider.buildLottieAnimation(),
             ),
           ],
         ),
-        body: _showResults ? _buildResults() : _buildAnalysisAnimation(),
+        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
+        elevation: 0,
+        actions: [
+          IconButton(
+            icon: Icon(
+              isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+            },
+          ),
+        ],
       ),
+      body: _showResults ? _buildResults() : _buildAnalysisAnimation(),
     );
   }
 
@@ -138,36 +129,11 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             builder: (context, child) {
               return Transform.scale(
                 scale: _scaleAnimation.value,
-                child: themeProvider.isGamified
-                    ? Lottie.asset(
-                        'assets/animations/Ai-powered marketing tools abstract.json',
-                        width: 200,
-                        height: 200,
-                        repeat: true,
-                        animate: true,
-                      )
-                    : Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)).withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CircularProgressIndicator(
-                              strokeWidth: 6,
-                              color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
-                            ),
-                            Icon(
-                              Icons.psychology,
-                              size: 40,
-                              color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
-                            ),
-                          ],
-                        ),
-                      ),
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  child: themeProvider.buildLottieAnimation(),
+                ),
               );
             },
           ),
@@ -177,7 +143,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -186,7 +152,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 16,
-              color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[400] : Colors.grey[600]),
+              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               height: 1.5,
             ),
           ),
@@ -276,14 +242,13 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildScoreCard() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     int score = widget.hasMalpractice ? 65 : 92;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -304,7 +269,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+                    color: isDarkMode ? Colors.white : Colors.black87,
                   ),
                 ),
                 SizedBox(height: 8),
@@ -325,7 +290,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             child: CircularProgressIndicator(
               value: score / 100,
               strokeWidth: 8,
-              backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
+              backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
               valueColor: AlwaysStoppedAnimation<Color>(
                 widget.hasMalpractice ? Colors.red : Colors.green,
               ),
@@ -337,13 +302,12 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildDetailedAnalysis() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -361,7 +325,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -369,7 +333,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             widget.analysisResult,
             style: TextStyle(
               fontSize: 16,
-              color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[300] : Colors.grey[700]),
+              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
               height: 1.5,
             ),
           ),
@@ -381,8 +345,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildAnalysisMetrics() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     List<Map<String, dynamic>> metrics = widget.hasMalpractice
         ? [
@@ -406,14 +369,14 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(metric['label'], style: TextStyle(fontWeight: FontWeight.w600, color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87))),
-                  Text('${(metric['value'] * 100).toInt()}%', style: TextStyle(color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87))),
+                  Text(metric['label'], style: TextStyle(fontWeight: FontWeight.w600, color: isDarkMode ? Colors.white : Colors.black87)),
+                  Text('${(metric['value'] * 100).toInt()}%', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
                 ],
               ),
               SizedBox(height: 4),
               LinearProgressIndicator(
                 value: metric['value'],
-                backgroundColor: themeProvider.isGamified ? Colors.white.withOpacity(0.2) : (isDarkMode ? Colors.grey[700] : Colors.grey[200]),
+                backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
                 valueColor: AlwaysStoppedAnimation<Color>(metric['color']),
               ),
             ],
@@ -424,8 +387,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildRecommendations() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     List<String> recommendations = widget.hasMalpractice
         ? [
@@ -442,7 +404,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : (isDarkMode ? Colors.grey[800] : Colors.white),
+        color: isDarkMode ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -460,7 +422,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+              color: isDarkMode ? Colors.white : Colors.black87,
             ),
           ),
           SizedBox(height: 16),
@@ -471,7 +433,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                   children: [
                     Icon(
                       Icons.lightbulb_outline,
-                      color: themeProvider.isGamified ? Colors.white : (isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB)),
+                      color: isDarkMode ? Colors.blue[300]! : Color(0xFF2563EB),
                       size: 20,
                     ),
                     SizedBox(width: 12),
@@ -480,7 +442,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
                         rec,
                         style: TextStyle(
                           fontSize: 16,
-                          color: themeProvider.isGamified ? Colors.white70 : (isDarkMode ? Colors.grey[300] : Colors.grey[700]),
+                          color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
                         ),
                       ),
                     ),
@@ -493,8 +455,7 @@ class _AnalysisResultsPageState extends State<AnalysisResultsPage>
   }
 
   Widget _buildNavigationButtons() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Row(
       children: [

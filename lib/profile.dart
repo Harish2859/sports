@@ -27,9 +27,7 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
-  late AnimationController _breathingController;
   late Animation<double> _fadeAnimation;
-  late Animation<double> _breathingAnimation;
   final AppState _appState = AppState.instance;
   final PostManager _postManager = PostManager();
   final PerformanceVideosManager _videosManager = PerformanceVideosManager();
@@ -46,7 +44,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   void dispose() {
     _appState.removeListener(_onAppStateChanged);
     _animationController.dispose();
-    _breathingController.dispose();
     super.dispose();
   }
 
@@ -60,14 +57,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
-    
-    _breathingController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    )..repeat(reverse: true);
-    _breathingAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
-      CurvedAnimation(parent: _breathingController, curve: Curves.easeInOut),
-    );
   }
 
   void _onAppStateChanged() {
@@ -83,7 +72,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     return Container(
       decoration: _buildBackgroundDecoration(themeProvider),
       child: Scaffold(
-        backgroundColor: themeProvider.isGamified ? Colors.transparent : Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         body: FadeTransition(
           opacity: _fadeAnimation,
           child: SingleChildScrollView(
@@ -97,20 +86,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   // UI Building Methods
   BoxDecoration? _buildBackgroundDecoration(ThemeProvider themeProvider) {
-    return themeProvider.isGamified
-        ? const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF1a237e), Color(0xFF000000)],
-            ),
-          )
-        : null;
+    return null;
   }
 
   Widget _buildProfileContent(bool isDarkMode) {
     final themeProvider = Provider.of<ThemeProvider>(context);
-    final isGamified = themeProvider.isGamified;
 
     return DefaultTabController(
       length: 2,
@@ -120,8 +100,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           const SizedBox(height: 20),
           _buildStatsCards(isDarkMode),
           const SizedBox(height: 20),
-          _buildXPCard(),
-          const SizedBox(height: 20),
           _buildActionButtons(isDarkMode),
           const SizedBox(height: 20),
           TabBar(
@@ -130,7 +108,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 child: Text(
                   'Posts',
                   style: TextStyle(
-                    color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
               ),
@@ -138,7 +116,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 child: Text(
                   'Performance',
                   style: TextStyle(
-                    color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
               ),
@@ -176,7 +154,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Profile Picture with Badge Overlay
+          // Profile Picture
           Stack(
             children: [
               CircleAvatar(
@@ -188,30 +166,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 child: _appState.profileImagePath == null
                     ? Icon(Icons.person, size: 50, color: Colors.blue[800])
                     : null,
-              ),
-              // Animated Badge at top right
-              Positioned(
-                top: 0,
-                right: 0,
-                child: AnimatedBuilder(
-                  animation: _breathingAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _breathingAnimation.value,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        child: Image.asset(
-                          'assets/images/champ.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(Icons.emoji_events, color: Colors.amber, size: 30);
-                          },
-                        ),
-                      ),
-                    );
-                  },
-                ),
               ),
               // Edit button at bottom right
               Positioned(
@@ -244,20 +198,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _appState.userName,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-                Text(
-                  '@alex_sports_pro',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _appState.userName,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                    ),
+                    Text(
+                      '@alex_sports_pro',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Container(
@@ -330,180 +289,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildXPCard() {
-    final int totalXP = _appState.totalXP;
-    final String currentLeague = _getLeague(totalXP);
-    final Map<String, dynamic> leagueInfo = _getLeagueInfo(currentLeague);
-    final int nextLeagueXP = _getNextLeagueXP(currentLeague);
-    final int currentLeagueMinXP = _getLeagueMinXP(currentLeague);
-    final double progress = nextLeagueXP > 0 ? (totalXP - currentLeagueMinXP) / (nextLeagueXP - currentLeagueMinXP) : 1.0;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: leagueInfo['colors'],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: leagueInfo['colors'][0].withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.flash_on, color: Colors.white, size: 32),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      'XP',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'Total Experience Points',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(leagueInfo['icon'], color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      currentLeague,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          if (nextLeagueXP > 0)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                const Text(
-                  'Progress to next league',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor: Colors.white.withOpacity(0.3),
-                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${(nextLeagueXP - totalXP)} XP to next league',
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-        ],
-      ),
-    );
-  }
 
-  // League System Helper Methods
-  String _getLeague(int xp) {
-    if (xp >= 5000) return 'Champion';
-    if (xp >= 3000) return 'Expert';
-    if (xp >= 1500) return 'Advanced';
-    if (xp >= 500) return 'Intermediate';
-    return 'Beginner';
-  }
 
-  Map<String, dynamic> _getLeagueInfo(String league) {
-    const leagueData = {
-      'Champion': {
-        'colors': [Color(0xFFFFD700), Color(0xFFFFA500)],
-        'icon': Icons.emoji_events,
-      },
-      'Expert': {
-        'colors': [Color(0xFF9C27B0), Color(0xFF673AB7)],
-        'icon': Icons.star,
-      },
-      'Advanced': {
-        'colors': [Color(0xFF2196F3), Color(0xFF3F51B5)],
-        'icon': Icons.trending_up,
-      },
-      'Intermediate': {
-        'colors': [Color(0xFF4CAF50), Color(0xFF388E3C)],
-        'icon': Icons.school,
-      },
-    };
-    
-    return leagueData[league] ?? {
-      'colors': [const Color(0xFF9E9E9E), const Color(0xFF616161)],
-      'icon': Icons.sports,
-    };
-  }
-
-  int _getNextLeagueXP(String currentLeague) {
-    const xpThresholds = {
-      'Beginner': 500,
-      'Intermediate': 1500,
-      'Advanced': 3000,
-      'Expert': 5000,
-    };
-    return xpThresholds[currentLeague] ?? 0;
-  }
-
-  int _getLeagueMinXP(String currentLeague) {
-    const minXpThresholds = {
-      'Beginner': 0,
-      'Intermediate': 500,
-      'Advanced': 1500,
-      'Expert': 3000,
-      'Champion': 5000,
-    };
-    return minXpThresholds[currentLeague] ?? 0;
-  }
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color, bool isDarkMode) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -522,14 +316,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Text(
             title,
             style: TextStyle(
               fontSize: 12,
-              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             textAlign: TextAlign.center,
           ),
@@ -539,11 +333,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildBadgeStatCard(bool isDarkMode) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: themeProvider.isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -562,14 +355,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: themeProvider.isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+              color: Theme.of(context).textTheme.bodyLarge?.color,
             ),
           ),
           Text(
             'Achievement',
             style: TextStyle(
               fontSize: 12,
-              color: themeProvider.isGamified ? Colors.white70 : Theme.of(context).textTheme.bodyMedium?.color,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
             textAlign: TextAlign.center,
           ),
@@ -670,7 +463,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget _buildPostSection() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    final isGamified = themeProvider.isGamified;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -685,7 +477,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
               IconButton(
@@ -698,7 +490,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 },
                 icon: Icon(
                   Icons.add,
-                  color: isGamified ? Colors.white : Theme.of(context).iconTheme.color,
+                  color: Theme.of(context).iconTheme.color,
                 ),
               ),
             ],
@@ -718,7 +510,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 final post = _postManager.posts[index];
                 return Container(
                   decoration: BoxDecoration(
-                    color: isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -754,7 +546,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                               post.description,
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(context).textTheme.bodyLarge?.color,
                               ),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -772,7 +564,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                       },
                                       icon: Icon(
                                         Icons.favorite_border,
-                                        color: isGamified ? Colors.white : Theme.of(context).iconTheme.color,
+                                        color: Theme.of(context).iconTheme.color,
                                         size: 16,
                                       ),
                                     ),
@@ -780,7 +572,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                       '${post.likes}',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                                        color: Theme.of(context).textTheme.bodyLarge?.color,
                                       ),
                                     ),
                                   ],
@@ -791,7 +583,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                       onPressed: () => _addComment(post.id),
                                       icon: Icon(
                                         Icons.comment,
-                                        color: isGamified ? Colors.white : Theme.of(context).iconTheme.color,
+                                        color: Theme.of(context).iconTheme.color,
                                         size: 16,
                                       ),
                                     ),
@@ -799,7 +591,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                                       '${post.comments.length}',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                                        color: Theme.of(context).textTheme.bodyLarge?.color,
                                       ),
                                     ),
                                   ],
@@ -821,7 +613,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               child: Text(
                 'No posts yet',
                 style: TextStyle(
-                  color: isGamified ? Colors.white.withOpacity(0.6) : Theme.of(context).textTheme.bodyMedium?.color,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
             ),
@@ -833,7 +625,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget _buildPerformanceSection() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    final isGamified = themeProvider.isGamified;
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
@@ -848,7 +639,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
-                  color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
               IconButton(
@@ -861,7 +652,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 },
                 icon: Icon(
                   Icons.add,
-                  color: isGamified ? Colors.white : Theme.of(context).iconTheme.color,
+                  color: Theme.of(context).iconTheme.color,
                 ),
               ),
             ],
@@ -876,7 +667,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: isGamified ? Colors.white.withOpacity(0.1) : Theme.of(context).cardColor,
+                    color: Theme.of(context).cardColor,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -892,12 +683,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       width: 60,
                       height: 60,
                       decoration: BoxDecoration(
-                        color: isGamified ? Colors.red.withOpacity(0.2) : Colors.red.withOpacity(0.1),
+                        color: Colors.red.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
                         Icons.play_circle_filled,
-                        color: isGamified ? Colors.red[300] : Colors.red,
+                        color: Colors.red,
                         size: 32,
                       ),
                     ),
@@ -905,13 +696,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       video.title,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: isGamified ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                     subtitle: Text(
                       'Recorded: ${_formatDate(video.recordedAt)}',
                       style: TextStyle(
-                        color: isGamified ? Colors.white.withOpacity(0.8) : Theme.of(context).textTheme.bodyMedium?.color,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
                     onTap: () => _playVideo(video),
@@ -926,7 +717,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               child: Text(
                 'No performance videos yet',
                 style: TextStyle(
-                  color: isGamified ? Colors.white.withOpacity(0.6) : Theme.of(context).textTheme.bodyMedium?.color,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                 ),
               ),
             ),
