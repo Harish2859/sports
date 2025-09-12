@@ -10,6 +10,7 @@ import 'performance_videos_page.dart';
 import 'my_certificates_page.dart';
 import 'leaderboard.dart';
 import 'community_page.dart';
+import 'screens/nutrition_screen.dart';
 
 class MainLayout extends StatefulWidget {
   final int currentIndex;
@@ -251,6 +252,18 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const CommunityPage()),
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                context,
+                Icons.restaurant_menu,
+                'Nutrition',
+                () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const NutritionScreen()),
                   );
                 },
               ),

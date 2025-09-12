@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/nutrition_screen.dart';
 import 'theme_provider.dart';
 import 'app_state.dart';
 import 'constants/app_constants.dart';
@@ -80,6 +81,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
+        '/nutrition': (context) => const NutritionScreen(),
       },
     );
   }
