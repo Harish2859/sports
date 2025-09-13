@@ -4,10 +4,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import 'package:provider/provider.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_android/webview_flutter_android.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+
 import 'main_layout.dart';
 import 'trainingunits.dart';
 import 'unit_details.dart';
@@ -37,9 +34,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   late Animation<double> _overlayAnimation;
   late Animation<double> _unitAnimation;
   late Animation<double> _breathingAnimation; // For breathing effect
-  late Future<WebViewController> _webViewControllerFuture;
-  WebViewController? _webViewController;
-  bool _isWebViewLoaded = false;
+
   
   // Track completion status for each unit in each section
   Map<int, Map<int, bool>> unitCompletionStatus = {};
@@ -109,10 +104,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       ),
     );
     
-    _webViewControllerFuture = _initWebViewController();
-    _webViewControllerFuture.then((controller) {
-      _webViewController = controller;
-    });
+
     _unitController.forward();
     
     // Initialize overlay animation state
@@ -134,43 +126,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     }
   }
   
-  Future<WebViewController> _initWebViewController() async {
-    if (kIsWeb) throw UnsupportedError('WebView is not supported on web platform');
-    
-    final WebViewController controller = WebViewController();
-    
-    // Set up platform-specific settings
-    if (Platform.isAndroid) {
-      final AndroidWebViewController androidController = controller.platform as AndroidWebViewController;
-      await androidController.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await androidController.setMediaPlaybackRequiresUserGesture(false);
-    } else if (Platform.isIOS) {
-      final WebKitWebViewController webkitController = controller.platform as WebKitWebViewController;
-      await webkitController.setJavaScriptMode(JavaScriptMode.unrestricted);
-    }
-    
-    // Set up navigation delegate
-    controller.setNavigationDelegate(
-      NavigationDelegate(
-        onPageFinished: (String url) {
-          debugPrint('Page finished loading: $url');
-          if (mounted) {
-            setState(() {
-              _isWebViewLoaded = true;
-            });
-          }
-        },
-        onWebResourceError: (WebResourceError error) {
-          debugPrint('WebView error: ${error.description}');
-        },
-      ),
-    );
-    
-    // Load local HTML file
-    await controller.loadFlutterAsset('assets/gamified_background.html');
-    
-    return controller;
-  }
+
 
   void _initializeSections() {
     final courseId = widget.courseId ?? '1'; // Use provided courseId or default
@@ -656,9 +612,7 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
                   ),
                 ),
               ),
-              // WebView on top when loaded
-              if (_webViewController != null && _isWebViewLoaded)
-                WebViewWidget(controller: _webViewController!),
+
             ],
           ),
         ),

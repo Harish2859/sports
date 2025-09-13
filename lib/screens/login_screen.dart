@@ -8,6 +8,7 @@ import '../theme_provider.dart';
 import 'home_screen.dart';
 import 'signup_screen.dart';
 import '../adminlogin.dart';
+import '../app_state.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +18,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _obscurePassword = true;
@@ -164,6 +166,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return Column(
       children: [
         CustomTextField(
+          controller: _usernameController,
+          hintText: 'Username',
+          prefixIcon: Icons.person_outline,
+        ),
+        const SizedBox(height: 16),
+        CustomTextField(
           controller: _emailController,
           hintText: 'Email',
           prefixIcon: Icons.email_outlined,
@@ -193,6 +201,11 @@ class _LoginScreenState extends State<LoginScreen> {
         CustomButton(
           text: 'Login',
           onPressed: () {
+            // Update user profile in AppState
+            Provider.of<AppState>(context, listen: false).updateUserProfile(
+              _usernameController.text,
+              '', // Gender can be added later if needed
+            );
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -365,6 +378,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();

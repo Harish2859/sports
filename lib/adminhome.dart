@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 import 'package:provider/provider.dart';
 import 'theme_provider.dart';
 import 'adminprofile.dart';
 import 'adminevents.dart';
+import 'screens/admin_fraud_detection_screen.dart';
+import 'screens/admin_leaderboard_screen.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
@@ -17,7 +18,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
 
   final List<Widget> _pages = [
     AdminDashboard(),
-    // Removed AdminCoursePage
+    const AdminLeaderboardScreen(),
     AdminEventsPage(),
     AdminProfilePage(),
   ];
@@ -37,20 +38,15 @@ class _AdminHomePageState extends State<AdminHomePage> {
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         selectedItemColor: Theme.of(context).primaryColor,
         unselectedItemColor: Theme.of(context).textTheme.bodyMedium?.color,
-        selectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 12,
-        ),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
             label: 'Dashboard',
           ),
-          // Removed Add Course tab
+          BottomNavigationBarItem(
+            icon: Icon(Icons.leaderboard),
+            label: 'Leaderboard',
+          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.event),
             label: 'Add Event',
@@ -70,319 +66,16 @@ class AdminDashboard extends StatefulWidget {
   State<AdminDashboard> createState() => _AdminDashboardState();
 }
 
-class _AdminDashboardState extends State<AdminDashboard> with TickerProviderStateMixin {
-  late AnimationController _themeController;
-  Animation<double>? _themeExpandAnimation;
-  Animation<double>? _floatingAnimation;
-  bool _isThemeExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _themeController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-
-    _themeExpandAnimation = CurvedAnimation(
-      parent: _themeController,
-      curve: Curves.elasticOut,
-    );
-
-    _floatingAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _themeController,
-      curve: Curves.easeInOut,
-    ));
-  }
-
-  @override
-  void dispose() {
-    _themeController.dispose();
-    super.dispose();
-  }
-
-  void _toggleThemeMenu() {
-    setState(() {
-      _isThemeExpanded = !_isThemeExpanded;
-    });
-
-    if (_isThemeExpanded) {
-      _themeController.forward();
-    } else {
-      _themeController.reverse();
-    }
-  }
+class _AdminDashboardState extends State<AdminDashboard> {
+  final List<Map<String, dynamic>> fraudAlerts = [
+    {'name': 'John Doe', 'count': 6, 'time': '2 hours ago'},
+    {'name': 'Jane Smith', 'count': 5, 'time': '1 day ago'},
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.sports_soccer,
-                    size: 48,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Coach Portal',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'Findrly - Empowering Talent',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.dashboard, color: Color(0xFF2563EB)),
-              title: const Text('Dashboard'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.group, color: Color(0xFF2563EB)),
-              title: const Text('Manage Athletes'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Athletes management
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.schedule, color: Color(0xFF2563EB)),
-              title: const Text('Training Schedule'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Training Schedule
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.assessment, color: Color(0xFF2563EB)),
-              title: const Text('Performance Analytics'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Performance Analytics
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.event, color: Color(0xFF2563EB)),
-              title: const Text('Competitions'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Competitions
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.fitness_center, color: Color(0xFF2563EB)),
-              title: const Text('Equipment Management'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Equipment Management
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.medical_services, color: Color(0xFF2563EB)),
-              title: const Text('Health & Safety'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Health & Safety
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bar_chart, color: Color(0xFF2563EB)),
-              title: const Text('Reports'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Reports
-              },
-            ),
-            const Divider(),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: SizedBox(
-                height: 200,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Main Theme Button
-                    Positioned(
-                      child: GestureDetector(
-                        onTap: () {
-                          _toggleThemeMenu();
-                        },
-                        child: AnimatedBuilder(
-                          animation: _themeController,
-                          builder: (context, child) {
-                            return Transform.rotate(
-                              angle: _themeController.value * 3.1415 / 4,
-                              child: Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF2563EB),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.2),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(
-                                  Icons.palette,
-                                  color: Colors.white,
-                                  size: 30,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    // Day Theme Button
-                    AnimatedBuilder(
-                      animation: _themeController,
-                      builder: (context, child) {
-                        final expandValue = (_themeExpandAnimation?.value ?? 0).clamp(0.0, 1.0);
-                        final offset = Offset(
-                          80 * expandValue * math.cos(-math.pi / 2),
-                          80 * expandValue * math.sin(-math.pi / 2) - 20 * (_floatingAnimation?.value ?? 0),
-                        );
-                        return Transform.translate(
-                          offset: offset,
-                          child: Transform.scale(
-                            scale: expandValue,
-                            child: Opacity(
-                              opacity: expandValue,
-                              child: GestureDetector(
-                                onTap: () {
-                                  Provider.of<ThemeProvider>(context, listen: false).setDayTheme();
-                                  _toggleThemeMenu();
-                                },
-                                child: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.yellow,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.wb_sunny,
-                                    color: Colors.black,
-                                    size: 25,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    // Dark Theme Button
-                    AnimatedBuilder(
-                      animation: _themeController,
-                      builder: (context, child) {
-                        final expandValue = (_themeExpandAnimation?.value ?? 0).clamp(0.0, 1.0);
-                        final offset = Offset(
-                          80 * expandValue * math.cos(math.pi / 6),
-                          80 * expandValue * math.sin(math.pi / 6) - 20 * (_floatingAnimation?.value ?? 0),
-                        );
-                        return Transform.translate(
-                          offset: offset,
-                          child: Transform.scale(
-                            scale: expandValue,
-                            child: Opacity(
-                              opacity: expandValue,
-                              child: GestureDetector(
-                                onTap: () {
-                                  Provider.of<ThemeProvider>(context, listen: false).setDarkTheme();
-                                  _toggleThemeMenu();
-                                },
-                                child: Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: const Icon(
-                                    Icons.nightlight_round,
-                                    color: Colors.white,
-                                    size: 25,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                  ],
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings, color: Color(0xFF2563EB)),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO: Navigate to Settings
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/login',
-                  (Route<dynamic> route) => false,
-                );
-              },
-            ),
-          ],
-        ),
-      ),
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -408,409 +101,176 @@ class _AdminDashboardState extends State<AdminDashboard> with TickerProviderStat
         backgroundColor: Theme.of(context).primaryColor,
         elevation: 0,
         centerTitle: false,
-        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {
-              // Handle notifications
+            onPressed: () {},
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.palette, color: Colors.white),
+            onSelected: (value) {
+              if (value == 'light') {
+                Provider.of<ThemeProvider>(context, listen: false).setDayTheme();
+              } else if (value == 'dark') {
+                Provider.of<ThemeProvider>(context, listen: false).setDarkTheme();
+              }
             },
-          ),
-          Builder(
-            builder: (context) => IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: const Icon(
-                Icons.menu,
-                color: Colors.white,
-                size: 24,
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'light',
+                child: Row(
+                  children: [
+                    Icon(Icons.wb_sunny),
+                    SizedBox(width: 8),
+                    Text('Light Theme'),
+                  ],
+                ),
               ),
-            ),
+              const PopupMenuItem(
+                value: 'dark',
+                child: Row(
+                  children: [
+                    Icon(Icons.nightlight_round),
+                    SizedBox(width: 8),
+                    Text('Dark Theme'),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
         ],
       ),
-      body: Center(
-        child: Text(
-          'Admin Dashboard',
-          style: TextStyle(
-            fontSize: 24, 
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.titleLarge?.color,
-          ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Dashboard Overview',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatCard(
+                    'Total Users',
+                    '1,234',
+                    Icons.people,
+                    Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatCard(
+                    'Active Events',
+                    '12',
+                    Icons.event,
+                    Colors.green,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Fraud Alerts',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            '${fraudAlerts.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ...fraudAlerts.map((alert) => ListTile(
+                      leading: const CircleAvatar(
+                        backgroundColor: Colors.red,
+                        child: Icon(Icons.warning, color: Colors.white),
+                      ),
+                      title: Text(alert['name']),
+                      subtitle: Text('${alert['count']} fraud detections'),
+                      trailing: Text(
+                        alert['time'],
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    )),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const AdminFraudDetectionScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.security),
+                      label: const Text('Review All Fraud Cases'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class AddCoursePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.sports_soccer,
-                    size: 48,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Coach Portal',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'Findrly - Empowering Talent',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.dashboard, color: Color(0xFF2563EB)),
-              title: const Text('Dashboard'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.group, color: Color(0xFF2563EB)),
-              title: const Text('Manage Athletes'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.schedule, color: Color(0xFF2563EB)),
-              title: const Text('Training Schedule'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.assessment, color: Color(0xFF2563EB)),
-              title: const Text('Performance Analytics'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.event, color: Color(0xFF2563EB)),
-              title: const Text('Competitions'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.fitness_center, color: Color(0xFF2563EB)),
-              title: const Text('Equipment Management'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.medical_services, color: Color(0xFF2563EB)),
-              title: const Text('Health & Safety'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bar_chart, color: Color(0xFF2563EB)),
-              title: const Text('Reports'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings, color: Color(0xFF2563EB)),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/login',
-                  (Route<dynamic> route) => false,
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Findrly',
-              style: TextStyle(
-                fontSize: 20,
+            Icon(icon, size: 40, color: color),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
               ),
             ),
-            const Text(
-              'Add Course',
+            Text(
+              title,
               style: TextStyle(
-                fontSize: 12,
-                color: Colors.white70,
-                fontWeight: FontWeight.w400,
+                color: Colors.grey[600],
+                fontSize: 14,
               ),
             ),
           ],
-        ),
-        backgroundColor: Theme.of(context).primaryColor,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {
-              // Handle notifications
-            },
-          ),
-          Builder(
-            builder: (context) => IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: const Icon(
-                Icons.menu,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Center(
-        child: Text(
-          'Add Course Page',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.titleLarge?.color,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class UploadEventPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.sports_soccer,
-                    size: 48,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Coach Portal',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'Findrly - Empowering Talent',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.dashboard, color: Color(0xFF2563EB)),
-              title: const Text('Dashboard'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.group, color: Color(0xFF2563EB)),
-              title: const Text('Manage Athletes'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.schedule, color: Color(0xFF2563EB)),
-              title: const Text('Training Schedule'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.assessment, color: Color(0xFF2563EB)),
-              title: const Text('Performance Analytics'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.event, color: Color(0xFF2563EB)),
-              title: const Text('Competitions'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.fitness_center, color: Color(0xFF2563EB)),
-              title: const Text('Equipment Management'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.medical_services, color: Color(0xFF2563EB)),
-              title: const Text('Health & Safety'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.bar_chart, color: Color(0xFF2563EB)),
-              title: const Text('Reports'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.settings, color: Color(0xFF2563EB)),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/login',
-                  (Route<dynamic> route) => false,
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Findrly',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const Text(
-              'Upload Event',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.white70,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Theme.of(context).primaryColor,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {
-              // Handle notifications
-            },
-          ),
-          Builder(
-            builder: (context) => IconButton(
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-              icon: const Icon(
-                Icons.menu,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Center(
-        child: Text(
-          'Upload Event Page',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).textTheme.titleLarge?.color,
-          ),
         ),
       ),
     );

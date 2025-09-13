@@ -11,6 +11,8 @@ import 'my_certificates_page.dart';
 import 'leaderboard.dart';
 import 'community_page.dart';
 import 'screens/nutrition_screen.dart';
+import 'gamification_screen.dart';
+import 'message_page.dart';
 
 class MainLayout extends StatefulWidget {
   final int currentIndex;
@@ -218,6 +220,18 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
               ),
               _buildDrawerItem(
                 context,
+                Icons.games,
+                'Gamification',
+                () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const GamificationScreen()),
+                  );
+                },
+              ),
+              _buildDrawerItem(
+                context,
                 Icons.restaurant_menu,
                 'Nutrition',
                 () {
@@ -226,6 +240,24 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                     context,
                     MaterialPageRoute(builder: (context) => const NutritionScreen()),
                   );
+                },
+              ),
+              _buildDrawerItem(
+                context,
+                Icons.assessment,
+                'Standard Assessment',
+                () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/assessment');
+                },
+              ),
+              _buildDrawerItem(
+                context,
+                Icons.quiz,
+                'Test',
+                () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/test');
                 },
               ),
               _buildDrawerItem(
@@ -476,7 +508,10 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
           ),
           IconButton(
             onPressed: () {
-              // Handle messages
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MessagePage()),
+              );
             },
             icon: Icon(
               Icons.message_outlined,

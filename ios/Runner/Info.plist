@@ -49,5 +49,9 @@
 	<string>This app needs access to camera to record performance videos</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>This app needs access to microphone to record audio with performance videos</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to photo library to attach images to bids</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access for location-based bids</string>
 </dict>
 </plist>

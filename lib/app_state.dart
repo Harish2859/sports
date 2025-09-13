@@ -17,9 +17,13 @@ class AppState extends ChangeNotifier {
   int _totalXP = 0; // Start with zero XP
 
   // User profile data
-  String _userName = 'Alex Rodriguez';
+  String _userName = 'python';
   String _userGender = 'Male'; // Default gender
   String? _profileImagePath;
+
+  // Streak data
+  int _streakCount = 0;
+  DateTime? _lastCompletionDate;
 
   // Course enrollments by gender: courseId -> gender -> list of usernames
   final Map<String, Map<String, List<String>>> _courseEnrollmentsByGender = {};
@@ -30,6 +34,8 @@ class AppState extends ChangeNotifier {
   String get userName => _userName;
   String get userGender => _userGender;
   String? get profileImagePath => _profileImagePath;
+  int get streakCount => _streakCount;
+  DateTime? get lastCompletionDate => _lastCompletionDate;
 
   void enrollInCourse(Course course) {
     if (!_enrolledCourses.any((c) => c.id == course.id)) {
@@ -151,5 +157,45 @@ class AppState extends ChangeNotifier {
 
   admin.Event? getEventById(String eventId) {
     return _events.firstWhere((e) => e.id == eventId);
+  }
+
+  // Streak management
+  void updateStreak() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    if (_lastCompletionDate == null) {
+      _streakCount = 1;
+      _lastCompletionDate = today;
+    } else {
+      final lastDate = DateTime(_lastCompletionDate!.year, _lastCompletionDate!.month, _lastCompletionDate!.day);
+      final daysDifference = today.difference(lastDate).inDays;
+      
+      if (daysDifference == 1) {
+        _streakCount++;
+        _lastCompletionDate = today;
+      } else if (daysDifference > 1) {
+        _streakCount = 1;
+        _lastCompletionDate = today;
+      }
+    }
+    notifyListeners();
+  }
+
+  bool get isStreakActive {
+    if (_lastCompletionDate == null) return false;
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastDate = DateTime(_lastCompletionDate!.year, _lastCompletionDate!.month, _lastCompletionDate!.day);
+    return today.difference(lastDate).inDays <= 1;
+  }
+
+  // Gamification mode
+  bool _isGamificationMode = false;
+  bool get isGamificationMode => _isGamificationMode;
+
+  void toggleGamificationMode() {
+    _isGamificationMode = !_isGamificationMode;
+    notifyListeners();
   }
 }

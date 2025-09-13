@@ -1,13 +1,19 @@
-# TODO: Update Navigation from Analysis Results to Performance Summary
+# TODO: Update Message Page Content for Sports App
 
-- [x] Update import in lib/analysis_results.dart to replace 'simple_performance_summary.dart' with 'performance_summary.dart'
-- [x] Modify _goToNextUnit() method in lib/analysis_results.dart to navigate to PerformanceSummaryPage instead of SimplePerformanceSummaryPage
-- [x] Test the navigation flow to ensure the "Next" button correctly takes the user to the performance summary page
+## Information Gathered
+- The message page in `lib/message_page.dart` currently has LinkedIn-style content with professional networking users, titles, and messages.
+- Sample data includes names like "Sarah Chen - Product Manager at Google", messages about job roles and connections.
+- UI elements like app bar title "Messaging" and chat content need to be adapted to sports context.
 
-# TODO: Add Post and Performance Sections to Profile Page
+## Plan
+- [x] Update app bar title from "Messaging" to "Sports Chat".
+- [x] Replace sample user data with sports-related names and titles (e.g., athletes, coaches, team members).
+- [x] Change chat messages to sports-related conversations (training, matches, performance tips).
+- [x] Update any LinkedIn-specific references to sports app context.
 
-- [x] Create lib/post_manager.dart for managing posts (images with description, likes, comments)
-- [x] Create lib/post_upload_page.dart for uploading posts with Instagram-like UI
-- [x] Create lib/performance_upload_page.dart for uploading performance videos
-- [x] Edit lib/profile.dart to add Post and Performance sections with Instagram-like styling
-- [x] Test the new sections and upload functionality
+## Dependent Files
+- `lib/message_page.dart`: Main file to edit with new sports-related content.
+
+## Followup Steps
+- [x] Test the message page to ensure content displays correctly.
+- [x] Verify no LinkedIn references remain.

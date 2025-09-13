@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:camera/camera.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/nutrition_screen.dart';
+import 'screens/fitness_tracker_screen.dart';
+import 'screens/assessment_screen.dart';
+import 'screens/test_screen.dart';
 import 'theme_provider.dart';
 import 'app_state.dart';
 import 'constants/app_constants.dart';
 
-void main() {
+List<CameraDescription> cameras = [];
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    cameras = await availableCameras();
+  } catch (e) {
+    print('Error initializing cameras: $e');
+  }
   runApp(
     MultiProvider(
       providers: [
@@ -82,6 +94,11 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
         '/nutrition': (context) => const NutritionScreen(),
+        '/fitness': (context) => cameras.isNotEmpty 
+            ? FitnessTrackerScreen(camera: cameras.first) 
+            : const Scaffold(body: Center(child: Text('No camera available'))),
+        '/assessment': (context) => const AssessmentScreen(),
+        '/test': (context) => const TestScreen(),
       },
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'dart:math' as math;
 import 'app_state.dart';
 import 'course.dart';
 import 'main_layout.dart';
@@ -17,6 +18,8 @@ import 'favorites_page.dart';
 import 'post_manager.dart';
 import 'post_upload_page.dart';
 import 'performance_upload_page.dart';
+import 'bid_screen.dart';
+import 'daily_tasks_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -31,6 +34,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   final AppState _appState = AppState.instance;
   final PostManager _postManager = PostManager();
   final PerformanceVideosManager _videosManager = PerformanceVideosManager();
+  bool _isSoloLevelingMode = false;
 
   // Lifecycle Methods
   @override
@@ -66,6 +70,18 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   // Main Build Method
   @override
   Widget build(BuildContext context) {
+    return Consumer<AppState>(
+      builder: (context, appState, child) {
+        if (appState.isGamificationMode) {
+          return _buildSoloLevelingProfile();
+        } else {
+          return _buildNormalProfile();
+        }
+      },
+    );
+  }
+
+  Widget _buildNormalProfile() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
@@ -79,6 +95,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             physics: const BouncingScrollPhysics(),
             child: _buildProfileContent(isDarkMode),
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DailyTasksScreen()),
+            );
+          },
+          child: const Icon(Icons.task_alt),
         ),
       ),
     );
@@ -97,6 +122,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       child: Column(
         children: [
           _buildProfileHeader(isDarkMode),
+          const SizedBox(height: 20),
+          _buildXPBar(isDarkMode),
           const SizedBox(height: 20),
           _buildStatsCards(isDarkMode),
           const SizedBox(height: 20),
@@ -248,42 +275,113 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
+  Widget _buildXPBar(bool isDarkMode) {
+    final int currentXP = _appState.totalXP;
+    final int currentLevel = (currentXP / 100).floor() + 1;
+    final int xpForCurrentLevel = (currentLevel - 1) * 100;
+    final int xpForNextLevel = currentLevel * 100;
+    final double progress = (currentXP - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Level $currentLevel',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                Text(
+                  '$currentXP XP',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            LinearProgressIndicator(
+              value: progress,
+              backgroundColor: Colors.grey[300],
+              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
+              minHeight: 8,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${(currentXP - xpForCurrentLevel)} / ${(xpForNextLevel - xpForCurrentLevel)} XP to next level',
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildStatsCards(bool isDarkMode) {
     final int totalXP = _appState.totalXP;
     final bool hasBeginnerBadge = totalXP >= 0;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: _buildStatCard(
-              'test taken', 
-              '5', 
-              Icons.play_circle_outline, 
-              Colors.blue, 
-              isDarkMode
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'test taken', 
+                  '5', 
+                  Icons.play_circle_outline, 
+                  Colors.blue, 
+                  isDarkMode
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildStatCard(
+                  'Skill Rating', 
+                  '8.7/10', 
+                  Icons.trending_up, 
+                  Colors.green, 
+                  isDarkMode
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => _navigateToAchievements(),
+                  child: hasBeginnerBadge 
+                      ? _buildBadgeStatCard(isDarkMode) 
+                      : _buildStatCard('Achievement', '0', Icons.emoji_events, Colors.orange, isDarkMode),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'Skill Rating', 
-              '8.7/10', 
-              Icons.trending_up, 
-              Colors.green, 
-              isDarkMode
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _navigateToAchievements(),
-              child: hasBeginnerBadge 
-                  ? _buildBadgeStatCard(isDarkMode) 
-                  : _buildStatCard('Achievement', '0', Icons.emoji_events, Colors.orange, isDarkMode),
-            ),
-          ),
+          const SizedBox(height: 12),
+          _buildStreakCard(isDarkMode),
         ],
       ),
     );
@@ -367,6 +465,59 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             textAlign: TextAlign.center,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildStreakCard(bool isDarkMode) {
+    final bool isActive = _appState.isStreakActive;
+    final Color streakColor = isActive ? Colors.orange : Colors.red;
+    final IconData streakIcon = isActive ? Icons.local_fire_department : Icons.local_fire_department;
+    
+    return GestureDetector(
+      onTap: () {
+        _appState.updateStreak();
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(streakIcon, color: streakColor, size: 32),
+            const SizedBox(width: 12),
+            Column(
+              children: [
+                Text(
+                  '${_appState.streakCount}',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                Text(
+                  'Day Streak',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -767,6 +918,264 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildSoloLevelingProfile() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment.topLeft,
+          radius: 1.5,
+          colors: [Color(0xFF1A2332), Color(0xFF0D1421), Color(0xFF000000)],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                _buildSoloHeader(),
+                const SizedBox(height: 24),
+                _buildSoloXPBar(),
+                const SizedBox(height: 24),
+                _buildSoloStats(),
+                const SizedBox(height: 1000),
+              ],
+            ),
+          ),
+        ),
+        floatingActionButton: Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(colors: [Color(0xFF00D4FF), Color(0xFF6C5CE7)]),
+            boxShadow: [BoxShadow(color: Color(0xFF00D4FF).withOpacity(0.5), blurRadius: 20, spreadRadius: 2)],
+          ),
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DailyTasksScreen()),
+              );
+            },
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            child: const Icon(Icons.task_alt, color: Colors.white, size: 28),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSoloHeader() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1A2332).withOpacity(0.9), Color(0xFF2D3748).withOpacity(0.8)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Color(0xFF00D4FF).withOpacity(0.3)),
+        boxShadow: [BoxShadow(color: Color(0xFF00D4FF).withOpacity(0.2), blurRadius: 20)],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF00D4FF), Color(0xFF6C5CE7)]),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Text('[ HUNTER PROFILE ]', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16, letterSpacing: 2)),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: Color(0xFF2D3748),
+                backgroundImage: _appState.profileImagePath != null ? FileImage(File(_appState.profileImagePath!)) : null,
+                child: _appState.profileImagePath == null ? const Icon(Icons.person, size: 50, color: Color(0xFF00D4FF)) : null,
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _appState.userName.toUpperCase(),
+                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5),
+                    ),
+                    Text('ID: @${_appState.userName.toLowerCase()}_hunter', style: TextStyle(fontSize: 14, color: Colors.grey[400])),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFFFB347)]),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text('S-RANK HUNTER', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12, letterSpacing: 1)),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSoloXPBar() {
+    final int currentXP = _appState.totalXP;
+    final int currentLevel = (currentXP / 100).floor() + 1;
+    final double progress = (currentXP % 100) / 100;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [Color(0xFF1A2332).withOpacity(0.9), Color(0xFF2D3748).withOpacity(0.8)]),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Color(0xFF6C5CE7).withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('LEVEL $currentLevel', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white, letterSpacing: 1.5)),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF00D4FF), Color(0xFF6C5CE7)]),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text('$currentXP EXP', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            height: 12,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Color(0xFF00D4FF).withOpacity(0.3)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: progress,
+                backgroundColor: Colors.grey[800],
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF00D4FF)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSoloStats() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _buildSoloStatCard('TESTS', '5', Icons.quiz_outlined, Color(0xFF00D4FF))),
+              const SizedBox(width: 12),
+              Expanded(child: _buildSoloStatCard('RATING', '8.7/10', Icons.trending_up, Color(0xFFFFD700))),
+              const SizedBox(width: 12),
+              Expanded(child: _buildSoloStatCard('ACHIEVEMENTS', '1', Icons.emoji_events, Color(0xFF6C5CE7))),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildSoloStreakCard(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSoloStatCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [Color(0xFF1A2332).withOpacity(0.9), Color(0xFF2D3748).withOpacity(0.8)]),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.3)),
+        boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 15)],
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 32),
+          const SizedBox(height: 8),
+          Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+          const SizedBox(height: 4),
+          Text(title, style: TextStyle(fontSize: 10, color: Colors.grey[400], letterSpacing: 0.5), textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSoloStreakCard() {
+    final bool isActive = _appState.isStreakActive;
+    final Color streakColor = isActive ? Color(0xFFFFD700) : Colors.red;
+    
+    return GestureDetector(
+      onTap: () => _appState.updateStreak(),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [Color(0xFF1A2332).withOpacity(0.9), Color(0xFF2D3748).withOpacity(0.8)]),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: streakColor.withOpacity(0.3)),
+          boxShadow: [BoxShadow(color: streakColor.withOpacity(0.3), blurRadius: 20)],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.local_fire_department, color: streakColor, size: 40),
+            const SizedBox(width: 16),
+            Column(
+              children: [
+                Text('${_appState.streakCount}', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text('DAY STREAK', style: TextStyle(fontSize: 14, color: Colors.grey[400], letterSpacing: 1)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class VideoPlayerScreen extends StatelessWidget {
+  final String videoPath;
+  final String title;
+
+  const VideoPlayerScreen({
+    Key? key,
+    required this.videoPath,
+    required this.title,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text('Video Player - Implementation needed'),
+      ),
+    );
   }
 }
 

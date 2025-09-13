@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
+import 'package:provider/provider.dart';
 import 'verification.dart';
+import 'app_state.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -399,31 +401,36 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           SizedBox(
                             width: double.infinity,
                             height: 50,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                if (_validateFields()) {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(builder: (context) => const VerificationPage()),
-                                  );
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF2563EB),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  if (_validateFields()) {
+                                    // Update user profile in AppState
+                                    Provider.of<AppState>(context, listen: false).updateUserProfile(
+                                      _usernameController.text,
+                                      '', // Gender can be added later if needed
+                                    );
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const VerificationPage()),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF2563EB),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
                                 ),
-                                elevation: 0,
-                              ),
-                              child: const Text(
-                                'Sign Up',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                child: const Text(
+                                  'Sign Up',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            ),
                           ),
                           
                           const SizedBox(height: 16),                  
