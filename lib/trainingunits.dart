@@ -157,29 +157,37 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
 
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-      appBar: AppBar(
-        title: Text(
-          '${widget.sectionName} Assessment',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      '${widget.sectionName} Assessment',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(child: _buildCurrentStage()),
+          ],
         ),
-        backgroundColor: units[currentUnitIndex].color,
-        elevation: 0,
-        actions: [
-          Container(
-            margin: EdgeInsets.only(right: 16),
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '${currentUnitIndex + 1}/${units.length}',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
       ),
-      body: _buildCurrentStage(),
     );
   }
 
@@ -1037,115 +1045,6 @@ class _TrainingUnitsPageState extends State<TrainingUnitsPage> with TickerProvid
             ),
             textAlign: TextAlign.center,
           ),
-          
-          SizedBox(height: 48),
-          
-          if (currentUnitIndex < units.length - 1) ...[
-            // Go to Next Unit Button
-            Container(
-              width: double.infinity,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: _goToNextUnit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: units[currentUnitIndex].color,
-                  foregroundColor: Colors.white,
-                  elevation: 8,
-                  shadowColor: units[currentUnitIndex].color.withOpacity(0.4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.arrow_forward, size: 28),
-                    SizedBox(width: 12),
-                    Text(
-                      'Next Unit',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            SizedBox(height: 16),
-            // Finish Training Button
-            Container(
-              width: double.infinity,
-              height: 60,
-              child: OutlinedButton(
-                onPressed: _finishAndReturn,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: units[currentUnitIndex].color,
-                  side: BorderSide(color: units[currentUnitIndex].color, width: 2),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.check_circle, size: 28),
-                    SizedBox(width: 12),
-                    Text(
-                      'Finish Training',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ] else ...[
-            // All Units Completed Message
-            Text(
-              'You have completed all training units in this section.',
-              style: TextStyle(
-                fontSize: 16,
-                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: 24),
-            // Finish Training Button
-            Container(
-              width: double.infinity,
-              height: 60,
-              child: ElevatedButton(
-                onPressed: _finishAndReturn,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[600],
-                  foregroundColor: Colors.white,
-                  elevation: 8,
-                  shadowColor: Colors.green.withOpacity(0.4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.check_circle, size: 28),
-                    SizedBox(width: 12),
-                    Text(
-                      'Complete Training',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ],
       ),
     );

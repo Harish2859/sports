@@ -62,6 +62,8 @@ class MyApp extends StatelessWidget {
         textTheme: const TextTheme(
           bodyLarge: TextStyle(color: Colors.white),
           bodyMedium: TextStyle(color: Colors.white70),
+
+          
         ),
         inputDecorationTheme: const InputDecorationTheme(
           filled: true,

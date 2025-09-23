@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'community_profile_page.dart';
+import 'admin_community_profile_page.dart';
 import 'theme_provider.dart';
 
-// Model classes
+// Reuse the same model classes from community_page.dart
 class Member {
   final String id;
   final String name;
@@ -80,174 +81,83 @@ class Community {
   });
 }
 
-// LinkedIn-style Community Page
-class CommunityPage extends StatefulWidget {
-  const CommunityPage({super.key});
+class AdminCommunityPage extends StatefulWidget {
+  const AdminCommunityPage({super.key});
 
   @override
-  State<CommunityPage> createState() => _CommunityPageState();
+  State<AdminCommunityPage> createState() => _AdminCommunityPageState();
 }
 
-class _CommunityPageState extends State<CommunityPage> {
+class _AdminCommunityPageState extends State<AdminCommunityPage> {
   final TextEditingController _searchController = TextEditingController();
-
+  List<Community> communities = [
+    Community(
+      id: '1',
+      name: 'Sports Enthusiasts',
+      description: 'Connect with fellow sports lovers',
+      iconUrl: '🏆',
+      primaryColor: Color(0xFF25D366),
+      secondaryColor: Color(0xFF25D366),
+      unreadCount: 3,
+      members: [
+        Member(id: '1', name: 'John Doe', avatarUrl: '👨', role: 'Admin'),
+        Member(id: '2', name: 'Jane Smith', avatarUrl: '👩'),
+        Member(id: '3', name: 'Alex Wilson', avatarUrl: '🧑'),
+      ],
+      messages: [
+        Message(
+          id: '1',
+          sender: Member(id: '2', name: 'Jane Smith', avatarUrl: '👩'),
+          content: 'Anyone up for a game this weekend?',
+          timestamp: DateTime.now().subtract(Duration(minutes: 15)),
+        ),
+      ],
+      posts: [
+        Post(
+          id: '1',
+          author: Member(id: '1', name: 'John Doe', avatarUrl: '👨', role: 'Admin'),
+          content: 'Just crushed my morning workout! 💪 Nothing beats that post-gym feeling.',
+          timestamp: DateTime.now().subtract(Duration(hours: 2)),
+          likeCount: 24,
+          commentCount: 8,
+        ),
+      ],
+    ),
+    Community(
+      id: '2',
+      name: 'Fitness Goals',
+      description: 'Share your fitness journey',
+      iconUrl: '💪',
+      primaryColor: Color(0xFF25D366),
+      secondaryColor: Color(0xFF25D366),
+      unreadCount: 1,
+      members: [
+        Member(id: '3', name: 'Mike Johnson', avatarUrl: '👨💼', role: 'Admin'),
+        Member(id: '4', name: 'Emily Brown', avatarUrl: '👩💻'),
+      ],
+      messages: [
+        Message(
+          id: '2',
+          sender: Member(id: '3', name: 'Mike Johnson', avatarUrl: '👨💼', role: 'Admin'),
+          content: 'Great workout session today! 💪',
+          timestamp: DateTime.now().subtract(Duration(hours: 2)),
+        ),
+      ],
+      posts: [
+        Post(
+          id: '3',
+          author: Member(id: '3', name: 'Mike Johnson', avatarUrl: '👨💼', role: 'Admin'),
+          content: '30-day transformation complete! 🙏 Lost 15 pounds and gained confidence.',
+          timestamp: DateTime.now().subtract(Duration(hours: 1)),
+          likeCount: 156,
+          commentCount: 43,
+        ),
+      ],
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Provider.of<ThemeProvider>(context).themeMode == ThemeMode.dark;
-    
-    // LinkedIn-style communities data
-    final communities = [
-      Community(
-        id: '1',
-        name: 'Sports Enthusiasts',
-        description: 'Connect with fellow sports lovers',
-        iconUrl: '🏆',
-        primaryColor: Color(0xFF25D366),
-        secondaryColor: Color(0xFF25D366),
-        unreadCount: 3,
-        members: [
-          Member(id: '1', name: 'John Doe', avatarUrl: '👨', role: 'Admin'),
-          Member(id: '2', name: 'Jane Smith', avatarUrl: '👩'),
-          Member(id: '3', name: 'Alex Wilson', avatarUrl: '🧑'),
-        ],
-        messages: [
-          Message(
-            id: '1',
-            sender: Member(id: '2', name: 'Jane Smith', avatarUrl: '👩'),
-            content: 'Anyone up for a game this weekend?',
-            timestamp: DateTime.now().subtract(Duration(minutes: 15)),
-          ),
-        ],
-        posts: [
-          Post(
-            id: '1',
-            author: Member(id: '1', name: 'John Doe', avatarUrl: '👨', role: 'Admin'),
-            content: 'Just crushed my morning workout! 💪 Nothing beats that post-gym feeling. Who else is hitting the gym today? #FitnessMotivation #MorningWorkout',
-            timestamp: DateTime.now().subtract(Duration(hours: 2)),
-            likeCount: 24,
-            commentCount: 8,
-          ),
-          Post(
-            id: '2',
-            author: Member(id: '2', name: 'Jane Smith', avatarUrl: '👩'),
-            content: 'New basketball shoes arrived! 🏀 Can\'t wait to test them out on the court this weekend. Thanks for the recommendation @mike! #Basketball #NewGear',
-            timestamp: DateTime.now().subtract(Duration(hours: 5)),
-            likeCount: 18,
-            commentCount: 12,
-          ),
-        ],
-      ),
-      Community(
-        id: '2',
-        name: 'Fitness Goals',
-        description: 'Share your fitness journey',
-        iconUrl: '💪',
-        primaryColor: Color(0xFF25D366),
-        secondaryColor: Color(0xFF25D366),
-        unreadCount: 1,
-        members: [
-          Member(id: '3', name: 'Mike Johnson', avatarUrl: '👨💼', role: 'Admin'),
-          Member(id: '4', name: 'Emily Brown', avatarUrl: '👩💻'),
-        ],
-        messages: [
-          Message(
-            id: '2',
-            sender: Member(id: '3', name: 'Mike Johnson', avatarUrl: '👨💼', role: 'Admin'),
-            content: 'Great workout session today! 💪',
-            timestamp: DateTime.now().subtract(Duration(hours: 2)),
-          ),
-        ],
-        posts: [
-          Post(
-            id: '3',
-            author: Member(id: '3', name: 'Mike Johnson', avatarUrl: '👨💼', role: 'Admin'),
-            content: '30-day transformation complete! 🙏 Lost 15 pounds and gained so much confidence. Consistency is everything! Special thanks to this amazing community for the support ❤️ #TransformationTuesday #FitnessJourney',
-            timestamp: DateTime.now().subtract(Duration(hours: 1)),
-            likeCount: 156,
-            commentCount: 43,
-          ),
-          Post(
-            id: '4',
-            author: Member(id: '4', name: 'Emily Brown', avatarUrl: '👩💻'),
-            content: 'Meal prep Sunday done right! 🥗 Healthy choices made easy for the week ahead. Swipe to see my favorite protein-packed recipes! #MealPrep #HealthyEating #SundayMotivation',
-            timestamp: DateTime.now().subtract(Duration(days: 1)),
-            likeCount: 89,
-            commentCount: 21,
-          ),
-        ],
-      ),
-      Community(
-        id: '3',
-        name: 'Tech Innovators',
-        description: 'Latest in technology',
-        iconUrl: '💻',
-        primaryColor: Color(0xFF25D366),
-        secondaryColor: Color(0xFF25D366),
-        members: [
-          Member(id: '6', name: 'Lisa Chen', avatarUrl: '👩💻', role: 'Admin'),
-          Member(id: '7', name: 'Robert Kim', avatarUrl: '👨🔬'),
-        ],
-        messages: [
-          Message(
-            id: '3',
-            sender: Member(id: '6', name: 'Lisa Chen', avatarUrl: '👩💻', role: 'Admin'),
-            content: 'Check out this new AI tool!',
-            timestamp: DateTime.now().subtract(Duration(days: 1)),
-          ),
-        ],
-        posts: [
-          Post(
-            id: '5',
-            author: Member(id: '6', name: 'Lisa Chen', avatarUrl: '👩💻', role: 'Admin'),
-            content: 'Just launched my new AI-powered fitness app! 🚀 It uses machine learning to create personalized workout plans. Beta testers wanted! DM me if interested 📲 #TechInnovation #FitnessApp #AI',
-            timestamp: DateTime.now().subtract(Duration(hours: 6)),
-            likeCount: 67,
-            commentCount: 29,
-          ),
-        ],
-      ),
-      Community(
-        id: '4',
-        name: 'Creative Artists',
-        description: 'Showcase your art',
-        iconUrl: '🎨',
-        primaryColor: Color(0xFF25D366),
-        secondaryColor: Color(0xFF25D366),
-        unreadCount: 5,
-        members: [
-          Member(id: '8', name: 'Maria Garcia', avatarUrl: '👩🎨', role: 'Admin'),
-          Member(id: '9', name: 'James Wilson', avatarUrl: '👨🎨'),
-        ],
-        messages: [
-          Message(
-            id: '4',
-            sender: Member(id: '8', name: 'Maria Garcia', avatarUrl: '👩🎨', role: 'Admin'),
-            content: 'New painting finished! What do you think?',
-            timestamp: DateTime.now().subtract(Duration(minutes: 45)),
-          ),
-        ],
-        posts: [
-          Post(
-            id: '6',
-            author: Member(id: '8', name: 'Maria Garcia', avatarUrl: '👩🎨', role: 'Admin'),
-            content: 'Finished my latest painting inspired by movement and energy! 🎨✨ This piece represents the flow of a perfect workout session. Art meets fitness! What do you see when you look at it? #AbstractArt #FitnessInspired #CreativeProcess',
-            timestamp: DateTime.now().subtract(Duration(minutes: 30)),
-            likeCount: 92,
-            commentCount: 15,
-          ),
-          Post(
-            id: '7',
-            author: Member(id: '9', name: 'James Wilson', avatarUrl: '👨🎨'),
-            content: 'Digital art commission completed! 🖥️ Created this motivational poster for a local gym. Love combining my passion for art with fitness inspiration 💪 #DigitalArt #MotivationalArt #Commission',
-            timestamp: DateTime.now().subtract(Duration(hours: 8)),
-            likeCount: 45,
-            commentCount: 7,
-          ),
-        ],
-      ),
-    ];
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -255,7 +165,7 @@ class _CommunityPageState extends State<CommunityPage> {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         title: const Text(
-          'Sports Communities',
+          'Admin Communities',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 20,
@@ -264,23 +174,14 @@ class _CommunityPageState extends State<CommunityPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.more_horiz, color: Colors.black54),
-            onPressed: () {
-              // Handle options menu
-            },
-          ),
-          IconButton(
             icon: const Icon(Icons.add, color: Colors.black54),
-            onPressed: () {
-              // Handle create community
-            },
+            onPressed: () => _showCreateCommunityDialog(),
           ),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Search Bar
             Container(
               padding: const EdgeInsets.all(16),
               color: Colors.white,
@@ -299,21 +200,17 @@ class _CommunityPageState extends State<CommunityPage> {
                   contentPadding: const EdgeInsets.symmetric(vertical: 8),
                 ),
                 onChanged: (value) {
-                  // Handle search
+                  setState(() {});
                 },
               ),
             ),
-
-
-
-            // Community List
             Expanded(
               child: ListView.builder(
                 padding: EdgeInsets.zero,
                 itemCount: communities.length,
                 itemBuilder: (context, index) {
                   final community = communities[index];
-                  return _buildLinkedInCommunityTile(context, community);
+                  return _buildAdminCommunityTile(context, community, index);
                 },
               ),
             ),
@@ -323,9 +220,7 @@ class _CommunityPageState extends State<CommunityPage> {
     );
   }
 
-
-
-  Widget _buildLinkedInCommunityTile(BuildContext context, Community community) {
+  Widget _buildAdminCommunityTile(BuildContext context, Community community, int index) {
     final lastMessage = community.messages.isNotEmpty ? community.messages.last : null;
     final timeString = lastMessage != null ? _formatTime(lastMessage.timestamp) : '';
     
@@ -373,15 +268,26 @@ class _CommunityPageState extends State<CommunityPage> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            if (lastMessage != null)
-              Text(
-                timeString,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w400,
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'delete') {
+                  _deleteCommunity(index);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete, color: Colors.red),
+                      SizedBox(width: 8),
+                      Text('Delete Community'),
+                    ],
+                  ),
                 ),
-              ),
+              ],
+              child: Icon(Icons.more_vert, color: Colors.grey[600]),
+            ),
           ],
         ),
         subtitle: Column(
@@ -418,7 +324,7 @@ class _CommunityPageState extends State<CommunityPage> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (community.unreadCount > 0) ...[
+                    if (community.unreadCount > 0) ...[ 
                       const SizedBox(width: 8),
                       Container(
                         width: 8,
@@ -438,14 +344,134 @@ class _CommunityPageState extends State<CommunityPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CommunityChatPage(community: community),
+              builder: (context) => AdminCommunityChatPage(
+                community: community,
+                onPostAdded: (post) => _addPostToCommunity(index, post),
+                onMessageAdded: (message) => _addMessageToCommunity(index, message),
+              ),
             ),
           );
         },
       ),
     );
   }
-  
+
+  void _showCreateCommunityDialog() {
+    final nameController = TextEditingController();
+    final descController = TextEditingController();
+    String selectedIcon = '🏆';
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Community'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(
+                labelText: 'Community Name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: descController,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
+              value: selectedIcon,
+              decoration: const InputDecoration(
+                labelText: 'Icon',
+                border: OutlineInputBorder(),
+              ),
+              items: ['🏆', '💪', '⚽', '🏀', '🎾', '🏊', '🚴']
+                  .map((icon) => DropdownMenuItem(value: icon, child: Text(icon)))
+                  .toList(),
+              onChanged: (value) => selectedIcon = value!,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (nameController.text.isNotEmpty) {
+                _createCommunity(nameController.text, descController.text, selectedIcon);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Create'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _createCommunity(String name, String description, String icon) {
+    setState(() {
+      communities.add(
+        Community(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          name: name,
+          description: description,
+          iconUrl: icon,
+          primaryColor: const Color(0xFF25D366),
+          secondaryColor: const Color(0xFF25D366),
+          members: [Member(id: 'admin', name: 'Admin', avatarUrl: '👨‍💼', role: 'Admin')],
+          messages: [],
+          posts: [],
+        ),
+      );
+    });
+  }
+
+  void _deleteCommunity(int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Community'),
+        content: Text('Are you sure you want to delete "${communities[index].name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                communities.removeAt(index);
+              });
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _addPostToCommunity(int index, Post post) {
+    setState(() {
+      communities[index].posts.insert(0, post);
+    });
+  }
+
+  void _addMessageToCommunity(int index, Message message) {
+    setState(() {
+      communities[index].messages.add(message);
+    });
+  }
+
   String _formatTime(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
@@ -462,17 +488,23 @@ class _CommunityPageState extends State<CommunityPage> {
   }
 }
 
-// Community Chat Page
-class CommunityChatPage extends StatefulWidget {
+class AdminCommunityChatPage extends StatefulWidget {
   final Community community;
+  final Function(Post) onPostAdded;
+  final Function(Message) onMessageAdded;
 
-  const CommunityChatPage({super.key, required this.community});
+  const AdminCommunityChatPage({
+    super.key,
+    required this.community,
+    required this.onPostAdded,
+    required this.onMessageAdded,
+  });
 
   @override
-  State<CommunityChatPage> createState() => _CommunityChatPageState();
+  State<AdminCommunityChatPage> createState() => _AdminCommunityChatPageState();
 }
 
-class _CommunityChatPageState extends State<CommunityChatPage>
+class _AdminCommunityChatPageState extends State<AdminCommunityChatPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -501,8 +533,16 @@ class _CommunityChatPageState extends State<CommunityChatPage>
       body: TabBarView(
         controller: _tabController,
         children: [
-          PostsTabView(community: widget.community, isDarkMode: isDarkMode),
-          MessagesTabView(community: widget.community, isDarkMode: isDarkMode),
+          AdminPostsTabView(
+            community: widget.community,
+            isDarkMode: isDarkMode,
+            onPostAdded: widget.onPostAdded,
+          ),
+          AdminMessagesTabView(
+            community: widget.community,
+            isDarkMode: isDarkMode,
+            onMessageAdded: widget.onMessageAdded,
+          ),
         ],
       ),
       floatingActionButton: _buildDynamicFab(context),
@@ -523,7 +563,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CommunityProfilePage(community: widget.community),
+              builder: (context) => AdminCommunityProfilePage(community: widget.community),
             ),
           );
         },
@@ -548,7 +588,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   ),
                   Text(
-                    '${widget.community.members.length} members',
+                    '${widget.community.members.length} members • Admin Mode',
                     style: TextStyle(
                       fontSize: 12,
                       color: isDarkMode ? Colors.white70 : Colors.grey[600],
@@ -578,10 +618,11 @@ class _CommunityChatPageState extends State<CommunityChatPage>
     bool isPostsTab = _tabController.index == 0;
     return FloatingActionButton(
       onPressed: () {
-        final action = isPostsTab ? 'Create New Post' : 'New Message';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(action)),
-        );
+        if (isPostsTab) {
+          _showCreatePostDialog();
+        } else {
+          _showCreateMessageDialog();
+        }
       },
       backgroundColor: Color(0xFF25D366),
       child: Icon(
@@ -590,28 +631,125 @@ class _CommunityChatPageState extends State<CommunityChatPage>
       ),
     );
   }
+
+  void _showCreatePostDialog() {
+    final contentController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Post'),
+        content: TextField(
+          controller: contentController,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            hintText: 'What\'s on your mind?',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (contentController.text.isNotEmpty) {
+                final post = Post(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  author: Member(id: 'admin', name: 'Admin', avatarUrl: '👨‍💼', role: 'Admin'),
+                  content: contentController.text,
+                  timestamp: DateTime.now(),
+                );
+                widget.onPostAdded(post);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Post'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCreateMessageDialog() {
+    final messageController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Send Message'),
+        content: TextField(
+          controller: messageController,
+          decoration: const InputDecoration(
+            hintText: 'Type your message...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (messageController.text.isNotEmpty) {
+                final message = Message(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  sender: Member(id: 'admin', name: 'Admin', avatarUrl: '👨‍💼', role: 'Admin'),
+                  content: messageController.text,
+                  timestamp: DateTime.now(),
+                  isMe: true,
+                );
+                widget.onMessageAdded(message);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Send'),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// WIDGET FOR POSTS TAB
-class PostsTabView extends StatefulWidget {
+class AdminPostsTabView extends StatefulWidget {
   final Community community;
   final bool isDarkMode;
-  const PostsTabView({super.key, required this.community, required this.isDarkMode});
+  final Function(Post) onPostAdded;
+
+  const AdminPostsTabView({
+    super.key,
+    required this.community,
+    required this.isDarkMode,
+    required this.onPostAdded,
+  });
 
   @override
-  State<PostsTabView> createState() => _PostsTabViewState();
+  State<AdminPostsTabView> createState() => _AdminPostsTabViewState();
 }
 
-class _PostsTabViewState extends State<PostsTabView> {
+class _AdminPostsTabViewState extends State<AdminPostsTabView> {
   Set<String> likedPosts = {};
 
   @override
   Widget build(BuildContext context) {
     if (widget.community.posts.isEmpty) {
       return Center(
-        child: Text(
-          'No posts yet.',
-          style: TextStyle(color: widget.isDarkMode ? Colors.white54 : Colors.grey),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'No posts yet.',
+              style: TextStyle(color: widget.isDarkMode ? Colors.white54 : Colors.grey),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => _showCreatePostDialog(),
+              icon: const Icon(Icons.add),
+              label: const Text('Create First Post'),
+            ),
+          ],
         ),
       );
     }
@@ -652,12 +790,20 @@ class _PostsTabViewState extends State<PostsTabView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        post.author.name,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: widget.isDarkMode ? Colors.white : Colors.black,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            post.author.name,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: widget.isDarkMode ? Colors.white : Colors.black,
+                            ),
+                          ),
+                          if (post.author.role == 'Admin') ...[
+                            SizedBox(width: 4),
+                            Icon(Icons.verified, color: Colors.blue, size: 16),
+                          ],
+                        ],
                       ),
                       Text(
                         _formatTime(post.timestamp),
@@ -669,9 +815,28 @@ class _PostsTabViewState extends State<PostsTabView> {
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.more_vert,
-                  color: widget.isDarkMode ? Colors.white60 : Colors.grey[600],
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'delete') {
+                      _deletePost(post);
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, color: Colors.red),
+                          SizedBox(width: 8),
+                          Text('Delete Post'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  child: Icon(
+                    Icons.more_vert,
+                    color: widget.isDarkMode ? Colors.white60 : Colors.grey[600],
+                  ),
                 ),
               ],
             ),
@@ -782,6 +947,72 @@ class _PostsTabViewState extends State<PostsTabView> {
     );
   }
 
+  void _showCreatePostDialog() {
+    final contentController = TextEditingController();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Create Post'),
+        content: TextField(
+          controller: contentController,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            hintText: 'What\'s on your mind?',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (contentController.text.isNotEmpty) {
+                final post = Post(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  author: Member(id: 'admin', name: 'Admin', avatarUrl: '👨‍💼', role: 'Admin'),
+                  content: contentController.text,
+                  timestamp: DateTime.now(),
+                );
+                widget.onPostAdded(post);
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Post'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _deletePost(Post post) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Post'),
+        content: const Text('Are you sure you want to delete this post?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                widget.community.posts.removeWhere((p) => p.id == post.id);
+              });
+              Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatTime(DateTime timestamp) {
     final now = DateTime.now();
     final difference = now.difference(timestamp);
@@ -798,13 +1029,18 @@ class _PostsTabViewState extends State<PostsTabView> {
   }
 }
 
-// WIDGET FOR MESSAGES TAB
-class MessagesTabView extends StatelessWidget {
+class AdminMessagesTabView extends StatelessWidget {
   final Community community;
   final bool isDarkMode;
+  final Function(Message) onMessageAdded;
   final TextEditingController _messageController = TextEditingController();
 
-  MessagesTabView({super.key, required this.community, required this.isDarkMode});
+  AdminMessagesTabView({
+    super.key,
+    required this.community,
+    required this.isDarkMode,
+    required this.onMessageAdded,
+  });
   
   @override
   Widget build(BuildContext context) {
@@ -844,13 +1080,21 @@ class MessagesTabView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (!message.isMe)
-                    Text(
-                      message.sender.name,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF25D366),
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          message.sender.name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF25D366),
+                          ),
+                        ),
+                        if (message.sender.role == 'Admin') ...[
+                          SizedBox(width: 4),
+                          Icon(Icons.verified, color: Colors.blue, size: 12),
+                        ],
+                      ],
                     ),
                   if (!message.isMe) SizedBox(height: 4),
                   Text(
@@ -928,9 +1172,14 @@ class MessagesTabView extends StatelessWidget {
             child: IconButton(
               onPressed: () {
                 if (_messageController.text.trim().isNotEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Message sent: ${_messageController.text}')),
+                  final message = Message(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    sender: Member(id: 'admin', name: 'Admin', avatarUrl: '👨‍💼', role: 'Admin'),
+                    content: _messageController.text,
+                    timestamp: DateTime.now(),
+                    isMe: true,
                   );
+                  onMessageAdded(message);
                   _messageController.clear();
                 }
               },

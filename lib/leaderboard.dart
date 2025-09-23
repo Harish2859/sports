@@ -132,173 +132,201 @@ class _LeaderboardPageState extends State<LeaderboardPage> with TickerProviderSt
       topThreeFiltered = filteredUsers.take(3).toList();
     }
 
-    return MainLayout(
-      currentIndex: -1,
-      onTabChanged: (index) {},
-      child: Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
+    return Scaffold(
+      backgroundColor: theme.scaffoldBackgroundColor,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Leaderboard',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    Text(
-                      activeTab == 'league' ? 'My League Leaderboard' :
-                      'Sports Champions Leaderboard',
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
                         children: [
-                          _buildTabButton('global', 'Global', Icons.public, theme),
-                          const SizedBox(width: 8),
-                          _buildTabButton('league', 'My League', Icons.emoji_events, theme),
+                          Text(
+                            activeTab == 'league' ? 'My League Leaderboard' :
+                            'Sports Champions Leaderboard',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildTabButton('global', 'Global', Icons.public, theme),
+                                const SizedBox(width: 8),
+                                _buildTabButton('league', 'My League', Icons.emoji_events, theme),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                  ],
-                ),
-              ),
 
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-              if (activeTab == 'league') ...[
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: theme.primaryColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    children: [
-                      AnimatedBuilder(
-                        animation: _scaleAnimation,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: _scaleAnimation.value,
-                            child: SizedBox(
-                              width: 50,
-                              height: 50,
-                              child: Image.asset(
-                                'assets/images/champ.png',
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Icon(Icons.emoji_events, color: Colors.white, size: 50);
-                                },
+                    if (activeTab == 'league') ...[
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16),
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: theme.primaryColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          children: [
+                            AnimatedBuilder(
+                              animation: _scaleAnimation,
+                              builder: (context, child) {
+                                return Transform.scale(
+                                  scale: _scaleAnimation.value,
+                                  child: SizedBox(
+                                    width: 50,
+                                    height: 50,
+                                    child: Image.asset(
+                                      'assets/images/champ.png',
+                                      fit: BoxFit.contain,
+                                      errorBuilder: (context, error, stackTrace) {
+                                        return Icon(Icons.emoji_events, color: Colors.white, size: 50);
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP'])} League',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP'])} League',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                            Text(
+                              _getLeagueDescription(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP'])),
+                              style: const TextStyle(color: Colors.white70, fontSize: 14),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _buildStatItem('Rank', '#4', Colors.white),
+                                _buildStatItem('XP', '${users.firstWhere((user) => user['isCurrentUser'])['totalXP']}', Colors.white),
+                                _buildStatItem('Members', '${filteredUsers.length}', Colors.white),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        _getLeagueDescription(_getLeague(users.firstWhere((user) => user['isCurrentUser'])['totalXP'])),
-                        style: const TextStyle(color: Colors.white70, fontSize: 14),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildStatItem('Rank', '#4', Colors.white),
-                          _buildStatItem('XP', '${users.firstWhere((user) => user['isCurrentUser'])['totalXP']}', Colors.white),
-                          _buildStatItem('Members', '${filteredUsers.length}', Colors.white),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
 
-                const SizedBox(height: 24),
-
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(
-                        'League Rankings',
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 16),
-                      ...filteredUsers.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final user = entry.value;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildUserCard(user, index + 1, theme),
-                        );
-                      }).toList(),
-                    ],
-                  ),
-                ),
-              ] else ...[
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(
-                        '🏆 Champions Podium 🏆',
-                        style: theme.textTheme.headlineSmall,
-                      ),
                       const SizedBox(height: 24),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
+
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
                           children: [
-                            if (topThreeFiltered.length > 1) _buildPodiumCard(topThreeFiltered[1], 2, theme),
-                            const SizedBox(width: 16),
-                            if (topThreeFiltered.isNotEmpty) _buildPodiumCard(topThreeFiltered[0], 1, theme),
-                            const SizedBox(width: 16),
-                            if (topThreeFiltered.length > 2) _buildPodiumCard(topThreeFiltered[2], 3, theme),
+                            Text(
+                              'League Rankings',
+                              style: theme.textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 16),
+                            ...filteredUsers.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final user = entry.value;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _buildUserCard(user, index + 1, theme),
+                              );
+                            }).toList(),
+                          ],
+                        ),
+                      ),
+                    ] else ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Text(
+                              '🏆 Champions Podium 🏆',
+                              style: theme.textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 24),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  if (topThreeFiltered.length > 1) _buildPodiumCard(topThreeFiltered[1], 2, theme),
+                                  const SizedBox(width: 16),
+                                  if (topThreeFiltered.isNotEmpty) _buildPodiumCard(topThreeFiltered[0], 1, theme),
+                                  const SizedBox(width: 16),
+                                  if (topThreeFiltered.length > 2) _buildPodiumCard(topThreeFiltered[2], 3, theme),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Full Rankings',
+                              style: theme.textTheme.headlineSmall,
+                            ),
+                            const SizedBox(height: 16),
+                            ...filteredUsers.asMap().entries.map((entry) {
+                              final index = entry.key;
+                              final user = entry.value;
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: _buildUserCard(user, index + 1, theme),
+                              );
+                            }).toList(),
                           ],
                         ),
                       ),
                     ],
-                  ),
+                  ],
                 ),
-
-                const SizedBox(height: 24),
-
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Text(
-                        'Full Rankings',
-                        style: theme.textTheme.headlineSmall,
-                      ),
-                      const SizedBox(height: 16),
-                      ...filteredUsers.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final user = entry.value;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildUserCard(user, index + 1, theme),
-                        );
-                      }).toList(),
-                    ],
-                  ),
-                ),
-              ],
-            ],
-          ),
+              ),
+            ),
+          ],
         ),
       ),
     );

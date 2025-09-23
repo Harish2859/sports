@@ -1009,8 +1009,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   Widget _buildGenderLeaderboard(String gender, IconData icon, Color color) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     // Use real data from AppState instead of dummy data
-    final enrolledUsers = _appState.getEnrolledUsersByGender(_course.id, gender);
-    final enrolledCount = enrolledUsers.length;
+    final enrolledUsers = _appState.getEnrolledUsersByGender(_course.id, gender) ?? [];
+    final safeEnrolledUsers = enrolledUsers.where((user) => user != null && user.isNotEmpty).toList();
+    final enrolledCount = safeEnrolledUsers.length;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1045,7 +1046,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
             ],
           ),
           const SizedBox(height: 12),
-          if (enrolledUsers.isEmpty)
+          if (safeEnrolledUsers.isEmpty)
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -1063,9 +1064,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
               height: 120,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: enrolledUsers.length,
+                itemCount: safeEnrolledUsers.length,
                 itemBuilder: (context, index) {
-                  final userName = enrolledUsers[index];
+                  if (index >= safeEnrolledUsers.length) return const SizedBox.shrink();
+                  final userName = safeEnrolledUsers[index] ?? 'Unknown';
                   return Padding(
                     padding: const EdgeInsets.only(right: 12),
                     child: Container(
@@ -1084,7 +1086,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
                             radius: 16,
                             backgroundColor: color.withOpacity(0.2),
                             child: Text(
-                              userName[0].toUpperCase(),
+                              userName.isNotEmpty ? userName[0].toUpperCase() : '?',
                               style: TextStyle(
                                 color: color,
                                 fontWeight: FontWeight.bold,

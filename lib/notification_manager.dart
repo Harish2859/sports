@@ -7,6 +7,7 @@ class NotificationItem {
   final DateTime timestamp;
   final NotificationType type;
   final bool isRead;
+  final Map<String, dynamic>? actionData;
 
   NotificationItem({
     required this.id,
@@ -15,6 +16,7 @@ class NotificationItem {
     required this.timestamp,
     required this.type,
     this.isRead = false,
+    this.actionData,
   });
 
   NotificationItem copyWith({
@@ -41,6 +43,10 @@ enum NotificationType {
   course,
   achievement,
   system,
+  friendRequest,
+  certificate,
+  dailyTask,
+  league,
 }
 
 class NotificationManager extends ChangeNotifier {
@@ -65,6 +71,7 @@ class NotificationManager extends ChangeNotifier {
     required String title,
     required String message,
     required NotificationType type,
+    Map<String, dynamic>? actionData,
   }) {
     final notification = NotificationItem(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -72,6 +79,7 @@ class NotificationManager extends ChangeNotifier {
       message: message,
       timestamp: DateTime.now(),
       type: type,
+      actionData: actionData,
     );
 
     _notifications.insert(0, notification);
@@ -108,9 +116,42 @@ class NotificationManager extends ChangeNotifier {
   // Helper methods for different types of notifications
   void addEventNotification(String eventName, String eventDate) {
     addNotification(
-      title: 'New Event Created',
+      title: 'New Event Posted',
       message: '$eventName has been scheduled for $eventDate',
       type: NotificationType.event,
+    );
+  }
+
+  void addFriendRequestNotification(String friendName, String friendId) {
+    addNotification(
+      title: 'Friend Request',
+      message: '$friendName wants to be your friend',
+      type: NotificationType.friendRequest,
+      actionData: {'friendName': friendName, 'friendId': friendId},
+    );
+  }
+
+  void addCertificateNotification(String certificateName) {
+    addNotification(
+      title: 'Certificate Earned!',
+      message: 'Congratulations! You earned: $certificateName',
+      type: NotificationType.certificate,
+    );
+  }
+
+  void addDailyTaskCompletedNotification() {
+    addNotification(
+      title: 'Daily Task Completed!',
+      message: 'Great job! You completed your daily tasks. Keep up the streak!',
+      type: NotificationType.dailyTask,
+    );
+  }
+
+  void addNewLeagueNotification(String leagueName) {
+    addNotification(
+      title: 'New League Available',
+      message: 'Join the $leagueName and compete with other athletes!',
+      type: NotificationType.league,
     );
   }
 
@@ -137,4 +178,6 @@ class NotificationManager extends ChangeNotifier {
       type: NotificationType.system,
     );
   }
+
+
 }

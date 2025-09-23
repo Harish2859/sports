@@ -96,6 +96,178 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildCommunityPostsSection() {
+    final samplePosts = [
+      {
+        'author': 'John Doe',
+        'content': 'Just crushed my morning workout! 💪 Nothing beats that post-gym feeling.',
+        'likes': 24,
+        'time': '2h',
+      },
+      {
+        'author': 'Mike Johnson',
+        'content': '30-day transformation complete! 🙏 Lost 15 pounds and gained confidence.',
+        'likes': 156,
+        'time': '1h',
+      },
+      {
+        'author': 'Lisa Chen',
+        'content': 'Just launched my new AI-powered fitness app! 🚀 Beta testers wanted!',
+        'likes': 67,
+        'time': '6h',
+      },
+    ];
+
+    return Container(
+      height: 200,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        itemCount: samplePosts.length,
+        itemBuilder: (context, index) {
+          final post = samplePosts[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundColor: Colors.green,
+                        child: Text(
+                          post['author'].toString()[0],
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              post['author'].toString(),
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                            ),
+                            Text(
+                              post['time'].toString(),
+                              style: TextStyle(color: Colors.grey[600], fontSize: 10),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    post['content'].toString(),
+                    style: const TextStyle(fontSize: 12),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.favorite_border, size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${post['likes']}',
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                      ),
+                      const SizedBox(width: 16),
+                      Icon(Icons.chat_bubble_outline, size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Comment',
+                        style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCommunityProfilesSection() {
+    final sampleProfiles = [
+      {
+        'name': 'Sports Enthusiasts',
+        'members': 245,
+        'description': 'Connect with fellow sports lovers',
+        'icon': '🏆',
+      },
+      {
+        'name': 'Fitness Goals',
+        'members': 189,
+        'description': 'Share your fitness journey',
+        'icon': '💪',
+      },
+      {
+        'name': 'Tech Innovators',
+        'members': 156,
+        'description': 'Latest in technology',
+        'icon': '💻',
+      },
+    ];
+
+    return Container(
+      height: 180,
+      child: ListView.builder(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        itemCount: sampleProfiles.length,
+        itemBuilder: (context, index) {
+          final profile = sampleProfiles[index];
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            child: ListTile(
+              contentPadding: const EdgeInsets.all(12),
+              leading: CircleAvatar(
+                radius: 20,
+                backgroundColor: Colors.green,
+                child: Text(
+                  profile['icon'].toString(),
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+              title: Text(
+                profile['name'].toString(),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${profile['members']} members',
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  ),
+                  Text(
+                    profile['description'].toString(),
+                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CommunityPage()),
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -260,6 +432,8 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   Navigator.pushNamed(context, '/test');
                 },
               ),
+              
+              const Divider(),
               _buildDrawerItem(
                 context,
                 Icons.logout,

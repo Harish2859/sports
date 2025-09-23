@@ -22,19 +22,19 @@ class _PerformanceVideosPageState extends State<PerformanceVideosPage> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
     
-    return MainLayout(
-      currentIndex: 4, // Profile tab
-      onTabChanged: (index) {
-        if (index != 4) {
-          Navigator.pop(context);
-        }
-      },
-      child: Scaffold(
-          backgroundColor: isDarkMode ? Colors.grey[900] : null,
-          body: _videosManager.hasVideos()
-              ? _buildVideosList()
-              : _buildEmptyState(),
+    return Scaffold(
+      backgroundColor: isDarkMode ? Colors.grey[900] : null,
+      appBar: AppBar(
+        title: const Text('Your Performance'),
+        backgroundColor: isDarkMode ? Colors.grey[800] : null,
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: const Icon(Icons.arrow_back),
         ),
+      ),
+      body: _videosManager.hasVideos()
+          ? _buildVideosList()
+          : _buildEmptyState(),
     );
   }
 

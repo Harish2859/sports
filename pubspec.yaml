@@ -50,6 +50,8 @@ dependencies:
   geolocator: ^10.1.0
   geocoding: ^2.1.1
   google_mlkit_pose_detection: ^0.10.0
+  fl_chart: ^0.68.0
+  table_calendar: ^3.0.9
 
 
 dev_dependencies:

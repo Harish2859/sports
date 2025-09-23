@@ -88,76 +88,81 @@ class _PerformanceSummaryPageState extends State<PerformanceSummaryPage>
 
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-      appBar: AppBar(
-        title: Row(
+      body: SafeArea(
+        child: Column(
           children: [
-            Expanded(child: Text('Performance Summary', style: TextStyle(color: Colors.white))),
-            themeProvider.buildXPBadge(appState.totalXP),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 30,
-              height: 30,
-              child: themeProvider.buildLottieAnimation(),
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'Performance Summary',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Stack(
+                children: [
+                  AnimatedBuilder(
+                    animation: _fadeAnimation,
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _fadeAnimation.value,
+                        child: Transform.translate(
+                          offset: Offset(0, _slideAnimation.value),
+                          child: SingleChildScrollView(
+                            padding: EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                _buildHeader(),
+                                SizedBox(height: 24),
+                                _buildPerformanceCards(),
+                                SizedBox(height: 24),
+                                _buildXPCard(),
+                                SizedBox(height: 32),
+                                _buildActionButtons(),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: AnimatedBuilder(
+                      animation: _confettiController,
+                      builder: (context, child) {
+                        return _confettiController.isAnimating
+                            ? Container(
+                                width: 300,
+                                height: 300,
+                                child: themeProvider.buildLottieAnimation(),
+                              )
+                            : SizedBox.shrink();
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(
-              isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
-            },
-          ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          AnimatedBuilder(
-            animation: _fadeAnimation,
-            builder: (context, child) {
-              return Opacity(
-                opacity: _fadeAnimation.value,
-                child: Transform.translate(
-                  offset: Offset(0, _slideAnimation.value),
-                  child: SingleChildScrollView(
-                    padding: EdgeInsets.all(20),
-                    child: Column(
-                      children: [
-                        _buildHeader(),
-                        SizedBox(height: 24),
-                        _buildPerformanceCards(),
-                        SizedBox(height: 24),
-                        _buildXPCard(),
-                        SizedBox(height: 32),
-                        _buildActionButtons(),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          Align(
-            alignment: Alignment.topCenter,
-            child: AnimatedBuilder(
-              animation: _confettiController,
-              builder: (context, child) {
-                return _confettiController.isAnimating
-                    ? Container(
-                        width: 300,
-                        height: 300,
-                        child: themeProvider.buildLottieAnimation(),
-                      )
-                    : SizedBox.shrink();
-              },
-            ),
-          ),
-        ],
       ),
     );
   }

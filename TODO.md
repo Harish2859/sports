@@ -1,19 +1,22 @@
-# TODO: Update Message Page Content for Sports App
+# Flutter RenderFlex Overflow Fix
 
-## Information Gathered
-- The message page in `lib/message_page.dart` currently has LinkedIn-style content with professional networking users, titles, and messages.
-- Sample data includes names like "Sarah Chen - Product Manager at Google", messages about job roles and connections.
-- UI elements like app bar title "Messaging" and chat content need to be adapted to sports context.
+## Completed Tasks ✅
+- [x] **Fixed RenderFlex overflow in event_search_page.dart**
+  - [x] Wrapped Column content in SingleChildScrollView for scrollable modal
+  - [x] Removed Spacer() widget that was causing layout conflicts
+  - [x] Added proper spacing with SizedBox before register button
+  - [x] Tested the fix resolves the 4.8 pixel overflow error
+- [x] **Removed dropdown button from event.dart**
+  - [x] Removed _selectedSport variable
+  - [x] Removed sport filter dropdown from _buildTopBar() method
+  - [x] Cleaned up unused code and maintained proper layout
 
-## Plan
-- [x] Update app bar title from "Messaging" to "Sports Chat".
-- [x] Replace sample user data with sports-related names and titles (e.g., athletes, coaches, team members).
-- [x] Change chat messages to sports-related conversations (training, matches, performance tips).
-- [x] Update any LinkedIn-specific references to sports app context.
+## Summary
+Successfully resolved the RenderFlex overflow error in the event search page modal bottom sheet. The modal now displays all event details properly without layout overflow issues, and users can scroll through the content when it exceeds the available space.
 
-## Dependent Files
-- `lib/message_page.dart`: Main file to edit with new sports-related content.
+Additionally, removed the sport filter dropdown button from the event page as requested, simplifying the UI and removing the unused _selectedSport variable.
 
-## Followup Steps
-- [x] Test the message page to ensure content displays correctly.
-- [x] Verify no LinkedIn references remain.
+## Next Steps
+- Test the modal behavior on different screen sizes
+- Verify no other layout issues are introduced
+- Consider adding pull-to-refresh functionality if needed

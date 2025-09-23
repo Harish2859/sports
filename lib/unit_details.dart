@@ -95,25 +95,53 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
 
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-      appBar: AppBar(
-        title: Text('Unit Details', style: TextStyle(color: Colors.white)),
-        backgroundColor: isDarkMode ? Colors.grey[800] : Color(0xFF2563EB),
-        elevation: 0,
-      ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildUnitHeader(),
-            SizedBox(height: 24),
-            _buildVideoSection(),
-            SizedBox(height: 24),
-            _buildObjectives(),
-            SizedBox(height: 24),
-            _buildRecordingSection(),
-            SizedBox(height: 32),
-            _buildNavigationButtons(),
+            // Custom Header
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      widget.unitName,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Content
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildUnitHeader(),
+                    SizedBox(height: 24),
+                    _buildVideoSection(),
+                    SizedBox(height: 24),
+                    _buildObjectives(),
+                    SizedBox(height: 24),
+                    _buildRecordingSection(),
+                    SizedBox(height: 32),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -140,23 +168,6 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Welcome to',
-            style: TextStyle(
-              fontSize: 16,
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            widget.unitName,
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
-            ),
-          ),
-          SizedBox(height: 16),
           Text(
             widget.unitDescription,
             style: TextStyle(
@@ -547,37 +558,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
     );
   }
 
-  Widget _buildNavigationButtons() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Back to Course'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
-              padding: EdgeInsets.symmetric(vertical: 16),
-            ),
-          ),
-        ),
-        SizedBox(width: 16),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: (_hasRecording && !_hasMalpractice) ? () => _goToNextUnit() : null,
-            child: Text(_isLastUnitInSection() ? 'Go to Next Section' : 'Go to Next Unit'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: (_hasRecording && !_hasMalpractice) ? (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)) : Colors.grey,
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(vertical: 16),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 
   void _toggleRecording() async {
     if (_isRecording) {

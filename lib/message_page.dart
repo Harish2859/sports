@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'theme_provider.dart';
+
+
 
 class MessagePage extends StatefulWidget {
   const MessagePage({super.key});
@@ -10,8 +14,6 @@ class MessagePage extends StatefulWidget {
 class _MessagePageState extends State<MessagePage> {
   final TextEditingController _searchController = TextEditingController();
   bool _isSearching = false;
-  String _selectedTab = 'Focused';
-
   // Sample data for demonstration
   final List<ChatUser> _activeUsers = [
     ChatUser(
@@ -181,118 +183,9 @@ class _MessagePageState extends State<MessagePage> {
               ),
             ),
 
-            // Tab Bar
-            Container(
-              color: Colors.white,
-              child: Row(
-                children: [
-                  _buildTab('Focused', _selectedTab == 'Focused'),
-                  _buildTab('Other', _selectedTab == 'Other'),
-                ],
-              ),
-            ),
-
-            const Divider(height: 1, color: Color(0xFFE0E0E0)),
-
-            // Chat List
+            // Messages Content
             Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  if (_selectedTab == 'Focused') ...[
-                    ..._focusedChats.map((chat) => LinkedInChatTile(chat: chat)),
-                  ] else ...[
-                    // Active section for Other tab
-                    if (_activeUsers.isNotEmpty) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        color: Colors.white,
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Active',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              'See all',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.blue[700],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        height: 80,
-                        color: Colors.white,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: _activeUsers.length,
-                          itemBuilder: (context, index) {
-                            final user = _activeUsers[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 16),
-                              child: Column(
-                                children: [
-                                  Stack(
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 26,
-                                        backgroundImage: NetworkImage(user.avatar),
-                                      ),
-                                      if (user.isOnline)
-                                        Positioned(
-                                          right: 2,
-                                          bottom: 2,
-                                          child: Container(
-                                            width: 14,
-                                            height: 14,
-                                            decoration: BoxDecoration(
-                                              color: Colors.green[600],
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: Colors.white,
-                                                width: 2,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 4),
-                                  SizedBox(
-                                    width: 52,
-                                    child: Text(
-                                      user.name.split(' ').first,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        color: Colors.black87,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const Divider(height: 1, color: Color(0xFFE0E0E0)),
-                    ],
-                    ..._otherChats.map((chat) => LinkedInChatTile(chat: chat)),
-                  ],
-                ],
-              ),
+              child: _buildMessagesSection(),
             ),
           ],
         ),
@@ -300,38 +193,33 @@ class _MessagePageState extends State<MessagePage> {
     );
   }
 
-  Widget _buildTab(String title, bool isSelected) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () {
-          setState(() {
-            _selectedTab = title;
-          });
-        },
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            border: isSelected
-                ? const Border(
-                    bottom: BorderSide(
-                      color: Colors.green,
-                      width: 2,
-                    ),
-                  )
-                : null,
-          ),
-          child: Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? Colors.green : Colors.grey[700],
-            ),
-          ),
-        ),
-      ),
+
+
+  Widget _buildMessagesSection() {
+    return ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        ..._focusedChats.map((chat) => LinkedInChatTile(chat: chat)),
+        ..._otherChats.map((chat) => LinkedInChatTile(chat: chat)),
+      ],
     );
+  }
+
+
+
+  String _formatTime(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+    
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m';
+    } else {
+      return 'now';
+    }
   }
 }
 
@@ -568,18 +456,6 @@ class _LinkedInChatScreenState extends State<LinkedInChatScreen> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.videocam_outlined, color: Colors.grey[700]),
-            onPressed: () {
-              // Handle video call
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.phone_outlined, color: Colors.grey[700]),
-            onPressed: () {
-              // Handle voice call
-            },
-          ),
-          IconButton(
             icon: Icon(Icons.info_outline, color: Colors.grey[700]),
             onPressed: () {
               // Handle user info
@@ -727,3 +603,4 @@ class ChatItem {
 }
 
 enum MessageStatus { sent, delivered, read }
+

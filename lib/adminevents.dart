@@ -3,12 +3,16 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'notification_manager.dart';
 import 'app_state.dart';
+import 'screens/admin_events_view_page.dart';
+import 'screens/admin_modules_page.dart';
 
 class AdminEventsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return EventsListScreen();
   }
+
+
 }
 
 // Event Model
@@ -163,7 +167,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -181,8 +185,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
-              _buildDropdownField(),
               const SizedBox(height: 16),
               _buildCertificateDropdown(),
               const SizedBox(height: 20),
@@ -230,7 +232,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
               _buildSectionTitle('Event Banner (Optional)'),
               const SizedBox(height: 16),
               _buildImageUpload(),
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -262,7 +264,6 @@ class _AddEventScreenState extends State<AddEventScreen> {
                         ),
                 ),
               ),
-              const SizedBox(height: 20),
             ],
           ),
         ),
@@ -315,55 +316,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
     );
   }
 
-  Widget _buildDropdownField() {
-    return DropdownButtonFormField<String>(
-      value: _selectedSportType,
-      decoration: InputDecoration(
-        labelText: 'Sport Type',
-        prefixIcon: Icon(
-          _selectedSportType != null ? _sportIcons[_selectedSportType!] : Icons.sports,
-          color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFD1D5DB)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
-        ),
-        filled: true,
-        fillColor: Theme.of(context).cardColor,
-      ),
-      items: _sportTypes.map((sport) {
-        return DropdownMenuItem<String>(
-          value: sport,
-          child: Row(
-            children: [
-              Icon(_sportIcons[sport], size: 20, color: const Color(0xFF2563EB)),
-              const SizedBox(width: 12),
-              Text(sport),
-            ],
-          ),
-        );
-      }).toList(),
-      onChanged: (value) {
-        setState(() {
-          _selectedSportType = value;
-        });
-      },
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please select a sport type';
-        }
-        return null;
-      },
-    );
-  }
+
 
   Widget _buildCertificateDropdown() {
     return DropdownButtonFormField<String>(
@@ -529,7 +482,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
-        height: 120,
+        height: 80,
         width: double.infinity,
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
@@ -693,7 +646,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
         date: _selectedDate!,
         time: _selectedTime!,
         location: _locationController.text,
-        sportType: _selectedSportType!,
+        sportType: 'General',
         description: _descriptionController.text,
         bannerPath: _bannerPath,
         requiredCertificate: _selectedCertificate == 'None Required' ? null : _selectedCertificate,
@@ -706,7 +659,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
         date: _selectedDate!,
         time: _selectedTime!,
         location: _locationController.text,
-        sportType: _selectedSportType!,
+        sportType: 'General',
         description: _descriptionController.text,
         bannerPath: _bannerPath,
         status: EventStatus.upcoming,
@@ -787,126 +740,24 @@ class _EventsListScreenState extends State<EventsListScreen> {
     }).toList();
   }
 
+  Widget _buildEventsPage() {
+    return Column(
+      children: [
+        _buildSearchAndFilters(),
+        Expanded(
+          child: _filteredEvents.isEmpty
+              ? _buildEmptyState()
+              : _buildEventsList(),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.sports_soccer,
-                    size: 48,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Coach Portal',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Text(
-                    'Findrly - Empowering Talent',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(),
-            ListTile(
-              leading: Icon(Icons.dashboard, color: Theme.of(context).primaryColor),
-              title: const Text('Dashboard'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.group, color: Theme.of(context).primaryColor),
-              title: const Text('Manage Athletes'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.schedule, color: Theme.of(context).primaryColor),
-              title: const Text('Training Schedule'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.assessment, color: Theme.of(context).primaryColor),
-              title: const Text('Performance Analytics'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.event, color: Theme.of(context).primaryColor),
-              title: const Text('Competitions'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.fitness_center, color: Theme.of(context).primaryColor),
-              title: const Text('Equipment Management'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.medical_services, color: Theme.of(context).primaryColor),
-              title: const Text('Health & Safety'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.bar_chart, color: Theme.of(context).primaryColor),
-              title: const Text('Reports'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: Icon(Icons.settings, color: Theme.of(context).primaryColor),
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/login',
-                  (Route<dynamic> route) => false,
-                );
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: _buildDrawer(),
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -936,13 +787,11 @@ class _EventsListScreenState extends State<EventsListScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: () => _navigateToAddEvent(),
+            onPressed: () => _navigateToAddEvent(context),
           ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-            onPressed: () {
-              // Handle notifications
-            },
+            onPressed: () {},
           ),
           Builder(
             builder: (context) => IconButton(
@@ -959,18 +808,9 @@ class _EventsListScreenState extends State<EventsListScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: Column(
-        children: [
-          _buildSearchAndFilters(),
-          Expanded(
-            child: _filteredEvents.isEmpty
-                ? _buildEmptyState()
-                : _buildEventsList(),
-          ),
-        ],
-      ),
+      body: _buildEventsPage(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _navigateToAddEvent(),
+        onPressed: () => _navigateToAddEvent(context),
         backgroundColor: Theme.of(context).primaryColor,
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -1250,7 +1090,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: () => _navigateToAddEvent(),
+            onPressed: () => _navigateToAddEvent(context),
             icon: const Icon(Icons.add),
             label: const Text('Add Event'),
             style: ElevatedButton.styleFrom(
@@ -1288,7 +1128,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
     }
   }
 
-  void _navigateToAddEvent([Event? event]) async {
+  void _navigateToAddEvent(BuildContext context, [Event? event]) async {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -1302,7 +1142,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
   }
 
   void _editEvent(Event event) {
-    _navigateToAddEvent(event);
+    _navigateToAddEvent(context, event);
   }
 
   void _deleteEvent(Event event) {
@@ -1387,5 +1227,132 @@ class _EventsListScreenState extends State<EventsListScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(
+                  Icons.sports_soccer,
+                  size: 48,
+                  color: Colors.white,
+                ),
+                const SizedBox(height: 10),
+                const Text(
+                  'Coach Portal',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Text(
+                  'Findrly - Empowering Talent',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          ListTile(
+            leading: Icon(Icons.dashboard, color: Theme.of(context).primaryColor),
+            title: const Text('Dashboard'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.event, color: Theme.of(context).primaryColor),
+            title: const Text('Events'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminEventsViewPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.school, color: Theme.of(context).primaryColor),
+            title: const Text('Modules'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminModulesPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.people, color: Theme.of(context).primaryColor),
+            title: const Text('Community'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.leaderboard, color: Theme.of(context).primaryColor),
+            title: const Text('Leaderboard'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: Icon(Icons.settings, color: Theme.of(context).primaryColor),
+            title: const Text('Settings'),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: const Text('Logout'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (Route<dynamic> route) => false,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGridItem(String title, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 20, color: Theme.of(context).primaryColor),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 }

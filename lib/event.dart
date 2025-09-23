@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'app_state.dart' as app_state;
 import 'theme_provider.dart';
+import 'event_search_page.dart';
 
 class Event {
   final String id;
@@ -238,53 +239,43 @@ class _SportsEventPageState extends State<SportsEventPage>
     );
   }
 
-  String _selectedSport = 'All Sports';
+
 
   Widget _buildTopBar() {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return Container(
-      height: 80,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: const BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(8),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventSearchPage(),
             ),
-            child: DropdownButton<String>(
-              value: _selectedSport,
-              underline: const SizedBox(),
-              dropdownColor: Colors.white,
-              items: ['All Sports', 'Swimming', 'Running', 'Basketball', 'Tennis', 'Football']
-                  .map((sport) => DropdownMenuItem(
-                        value: sport,
-                        child: Text(
-                          sport,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedSport = value!;
-                });
-              },
-            ),
+          );
+        },
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.grey[300]!),
           ),
-        ],
+          child: Row(
+            children: [
+              Icon(Icons.search, color: Colors.grey[600]),
+              SizedBox(width: 12),
+              Text(
+                'Search events by sport, name...',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
