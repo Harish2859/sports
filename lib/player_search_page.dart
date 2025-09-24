@@ -1,6 +1,47 @@
 import 'package:flutter/material.dart';
-import 'profile.dart';
+import 'package:flutter/services.dart';
 
+// --- Placeholder for your ProfilePage ---
+// You can replace this with your actual ProfilePage widget.
+class ProfilePage extends StatelessWidget {
+  final bool isOwnProfile;
+  final String userId;
+  final String userName;
+  final String userProfileImage;
+  final int friendsCount;
+
+  const ProfilePage({
+    super.key,
+    required this.isOwnProfile,
+    required this.userId,
+    required this.userName,
+    required this.userProfileImage,
+    required this.friendsCount,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(userName)),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundImage: NetworkImage(userProfileImage),
+            ),
+            const SizedBox(height: 16),
+            Text('Profile of $userName', style: const TextStyle(fontSize: 22)),
+            Text('User ID: $userId'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- Main Player Search Page Widget ---
 class PlayerSearchPage extends StatefulWidget {
   const PlayerSearchPage({super.key});
 
@@ -11,8 +52,9 @@ class PlayerSearchPage extends StatefulWidget {
 class _PlayerSearchPageState extends State<PlayerSearchPage> {
   final TextEditingController _searchController = TextEditingController();
   List<PlayerProfile> _searchResults = [];
-  bool _isSearching = false;
+  final Set<String> _pendingRequests = {}; // Tracks pending friend requests
 
+  // Hardcoded player data for demonstration
   final List<PlayerProfile> _allPlayers = [
     PlayerProfile(id: '1', name: 'Alex Johnson', username: 'alex_runner', sport: 'Running', profileImage: 'https://i.pravatar.cc/100?img=1', friendsCount: 234, isVerified: true),
     PlayerProfile(id: '2', name: 'Sarah Wilson', username: 'sarah_swimmer', sport: 'Swimming', profileImage: 'https://i.pravatar.cc/100?img=2', friendsCount: 189, isVerified: false),
@@ -25,22 +67,51 @@ class _PlayerSearchPageState extends State<PlayerSearchPage> {
   @override
   void initState() {
     super.initState();
+    // Initially, show all players
     _searchResults = _allPlayers;
+    // Add a listener to rebuild the UI when the search text changes (for the clear button)
+    _searchController.addListener(() => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _performSearch(String query) {
     setState(() {
-      _isSearching = query.isNotEmpty;
       if (query.isEmpty) {
         _searchResults = _allPlayers;
       } else {
-        _searchResults = _allPlayers.where((player) =>
-          player.name.toLowerCase().contains(query.toLowerCase()) ||
-          player.username.toLowerCase().contains(query.toLowerCase()) ||
-          player.sport.toLowerCase().contains(query.toLowerCase())
-        ).toList();
+        _searchResults = _allPlayers
+            .where((player) =>
+                player.name.toLowerCase().contains(query.toLowerCase()) ||
+                player.username.toLowerCase().contains(query.toLowerCase()) ||
+                player.sport.toLowerCase().contains(query.toLowerCase()))
+            .toList();
       }
     });
+  }
+
+  void _addFriend(PlayerProfile player) {
+    setState(() {
+      _pendingRequests.add(player.id);
+    });
+    // Show a confirmation snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        elevation: 2,
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF2A2A2A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        content: Text(
+          'Connection request sent to ${player.name}',
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+      ),
+    );
   }
 
   @override
@@ -48,235 +119,265 @@ class _PlayerSearchPageState extends State<PlayerSearchPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        elevation: 0,
+        // Use system UI overlay style for better status bar contrast
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
         backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        scrolledUnderElevation: 0.5,
+        shadowColor: Colors.grey[200],
         title: const Text(
-          'Discover Players',
+          'Discover',
           style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            color: Color(0xFF1A1A1A),
           ),
         ),
+        // Simplified leading back button
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF1A1A1A), size: 20),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          // Simplified filter button
+          IconButton(
+            icon: const Icon(Icons.filter_list_rounded, color: Color(0xFF1A1A1A), size: 24),
+            onPressed: () {
+              // TODO: Implement filter logic
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search Bar
-          Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
+          // ## 1. Minimalistic Search Bar
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
-                hintText: 'Search players, sports...',
-                hintStyle: TextStyle(color: Colors.grey[600]),
-                prefixIcon: Icon(Icons.search, color: Colors.grey[600], size: 20),
+                hintText: 'Search players or sports...',
+                hintStyle: TextStyle(color: Colors.grey[500]),
+                prefixIcon: Icon(Icons.search, color: Colors.grey[500], size: 22),
+                // Show clear button only when text is entered
+                suffixIcon: _searchController.text.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(Icons.clear_rounded, color: Colors.grey[500]),
+                        onPressed: () {
+                          _searchController.clear();
+                          _performSearch('');
+                        },
+                      )
+                    : null,
                 filled: true,
-                fillColor: const Color(0xFFF3F2EF),
+                fillColor: Colors.grey[100],
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                // Use a subtle border instead of shadow
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
               onChanged: _performSearch,
             ),
           ),
-          
-          const Divider(height: 1, color: Color(0xFFE0E0E0)),
-          
-          // Results
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.0,
+
+          // ## 2. Dynamic Results Header
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Text(
+              _searchController.text.isEmpty
+                  ? 'Suggested Players'
+                  : 'Results (${_searchResults.length})',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
               ),
-              itemCount: _searchResults.length,
-              itemBuilder: (context, index) {
-                final player = _searchResults[index];
-                return _buildPlayerCard(player);
-              },
             ),
+          ),
+
+          // ## 3. Content Area with Conditional UI
+          Expanded(
+            child: _searchResults.isEmpty
+                ? _buildEmptyState()
+                : _buildResultsList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPlayerCard(PlayerProfile player) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProfilePage(
-            isOwnProfile: false,
-            userId: player.id,
-            userName: player.name,
-            userProfileImage: player.profileImage,
-            friendsCount: player.friendsCount,
-          ),
-        ),
+  /// A clean list view for displaying results.
+  Widget _buildResultsList() {
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      itemCount: _searchResults.length,
+      itemBuilder: (context, index) {
+        final player = _searchResults[index];
+        return _buildPlayerListItem(player);
+      },
+      // Add a subtle divider between items
+      separatorBuilder: (context, index) => Divider(
+        color: Colors.grey[200],
+        height: 1,
+        indent: 80, // Indent to align with text
+        endIndent: 16,
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+    );
+  }
+
+  /// Refactored player card into a cleaner list item.
+  Widget _buildPlayerListItem(PlayerProfile player) {
+    final isPending = _pendingRequests.contains(player.id);
+
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          // Navigate to the player's profile page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProfilePage(
+                isOwnProfile: false,
+                userId: player.id,
+                userName: player.name,
+                userProfileImage: player.profileImage,
+                friendsCount: player.friendsCount,
+              ),
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Profile section
-            Expanded(
-              flex: 3,
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.blue[400]!, Colors.blue[600]!],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // ## Profile Picture with Verified Badge
+              Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundImage: NetworkImage(player.profileImage),
+                    backgroundColor: Colors.grey[200],
                   ),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Stack(
-                      children: [
-                        CircleAvatar(
-                          radius: 32,
-                          backgroundColor: Colors.white,
-                          child: CircleAvatar(
-                            radius: 30,
-                            backgroundImage: NetworkImage(player.profileImage),
-                          ),
-                        ),
-                        if (player.isVerified)
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                color: Colors.green,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                              ),
-                              child: const Icon(Icons.check, size: 12, color: Colors.white),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        player.sport,
-                        style: const TextStyle(
+                  if (player.isVerified)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
                           color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                          shape: BoxShape.circle,
                         ),
+                        child: const Icon(Icons.verified, color: Colors.blueAccent, size: 18),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 16),
+
+              // ## Name and Username
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      player.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '@${player.username}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            // Info section
-            Container(
-              height: 60,
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    children: [
-                      Text(
-                        player.name,
-                        style: const TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        '@${player.username}',
-                        style: TextStyle(
-                          fontSize: 7,
-                          color: Colors.grey[600],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        '${player.friendsCount} friends',
-                        style: TextStyle(
-                          fontSize: 7,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 19,
-                    child: ElevatedButton(
-                      onPressed: () => _addFriend(player),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[600],
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(9),
-                        ),
-                        padding: EdgeInsets.zero,
-                      ),
-                      child: const Text('Add', style: TextStyle(fontSize: 8)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+              const SizedBox(width: 16),
+
+              // ## 'Connect' Button with State
+              _buildConnectButton(isPending, player),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _addFriend(PlayerProfile player) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Friend request sent to ${player.name}'),
-        backgroundColor: Colors.green,
+  /// A dedicated builder for the connect button to handle different states.
+  Widget _buildConnectButton(bool isPending, PlayerProfile player) {
+    return isPending
+        ? OutlinedButton.icon(
+            onPressed: null, // Disabled
+            icon: const Icon(Icons.check, size: 16),
+            label: const Text('Pending'),
+            style: OutlinedButton.styleFrom(
+              disabledForegroundColor: Colors.grey[600],
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              side: BorderSide(color: Colors.grey[300]!),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+          )
+        : ElevatedButton.icon(
+            onPressed: () => _addFriend(player),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Connect'),
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: Colors.blueAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+          );
+  }
+
+  /// Refreshed empty state UI.
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_off_rounded,
+            size: 80,
+            color: Colors.grey[300],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No Players Found',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Try using different keywords.',
+            style: TextStyle(
+              fontSize: 15,
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
+// --- Data Model for a Player ---
 class PlayerProfile {
   final String id;
   final String name;
