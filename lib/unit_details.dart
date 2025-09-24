@@ -1,12 +1,41 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
 import 'analysis_results.dart';
-import 'theme_provider.dart';
 import 'simple_video_recorder.dart';
 import 'performance_videos_manager.dart';
-import 'main_layout.dart';
+
+// A custom painter for the dashed border effect.
+class DashedBorderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.grey[700]!
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    const double dashWidth = 8;
+    const double dashSpace = 6;
+    double startX = 0;
+    while (startX < size.width) {
+      canvas.drawLine(Offset(startX, 0), Offset(startX + dashWidth, 0), paint);
+      canvas.drawLine(Offset(startX, size.height), Offset(startX + dashWidth, size.height), paint);
+      startX += dashWidth + dashSpace;
+    }
+
+    double startY = 0;
+    while (startY < size.height) {
+      canvas.drawLine(Offset(0, startY), Offset(0, startY + dashWidth), paint);
+      canvas.drawLine(Offset(size.width, startY), Offset(size.width, startY + dashWidth), paint);
+      startY += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
 
 class UnitDetailsPage extends StatefulWidget {
   final String unitName;
@@ -39,6 +68,7 @@ class UnitDetailsPage extends StatefulWidget {
 }
 
 class _UnitDetailsPageState extends State<UnitDetailsPage> {
+  // State variables remain the same
   bool _isRecording = false;
   bool _isAnalyzing = false;
   bool _hasRecording = false;
@@ -57,9 +87,16 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
 
   @override
   void dispose() {
+    _videoController?.removeListener(_videoListener);
     _videoController?.dispose();
     _recordedVideoController?.dispose();
     super.dispose();
+  }
+  
+  void _videoListener() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _initializeVideo() {
@@ -70,18 +107,24 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         _videoController = VideoPlayerController.asset(widget.videoUrl!);
       }
       
-      _videoController!.initialize().then((_) {
-        setState(() {
-          _isVideoInitialized = true;
-        });
+      _videoController!
+        ..addListener(_videoListener)
+        ..initialize().then((_) {
+        if (mounted) {
+          setState(() {
+            _isVideoInitialized = true;
+          });
+        }
       }).catchError((error) {
         print('Video initialization error: $error');
+        // Handle error state if needed
       });
     }
   }
 
   Future<void> _initializeRecordedVideo() async {
     if (_recordedVideoPath != null) {
+      _recordedVideoController?.dispose();
       _recordedVideoController = VideoPlayerController.file(File(_recordedVideoPath!));
       await _recordedVideoController!.initialize();
       if (mounted) setState(() {});
@@ -90,497 +133,581 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final theme = Theme.of(context);
+    final Color primaryColor = Color(0xFF007BFF); // A vibrant blue for primary actions
+    final Color backgroundColor = Color(0xFF121212); // A deep, dark grey for the background
 
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Custom Header
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: isDarkMode ? Colors.white : Colors.black87,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      widget.unitName,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Colors.white : Colors.black87,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.all(16),
+    return Theme(
+      data: theme.copyWith(
+        primaryColor: primaryColor,
+        scaffoldBackgroundColor: backgroundColor,
+        brightness: Brightness.dark,
+      ),
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildVideoHero(context),
+              Padding(
+                padding: const EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildUnitHeader(),
-                    SizedBox(height: 24),
-                    _buildVideoSection(),
-                    SizedBox(height: 24),
-                    _buildObjectives(),
-                    SizedBox(height: 24),
+                    _buildUnitInfo(),
+                    _buildDivider(),
+                    _buildSectionHeader("Record Your Performance"),
+                    SizedBox(height: 16),
                     _buildRecordingSection(),
+                    _buildDivider(),
+                    _buildDosAndDontsSection(), // **NEW SECTION**
+                    _buildDivider(),
+                    _buildSectionHeader("Learning Objectives"),
+                    SizedBox(height: 16),
+                    _buildObjectives(),
                     SizedBox(height: 32),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildUnitHeader() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.unitDescription,
-            style: TextStyle(
-              fontSize: 16,
-              color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
-              height: 1.5,
+  Widget _buildVideoHero(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          height: 300,
+          width: double.infinity,
+          color: Colors.black,
+          child: _isVideoInitialized && _videoController != null
+              ? Center(
+                  child: AspectRatio(
+                    aspectRatio: _videoController!.value.aspectRatio,
+                    child: VideoPlayer(_videoController!),
+                  ),
+                )
+              : Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.ondemand_video_rounded, size: 64, color: Colors.grey[800]),
+                      SizedBox(height: 12),
+                      Text('No Instructional Video Available', style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                    ],
+                  ),
+                ),
+        ),
+        // Gradient overlay for text readability
+        Container(
+          height: 300,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withOpacity(0.7),
+                Colors.transparent,
+                Colors.black.withOpacity(0.9)
+              ],
+              stops: [0.0, 0.5, 1.0],
             ),
           ),
-          SizedBox(height: 16),
-          Row(
+        ),
+        // Video Player Controls
+        if (_isVideoInitialized && _videoController != null)
+        Positioned.fill(
+          child: _buildVideoControlsOverlay(_videoController!),
+        ),
+        // Top action buttons (Back, etc.)
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 8,
+          left: 16,
+          right: 16,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(
-                Icons.access_time, 
-                color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB), 
-                size: 20
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Estimated time: 15-20 minutes',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              _buildHeroButton(context, Icons.arrow_back, () => Navigator.of(context).pop()),
+              _buildHeroButton(context, Icons.more_horiz, () { /* Add functionality */ }),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildVideoSection() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 4),
+  Widget _buildHeroButton(BuildContext context, IconData icon, VoidCallback onPressed) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(50),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.1),
+            shape: BoxShape.circle,
           ),
-        ],
+          child: IconButton(
+            icon: Icon(icon, color: Colors.white),
+            onPressed: onPressed,
+          ),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Instructional Video',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
-            ),
-          ),
-          SizedBox(height: 16),
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: _isVideoInitialized && _videoController != null
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(
-                      children: [
-                        AspectRatio(
-                          aspectRatio: _videoController!.value.aspectRatio,
-                          child: VideoPlayer(_videoController!),
-                        ),
-                        Positioned.fill(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _videoController!.value.isPlaying
-                                    ? _videoController!.pause()
-                                    : _videoController!.play();
-                              });
-                            },
-                            child: Container(
-                              color: Colors.transparent,
-                              child: Center(
-                                child: Icon(
-                                  _videoController!.value.isPlaying
-                                      ? Icons.pause_circle_outline
-                                      : Icons.play_circle_outline,
-                                  size: 64,
-                                  color: Colors.white.withOpacity(0.8),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.play_circle_outline, size: 64, color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
-                        SizedBox(height: 8),
-                        Text(
-                          widget.videoUrl != null ? 'Loading video...' : 'No video available',
-                          style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
-                        ),
-                      ],
+    );
+  }
+  
+  Widget _buildVideoControlsOverlay(VideoPlayerController controller) {
+    bool isFinished = controller.value.position >= controller.value.duration;
+    
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Top space
+        Expanded(
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              setState(() {
+                if (isFinished) {
+                  controller.seekTo(Duration.zero);
+                  controller.play();
+                } else {
+                  controller.value.isPlaying ? controller.pause() : controller.play();
+                }
+              });
+            },
+            child: Container(
+              color: Colors.transparent,
+              child: Center(
+                child: AnimatedOpacity(
+                  opacity: controller.value.isPlaying ? 0.0 : 1.0,
+                  duration: const Duration(milliseconds: 300),
+                  child: CircleAvatar(
+                    radius: 35,
+                    backgroundColor: Colors.black.withOpacity(0.6),
+                    child: Icon(
+                      isFinished ? Icons.replay : Icons.play_arrow,
+                      size: 50,
+                      color: Colors.white,
                     ),
                   ),
-          ),
-          SizedBox(height: 12),
-          Text(
-            'Watch this video for an overview and demonstration of key concepts for ${widget.unitName}.',
-            style: TextStyle(
-              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildObjectives() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Learning Objectives',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
-            ),
-          ),
-          SizedBox(height: 16),
-          _buildObjectiveItem('Master proper form and technique'),
-          _buildObjectiveItem('Understand progression principles'),
-          _buildObjectiveItem('Apply safety guidelines'),
-          _buildObjectiveItem('Record and track your performance'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildObjectiveItem(String objective) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
-    return Padding(
-      padding: EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(
-            Icons.check_circle_outline, 
-            color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB), 
-            size: 20
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              objective,
-              style: TextStyle(
-                fontSize: 16,
-                color: isDarkMode ? Colors.grey[300] : Colors.grey[700],
+                ),
               ),
             ),
           ),
+        ),
+        // Progress Bar
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+          child: VideoProgressIndicator(
+            controller,
+            allowScrubbing: true,
+            padding: const EdgeInsets.all(8),
+            colors: VideoProgressColors(
+              playedColor: Theme.of(context).primaryColor,
+              bufferedColor: Colors.grey[700]!,
+              backgroundColor: Colors.grey[850]!,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildUnitInfo() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          widget.unitName,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+            letterSpacing: -0.5,
+          ),
+        ),
+        SizedBox(height: 12),
+        Row(
+          children: [
+            _buildInfoTag(Icons.calendar_today_outlined, '2025'),
+            SizedBox(width: 12),
+            _buildInfoTag(Icons.timer_outlined, '15-20 min'),
+          ],
+        ),
+        SizedBox(height: 20),
+        Text(
+          widget.unitDescription,
+          style: TextStyle(
+            color: Colors.grey[400],
+            fontSize: 16,
+            height: 1.6,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildInfoTag(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.grey[400], size: 16),
+          SizedBox(width: 8),
+          Text(text, style: TextStyle(color: Colors.grey[300], fontSize: 14)),
         ],
+      ),
+    );
+  }
+  
+  Widget _buildDivider() => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 24.0),
+    child: Divider(color: Colors.grey[800], height: 1),
+  );
+  
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 22,
+        fontWeight: FontWeight.bold
       ),
     );
   }
 
   Widget _buildRecordingSection() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    Widget currentStateWidget;
 
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[800] : Colors.white,
+    if (_isAnalyzing) {
+      currentStateWidget = _buildAnalyzingState();
+    } else if (_hasRecording) {
+      currentStateWidget = _buildResultState();
+    } else {
+      currentStateWidget = _buildInitialState();
+    }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(scale: animation, child: child),
+        );
+      },
+      child: currentStateWidget,
+    );
+  }
+
+  Widget _buildInitialState() {
+    return Column(
+      key: ValueKey('initial'),
+      children: [
+        _buildRecordedVideoPlayerContainer(),
+        SizedBox(height: 24),
+        ElevatedButton.icon(
+          onPressed: () {
+            HapticFeedback.heavyImpact();
+            _toggleRecording();
+          },
+          icon: Icon(Icons.videocam),
+          label: Text('Record Now'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).primaryColor,
+            foregroundColor: Colors.white,
+            minimumSize: Size(double.infinity, 55),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            elevation: 8,
+            shadowColor: Theme.of(context).primaryColor.withOpacity(0.5),
+          ),
+        ),
+        SizedBox(height: 12),
+        TextButton.icon(
+          onPressed: _showRecordingTips,
+          icon: Icon(Icons.lightbulb_outline, size: 20),
+          label: Text('Recording Tips'),
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.grey[400],
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildRecordedVideoPlayerContainer({Widget? overlay}) {
+    bool hasVideo = _recordedVideoPath != null && _recordedVideoController != null && _recordedVideoController!.value.isInitialized;
+    
+    return AspectRatio(
+      aspectRatio: 16/9,
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Record Your Performance',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDarkMode ? Colors.white : Colors.black87,
-            ),
-          ),
-          SizedBox(height: 16),
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: _recordedVideoPath != null && _recordedVideoController != null && _recordedVideoController!.value.isInitialized
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(
-                      children: [
-                        VideoPlayer(_recordedVideoController!),
-                        Positioned.fill(
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _recordedVideoController!.value.isPlaying
-                                    ? _recordedVideoController!.pause()
-                                    : _recordedVideoController!.play();
-                              });
-                            },
-                            child: Container(
-                              color: Colors.transparent,
-                              child: Center(
-                                child: Icon(
-                                  _recordedVideoController!.value.isPlaying
-                                      ? Icons.pause_circle_outline
-                                      : Icons.play_circle_outline,
-                                  size: 64,
-                                  color: Colors.white.withOpacity(0.8),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+        child: Container(
+          color: Colors.black,
+          child: hasVideo
+              ? Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    AspectRatio(
+                      aspectRatio: _recordedVideoController!.value.aspectRatio,
+                      child: VideoPlayer(_recordedVideoController!),
                     ),
-                  )
-                : Center(
+                    _buildVideoControlsOverlay(_recordedVideoController!),
+                    if (overlay != null) overlay,
+                  ],
+                )
+              : CustomPaint(
+                  painter: DashedBorderPainter(),
+                  child: Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.videocam, size: 48, color: isDarkMode ? Colors.grey[400] : Colors.grey[500]),
-                        SizedBox(height: 8),
-                        Text(
-                          'Tap to record your performance',
-                          style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
-                        ),
-                      ],
-                    ),
-                  ),
-          ),
-          SizedBox(height: 16),
-          if (_isAnalyzing)
-            Column(
-              children: [
-                CircularProgressIndicator(color: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
-                SizedBox(height: 12),
-                Text(
-                  'AI is recognizing your facial marks...', 
-                  style: TextStyle(color: isDarkMode ? Colors.grey[400] : Colors.grey[600])
-                ),
-              ],
-            )
-          else if (_hasRecording && !_isAnalyzing)
-            Column(
-              children: [
-                if (_hasMalpractice)
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.red[900] : Colors.red[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.red[200]!, width: 1),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.warning, color: Colors.red),
-                            SizedBox(width: 8),
-                            Text('Issues Detected', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          _analysisResult ?? '', 
-                          style: TextStyle(color: isDarkMode ? Colors.white : Colors.red[700])
-                        ),
+                        Icon(Icons.photo_camera_front_outlined, size: 64, color: Colors.grey[700]),
                         SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: _retakeRecording,
-                          child: Text('Retake Recording'),
-                          style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.green[900] : Colors.green[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green[200]!, width: 1),
-                    ),
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.check_circle, color: Colors.green),
-                            SizedBox(width: 8),
-                            Text(
-                              'Face Matched Successfully!', 
-                              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 8),
-                        Text(
-                          _analysisResult ?? '', 
-                          style: TextStyle(color: isDarkMode ? Colors.white : Colors.green[700])
-                        ),
+                        Text('Your recording will appear here', style: TextStyle(color: Colors.grey[500])),
                       ],
                     ),
                   ),
-                SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: _submitRecording,
-                  child: Text('Submit Recording'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
-                    padding: EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAnalyzingState() {
+    return Column(
+      key: ValueKey('analyzing'),
+      children: [
+        _buildRecordedVideoPlayerContainer(
+          overlay: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: Theme.of(context).primaryColor),
+                      SizedBox(height: 20),
+                      Text(
+                        'AI is analyzing your video...',
+                        style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            )
-          else
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: _toggleRecording,
-                  icon: Icon(_isRecording ? Icons.stop : Icons.fiber_manual_record),
-                  label: Text(_isRecording ? 'Stop Recording' : 'Start Recording'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isRecording ? Colors.red : (isDarkMode ? Colors.blue[300] : Color(0xFF2563EB)),
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => _showRecordingTips(),
-                  icon: Icon(Icons.info_outline),
-                  label: Text('Tips'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: isDarkMode ? Colors.blue[300] : Color(0xFF2563EB),
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  ),
-                ),
-              ],
+              ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResultState() {
+    return Column(
+      key: ValueKey('result'),
+      children: [
+        _buildRecordedVideoPlayerContainer(),
+        SizedBox(height: 24),
+        _buildAnalysisResultCard(),
+        SizedBox(height: 16),
+        if (!_hasMalpractice)
+          ElevatedButton.icon(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              _submitRecording();
+            },
+            icon: Icon(Icons.check_circle_outline),
+            label: Text('Submit Recording'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              minimumSize: Size(double.infinity, 55),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+      ],
+    );
+  }
+  
+  Widget _buildAnalysisResultCard() {
+    final bool isSuccess = !_hasMalpractice;
+    final Color cardColor = isSuccess ? Color(0xFF1A3D1A) : Color(0xFF4D1A1A);
+    final Color borderColor = isSuccess ? Colors.green.shade400 : Colors.red.shade400;
+    final String title = isSuccess ? 'Face Matched Successfully!' : 'Issues Detected';
+
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor, width: 1.5),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(isSuccess ? Icons.check_circle : Icons.warning, color: borderColor, size: 28),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12),
+          Text(
+            _analysisResult ?? '',
+            style: TextStyle(color: Colors.white.withOpacity(0.9), height: 1.5),
+          ),
+          if (!isSuccess) ...[
+            SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _retakeRecording();
+              },
+              icon: Icon(Icons.refresh),
+              label: Text('Retake Recording'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                minimumSize: Size(double.infinity, 48),
+                textStyle: TextStyle(fontWeight: FontWeight.bold)
+              ),
+            ),
+          ]
         ],
       ),
     );
   }
 
-
-
-  void _toggleRecording() async {
-    if (_isRecording) {
-      setState(() {
-        _isRecording = false;
-      });
-      return;
+  // ** NEW WIDGET **
+  Widget _buildDosAndDontsSection() {
+    if (widget.dos.isEmpty && widget.donts.isEmpty) {
+      return SizedBox.shrink();
     }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader("Key Points"),
+        SizedBox(height: 16),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.dos.isNotEmpty)
+            Expanded(
+              child: _buildGuidelineList(
+                "Do's",
+                widget.dos,
+                Icons.check_circle,
+                Colors.green.shade400,
+              ),
+            ),
+            if (widget.dos.isNotEmpty && widget.donts.isNotEmpty)
+            SizedBox(width: 20),
+            if (widget.donts.isNotEmpty)
+            Expanded(
+              child: _buildGuidelineList(
+                "Don'ts",
+                widget.donts,
+                Icons.cancel,
+                Colors.red.shade400,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  // ** NEW HELPER WIDGET **
+  Widget _buildGuidelineList(String title, List<String> items, IconData icon, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: TextStyle(color: color, fontSize: 18, fontWeight: FontWeight.bold)),
+        SizedBox(height: 12),
+        ...items.map((item) => Padding(
+          padding: const EdgeInsets.only(bottom: 10.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 20),
+              SizedBox(width: 10),
+              Expanded(child: Text(item, style: TextStyle(color: Colors.grey[300], height: 1.4))),
+            ],
+          ),
+        )).toList(),
+      ],
+    );
+  }
 
+  Widget _buildObjectives() {
+    return Column(
+      children: widget.objectives
+        .map((objective) => _buildObjectiveItem(objective))
+        .toList(),
+    );
+  }
+
+  Widget _buildObjectiveItem(String objective) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.task_alt, color: Theme.of(context).primaryColor, size: 24),
+          SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              objective,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[300],
+                height: 1.5,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // --- LOGIC METHODS (Unchanged functionality, minor additions like Haptic Feedback) ---
+  
+  void _toggleRecording() async {
     final result = await Navigator.push<String>(
       context,
       MaterialPageRoute(builder: (context) => const SimpleVideoRecorder()),
     );
 
-    if (result != null) {
+    if (result != null && mounted) {
       PerformanceVideosManager().addVideo(result);
-      if (mounted) {
-        setState(() {
-          _recordedVideoPath = result;
-        });
-      }
-      _initializeRecordedVideo();
+      setState(() {
+        _recordedVideoPath = result;
+      });
+      await _initializeRecordedVideo();
       _startAnalysis();
     }
   }
@@ -601,8 +728,8 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
       _isAnalyzing = false;
       _hasMalpractice = hasMalpractice;
       _analysisResult = hasMalpractice 
-        ? 'Face not clearly visible or video quality issues detected. Please ensure good lighting and face is clearly visible throughout the recording.'
-        : 'Face successfully recognized with clear visibility. AI analysis completed successfully.';
+      ? 'Face not clearly visible or video quality issues detected. Please ensure good lighting and face is clearly visible throughout the recording.'
+      : 'Face successfully recognized with clear visibility. AI analysis completed successfully.';
     });
   }
 
@@ -649,8 +776,8 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
 
   void _goToNextUnit() {
     String message = _isLastUnitInSection() 
-        ? 'Section completed! Moving to next section...'
-        : 'Unit completed! Moving to next unit...';
+      ? 'Section completed! Moving to next section...'
+      : 'Unit completed! Moving to next unit...';
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -664,30 +791,47 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   }
 
   void _showRecordingTips() {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
+    final Color primaryColor = Theme.of(context).primaryColor;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
-        title: Text('Recording Tips', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+        backgroundColor: Color(0xFF282828),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Icon(Icons.tips_and_updates, color: primaryColor),
+            SizedBox(width: 10),
+            Text('Recording Tips', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('• Ensure good lighting', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
-            Text('• Keep camera steady', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
-            Text('• Record full movement', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
-            Text('• Focus on proper form', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
-            Text('• Record multiple angles if needed', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            _buildTipItem('Ensure good, bright lighting on your face.', Icons.lightbulb_outline, primaryColor),
+            _buildTipItem('Keep the camera steady and at eye level.', Icons.videocam_outlined, primaryColor),
+            _buildTipItem('Make sure your entire movement is in the frame.', Icons.zoom_out_map, primaryColor),
+            _buildTipItem('Focus on proper form, not speed.', Icons.accessibility_new, primaryColor),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Got it', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+            child: Text('Got it', style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 16)),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipItem(String text, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 22),
+          SizedBox(width: 16),
+          Expanded(child: Text(text, style: TextStyle(color: Colors.white70, height: 1.4))),
         ],
       ),
     );
