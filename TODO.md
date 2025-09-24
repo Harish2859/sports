@@ -1,22 +1,44 @@
-# Flutter RenderFlex Overflow Fix
+# Course.dart UI Enhancement Plan
 
-## Completed Tasks ✅
-- [x] **Fixed RenderFlex overflow in event_search_page.dart**
-  - [x] Wrapped Column content in SingleChildScrollView for scrollable modal
-  - [x] Removed Spacer() widget that was causing layout conflicts
-  - [x] Added proper spacing with SizedBox before register button
-  - [x] Tested the fix resolves the 4.8 pixel overflow error
-- [x] **Removed dropdown button from event.dart**
-  - [x] Removed _selectedSport variable
-  - [x] Removed sport filter dropdown from _buildTopBar() method
-  - [x] Cleaned up unused code and maintained proper layout
+## Steps to Complete
 
-## Summary
-Successfully resolved the RenderFlex overflow error in the event search page modal bottom sheet. The modal now displays all event details properly without layout overflow issues, and users can scroll through the content when it exceeds the available space.
+1. **Add necessary imports and dependencies**
+   - Add imports for animations (e.g., flutter_staggered_animations if needed)
+   - Add BackdropFilter for glassmorphism effects
+   - Status: Completed
 
-Additionally, removed the sport filter dropdown button from the event page as requested, simplifying the UI and removing the unused _selectedSport variable.
+2. **Enhance the search bar**
+   - Add animated search icon
+   - Improve visual feedback with focus animations
+   - Status: Completed
 
-## Next Steps
-- Test the modal behavior on different screen sizes
-- Verify no other layout issues are introduced
-- Consider adding pull-to-refresh functionality if needed
+3. **Add staggered animations to the course list**
+   - Implement AnimationController for list items
+   - Add slide and fade animations for each course card
+   - Status: Completed
+
+4. **Improve course cards with glassmorphism and micro-interactions**
+   - Add BackdropFilter for glass effect
+   - Enhance typography with better font weights and sizes
+   - Add hover/press effects
+   - Status: Completed
+
+5. **Add floating action button**
+   - Implement FAB for quick actions (e.g., add new course)
+   - Position it appropriately
+   - Status: Pending
+
+6. **Implement loading states and skeleton screens**
+   - Add loading indicator for initial load
+   - Create skeleton widgets for course cards
+   - Status: Pending
+
+7. **Update gradients and shadows for modern look**
+   - Enhance existing gradients
+   - Add more sophisticated shadows
+   - Status: Pending
+
+8. **Testing and final adjustments**
+   - Test on different devices
+   - Check performance and accessibility
+   - Status: Pending

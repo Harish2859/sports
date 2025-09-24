@@ -39,7 +39,9 @@ class CourseDataManager {
 
   List<Course> get allCourses => List.unmodifiable(_courses);
 
-
+  void addCourse(Course course) {
+    _courses.add(course);
+  }
 
   CourseDetails? getCourseDetails(String courseId) {
     return _courseDetails[courseId];

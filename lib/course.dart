@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import 'coursedetails.dart';
 import 'course_data_manager.dart';
 import 'theme_provider.dart';
@@ -73,10 +74,14 @@ class CoursePage extends StatefulWidget {
   State<CoursePage> createState() => _CoursePageState();
 }
 
-class _CoursePageState extends State<CoursePage> {
+class _CoursePageState extends State<CoursePage> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   String _selectedCategory = 'All';
   List<Course> _filteredCourses = [];
+  late AnimationController _searchAnimationController;
+  late Animation<double> _searchAnimation;
+  late AnimationController _listAnimationController;
+  late Animation<double> _listAnimation;
 
   final CourseDataManager _courseManager = CourseDataManager();
   List<Course> get _courses => _courseManager.allCourses;
@@ -90,6 +95,28 @@ class _CoursePageState extends State<CoursePage> {
   void initState() {
     super.initState();
     _filteredCourses = _courses;
+    _searchAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _searchAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _searchAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    _listAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _listAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _listAnimationController,
+        curve: Curves.easeOut,
+      ),
+    );
+    _listAnimationController.forward();
   }
 
   void _filterCourses() {
@@ -197,16 +224,75 @@ class _CoursePageState extends State<CoursePage> {
           
           // Course List
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _filteredCourses.length,
-              itemBuilder: (context, index) {
-                final course = _filteredCourses[index];
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: _buildCourseCard(course),
-                );
-              },
+            child: Stack(
+              children: [
+                ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _filteredCourses.length,
+                  itemBuilder: (context, index) {
+                    final course = _filteredCourses[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.0, 0.5),
+                          end: Offset.zero,
+                        ).animate(
+                          CurvedAnimation(
+                            parent: _listAnimationController,
+                            curve: Interval(
+                              index * 0.1,
+                              (index * 0.1) + 0.3,
+                              curve: Curves.easeOut,
+                            ),
+                          ),
+                        ),
+                        child: FadeTransition(
+                          opacity: Tween<double>(
+                            begin: 0.0,
+                            end: 1.0,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: _listAnimationController,
+                              curve: Interval(
+                                index * 0.1,
+                                (index * 0.1) + 0.3,
+                                curve: Curves.easeOut,
+                              ),
+                            ),
+                          ),
+                          child: _buildCourseCard(course),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                // Floating Action Button
+                Positioned(
+                  bottom: 24,
+                  right: 24,
+                  child: FloatingActionButton.extended(
+                    onPressed: () {
+                      _showAddCourseDialog(context);
+                    },
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    elevation: 8,
+                    icon: const Icon(Icons.add, size: 20),
+                    label: const Text(
+                      'Add Course',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -215,182 +301,294 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   Widget _buildCourseCard(Course course) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CourseDetailsPage(course: course),
+    return Hero(
+      tag: 'course-${course.id}',
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => CourseDetailsPage(course: course),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: animation.drive(Tween(begin: const Offset(1.0, 0.0), end: Offset.zero)),
+                  child: child,
+                );
+              },
+            ),
+          );
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          transform: Matrix4.identity()..scale(1.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Theme.of(context).shadowColor.withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+                spreadRadius: 0,
+              ),
+            ],
           ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Theme.of(context).shadowColor.withOpacity(0.08),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Course Thumbnail
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor.withOpacity(0.8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                    width: 1,
+                  ),
                 ),
-              ),
-              child: ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
-                ),
-                child: _getCourseImage(course.title),
-              ),
-            ),
-            
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Course Title and Category
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          course.title,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.headlineSmall?.color,
-                          ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Course Thumbnail with gradient overlay
+                    Container(
+                      height: 220,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20),
                         ),
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          course.category,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 8),
-                  
-                  // Instructor
-                  Text(
-                    'by ${course.instructor}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Course Summary
-                  Text(
-                    course.summary,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  
-                  const SizedBox(height: 16),
-                  
-                  // Course Stats
-                  Row(
-                    children: [
-                      // Rating
-                      Row(
+                      child: Stack(
                         children: [
-                          const Icon(
-                            Icons.star,
-                            size: 16,
-                            color: Color(0xFFFBBF24),
+                          ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(20),
+                              topRight: Radius.circular(20),
+                            ),
+                            child: _getCourseImage(course.title),
                           ),
-                          const SizedBox(width: 4),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(20),
+                                topRight: Radius.circular(20),
+                              ),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withOpacity(0.3),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.star,
+                                    size: 14,
+                                    color: Color(0xFFFBBF24),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    course.rating.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Course Title and Category
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  course.title,
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).textTheme.headlineSmall?.color,
+                                    height: 1.2,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Theme.of(context).colorScheme.primary,
+                                      Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Text(
+                                  course.category,
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Instructor
                           Text(
-                            course.rating.toString(),
+                            'by ${course.instructor}',
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onSurface,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        ],
-                      ),
-                      
-                      const SizedBox(width: 16),
-                      
-                      // Difficulty Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: _getDifficultyColor(course.difficulty).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          course.difficulty,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: _getDifficultyColor(course.difficulty),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      
-                      const Spacer(),
-                      
-                      // Enrolled Count
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.people_outline,
-                            size: 16,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                          ),
-                          const SizedBox(width: 4),
+
+                          const SizedBox(height: 12),
+
+                          // Course Summary
                           Text(
-                            '${course.enrolledCount}',
+                            course.summary,
                             style: TextStyle(
-                              fontSize: 12,
-                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              fontSize: 14,
+                              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.8),
+                              height: 1.4,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Course Stats with enhanced design
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                // Duration
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.schedule,
+                                        size: 20,
+                                        color: Theme.of(context).colorScheme.primary,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        course.duration,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                Container(
+                                  width: 1,
+                                  height: 30,
+                                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                                ),
+
+                                // Difficulty
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.trending_up,
+                                        size: 20,
+                                        color: _getDifficultyColor(course.difficulty),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        course.difficulty,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: _getDifficultyColor(course.difficulty),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                Container(
+                                  width: 1,
+                                  height: 30,
+                                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                                ),
+
+                                // Enrolled Count
+                                Expanded(
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.people,
+                                        size: 20,
+                                        color: Theme.of(context).colorScheme.secondary,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${course.enrolledCount}',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w600,
+                                          color: Theme.of(context).colorScheme.onSurface,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -438,9 +636,134 @@ class _CoursePageState extends State<CoursePage> {
     }
   }
 
+  void _showAddCourseDialog(BuildContext context) {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController instructorController = TextEditingController();
+    final TextEditingController summaryController = TextEditingController();
+    String selectedDifficulty = 'Beginner';
+    String selectedCategory = 'Track & Field';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Add New Course'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Course Title',
+                    hintText: 'Enter course title',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: instructorController,
+                  decoration: const InputDecoration(
+                    labelText: 'Instructor',
+                    hintText: 'Enter instructor name',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: summaryController,
+                  decoration: const InputDecoration(
+                    labelText: 'Summary',
+                    hintText: 'Enter course summary',
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedDifficulty,
+                  decoration: const InputDecoration(
+                    labelText: 'Difficulty Level',
+                  ),
+                  items: ['Beginner', 'Intermediate', 'Advanced']
+                      .map((difficulty) => DropdownMenuItem<String>(
+                            value: difficulty,
+                            child: Text(difficulty),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    selectedDifficulty = value!;
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  decoration: const InputDecoration(
+                    labelText: 'Category',
+                  ),
+                  items: ['Track & Field', 'Swimming', 'Basketball']
+                      .map((category) => DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    selectedCategory = value!;
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (titleController.text.isNotEmpty &&
+                    instructorController.text.isNotEmpty) {
+                  final newCourse = Course(
+                    id: DateTime.now().millisecondsSinceEpoch.toString(),
+                    title: titleController.text,
+                    instructor: instructorController.text,
+                    summary: summaryController.text.isNotEmpty
+                        ? summaryController.text
+                        : 'Learn the fundamentals of this exciting sport.',
+                    rating: 4.5,
+                    difficulty: selectedDifficulty,
+                    enrolledCount: 0,
+                    duration: '2-3 hours',
+                    category: selectedCategory,
+                    prerequisites: ['Basic fitness level'],
+                    description: 'Detailed course description would go here.',
+                  );
+
+                  _courseManager.addCourse(newCourse);
+                  _filterCourses();
+
+                  Navigator.of(context).pop();
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Course added successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Add Course'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
+    _searchAnimationController.dispose();
+    _listAnimationController.dispose();
     super.dispose();
   }
 }

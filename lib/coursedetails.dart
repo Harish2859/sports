@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:ui';
 import 'course.dart';
 import 'app_state.dart';
 import 'main_layout.dart';
@@ -7,7 +8,7 @@ import 'gotocourse.dart';
 import 'course_data_manager.dart';
 import 'theme_provider.dart';
 
-// Comment Model
+// Comment class remains the same
 class Comment {
   final String id;
   final String username;
@@ -56,36 +57,37 @@ class CourseDetailsPage extends StatefulWidget {
   State<CourseDetailsPage> createState() => _CourseDetailsPageState();
 }
 
-class _CourseDetailsPageState extends State<CourseDetailsPage> {
+class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProviderStateMixin {
   final TextEditingController _commentController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
   final AppState _appState = AppState();
-  
+
   late Course _course;
+  int _currentSection = 0;
   int _enrolledCount = 0;
   
+  final Map<String, IconData> _sectionTabs = {
+    'About': Icons.info_outline,
+    'Prerequisites': Icons.check_circle_outline,
+    'Sessions': Icons.list_alt,
+    'Reviews': Icons.reviews_outlined,
+    'FAQ': Icons.quiz_outlined,
+    'Info': Icons.dataset_outlined,
+    'Leaderboard': Icons.leaderboard_outlined,
+  };
+
+  // **NEW**: A list of placeholder images for the session cards.
+  // Make sure you have these images in your assets/images/ folder.
+  final List<String> _sessionImages = [
+    'assets/images/javeline.jpg',
+    'assets/images/hurdle.jpg',
+    'assets/images/running_track.jpg', // Example new image
+    'assets/images/starting_blocks.jpg', // Example new image
+  ];
+
   List<Comment> _comments = [
-    Comment(
-      id: '1',
-      username: 'Alex Johnson',
-      text: 'Excellent course! The instructor explains complex concepts very clearly.',
-      timestamp: DateTime.now().subtract(const Duration(hours: 2)),
-      likes: 12,
-    ),
-    Comment(
-      id: '2',
-      username: 'Maria Garcia',
-      text: 'Great practical examples and hands-on projects. Highly recommend!',
-      timestamp: DateTime.now().subtract(const Duration(days: 1)),
-      likes: 8,
-    ),
-    Comment(
-      id: '3',
-      username: 'John Smith',
-      text: 'The course content is up-to-date and relevant to industry standards.',
-      timestamp: DateTime.now().subtract(const Duration(days: 2)),
-      likes: 15,
-    ),
+    Comment(id: '1', username: 'Alex Johnson', text: 'Excellent course! The instructor explains complex concepts very clearly.', timestamp: DateTime.now().subtract(const Duration(hours: 2)), likes: 12),
+    Comment(id: '2', username: 'Maria Garcia', text: 'Great practical examples and hands-on projects. Highly recommend!', timestamp: DateTime.now().subtract(const Duration(days: 1)), likes: 8),
+    Comment(id: '3', username: 'John Smith', text: 'The course content is up-to-date and relevant to industry standards.', timestamp: DateTime.now().subtract(const Duration(days: 2)), likes: 15),
   ];
 
   final CourseDataManager _courseManager = CourseDataManager();
@@ -98,6 +100,583 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     _enrolledCount = _course.enrolledCount;
   }
 
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      body: Column(
+        children: [
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                _buildSliverAppBar(themeProvider),
+                SliverToBoxAdapter(
+                  child: Column(
+                    children: [
+                      _buildSectionTabs(),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (child, animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        child: _buildSectionContent(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _buildEnrollButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSliverAppBar(ThemeProvider themeProvider) {
+    return SliverAppBar(
+      expandedHeight: 280,
+      pinned: true,
+      stretch: true,
+      backgroundColor: themeProvider.themeMode == ThemeMode.dark
+          ? Colors.grey[900]
+          : const Color(0xFF2563EB),
+      leading: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      actions: [
+        Container(
+          margin: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: Icon(
+              _appState.isFavorite(_course.id) ? Icons.favorite : Icons.favorite_border,
+              color: _appState.isFavorite(_course.id) ? Colors.red : Colors.white,
+            ),
+            onPressed: _toggleFavorite,
+          ),
+        ),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            _getCourseBannerImage(_course.title),
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.black.withOpacity(0.1), Colors.black.withOpacity(0.7)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(_course.category, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _course.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      shadows: [Shadow(color: Colors.black54, offset: Offset(0, 2), blurRadius: 4)],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTabs() {
+    return Container(
+      height: 50,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _sectionTabs.length,
+        itemBuilder: (context, index) {
+          final title = _sectionTabs.keys.elementAt(index);
+          final icon = _sectionTabs.values.elementAt(index);
+          final isSelected = index == _currentSection;
+          return GestureDetector(
+            onTap: () => setState(() => _currentSection = index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: isSelected ? const Color(0xFF2563EB) : Theme.of(context).cardColor,
+                borderRadius: BorderRadius.circular(25),
+                border: Border.all(color: isSelected ? const Color(0xFF2563EB) : Colors.grey.withOpacity(0.2)),
+                boxShadow: isSelected
+                    ? [BoxShadow(color: const Color(0xFF2563EB).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))]
+                    : [],
+              ),
+              child: Row(
+                children: [
+                  Icon(icon, size: 18, color: isSelected ? Colors.white : Colors.grey[600]),
+                  const SizedBox(width: 8),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey[700],
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildSectionContent() {
+    switch (_currentSection) {
+      case 0:
+        return _buildAboutSection(key: const ValueKey('about'));
+      case 1:
+        return _buildPrerequisitesSection(key: const ValueKey('prereqs'));
+      case 2:
+        return _buildSessionsSection(key: const ValueKey('sessions'));
+      case 3:
+        return _buildReviewsSection(key: const ValueKey('reviews'));
+      case 4:
+        return _buildFAQSection(key: const ValueKey('faq'));
+      case 5:
+        return _buildInfoSection(key: const ValueKey('info'));
+      case 6:
+        return _buildLeaderboardSection(key: const ValueKey('leaderboard'));
+      default:
+        return const SizedBox.shrink(key: ValueKey('empty'));
+    }
+  }
+
+  Widget _buildAboutSection({Key? key}) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInstructorCard(),
+          const SizedBox(height: 24),
+          const Text("Course Overview", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+          _buildCourseStats(),
+          const SizedBox(height: 24),
+          Text(
+            _course.description,
+            style: TextStyle(fontSize: 16, height: 1.6, color: Colors.grey[700]),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildInstructorCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
+            child: Text(
+              _course.instructor[0].toUpperCase(),
+              style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(_course.instructor, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                Text("Course Instructor", style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCourseStats() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        _InfoPill(icon: Icons.star, text: '${_course.rating} Rating', color: const Color(0xFFFBBF24)),
+        _InfoPill(icon: Icons.timer_outlined, text: _course.duration, color: const Color(0xFF10B981)),
+        _InfoPill(icon: Icons.bar_chart, text: _course.difficulty, color: const Color(0xFFEF4444)),
+      ],
+    );
+  }
+
+  Widget _buildPrerequisitesSection({Key? key}) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Prerequisites', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          if (_course.prerequisites.isEmpty)
+            const Text('No prerequisites required')
+          else
+            ..._course.prerequisites.map((prereq) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.check_circle, size: 22, color: Color(0xFF10B981)),
+                      const SizedBox(width: 12),
+                      Expanded(child: Text(prereq, style: const TextStyle(fontSize: 16))),
+                    ],
+                  ),
+                )),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  // **MODIFIED**: This section now builds image-based cards.
+  Widget _buildSessionsSection({Key? key}) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Module Sessions', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _sessionTitles.length,
+            itemBuilder: (context, index) {
+              // Use modulo to loop through the available images
+              final imagePath = _sessionImages[index % _sessionImages.length];
+              return Card(
+                clipBehavior: Clip.antiAlias, // Ensures the image respects the card's rounded corners
+                elevation: 4.0,
+                shadowColor: Colors.black.withOpacity(0.2),
+                margin: const EdgeInsets.only(bottom: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                child: Stack(
+                  alignment: Alignment.bottomLeft,
+                  children: [
+                    // Background Image with error handling
+                    Container(
+                      height: 120,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2563EB),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(16),
+                        child: Image.asset(
+                          imagePath,
+                          height: 120,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              height: 120,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                              ),
+                              child: const Center(
+                                child: Icon(
+                                  Icons.play_circle_outline,
+                                  size: 40,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    // Gradient Scrim for text readability
+                    Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.center,
+                        ),
+                      ),
+                    ),
+                    // Text and Icon Content
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Session ${index + 1}',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Text(
+                                  _sessionTitles[index],
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.play_circle_fill,
+                            color: Colors.white.withOpacity(0.9),
+                            size: 40,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewsSection({Key? key}) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('Reviews', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const Spacer(),
+              Text('${_comments.length} reviews', style: TextStyle(fontSize: 14, color: Colors.grey[600])),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              const CircleAvatar(radius: 16, backgroundColor: Color(0xFF2563EB), child: Icon(Icons.person, size: 16, color: Colors.white)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _commentController,
+                  decoration: InputDecoration(
+                    hintText: 'Add a comment...',
+                    filled: true,
+                    fillColor: Theme.of(context).scaffoldBackgroundColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide(color: Colors.grey.withOpacity(0.3))),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(24), borderSide: BorderSide(color: Colors.grey.withOpacity(0.3))),
+                    suffixIcon: IconButton(onPressed: _addComment, icon: const Icon(Icons.send, color: Color(0xFF2563EB))),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _comments.length,
+            itemBuilder: (context, index) => _buildCommentCard(_comments[index]),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFAQSection({Key? key}) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('FAQ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          ListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            children: _courseManager.getFAQItems(_course.id).map((faq) => _buildFAQItem(faq.question, faq.answer)).toList(),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoSection({Key? key}) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Module Information', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _buildInfoRow('Category', _course.category),
+          _buildInfoRow('Duration', _course.duration),
+          _buildInfoRow('Difficulty Level', _course.difficulty),
+          ..._courseManager.getCourseMetadata(_course.id).entries.map((entry) => _buildInfoRow(entry.key, entry.value)),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardSection({Key? key}) {
+    return Padding(
+      key: key,
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Leaderboards', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          _buildGenderLeaderboard('Male', Icons.male, const Color(0xFF2563EB)),
+          const SizedBox(height: 16),
+          _buildGenderLeaderboard('Female', Icons.female, const Color(0xFFDC2626)),
+          const SizedBox(height: 16),
+          _buildGenderLeaderboard('Other', Icons.transgender, const Color(0xFF7C3AED)),
+          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnrollButton() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      child: Container(
+        width: double.infinity,
+        height: 60,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: _appState.isEnrolled(_course.id)
+                ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                : [const Color(0xFF2563EB), const Color(0xFF1D4ED8)],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: (_appState.isEnrolled(_course.id) ? const Color(0xFF10B981) : const Color(0xFF2563EB)).withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ElevatedButton(
+          onPressed: _appState.isEnrolled(_course.id)
+              ? () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          GotoCoursePage(courseName: _course.title, courseId: _course.id),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        return FadeTransition(
+                          opacity: animation,
+                          child: SlideTransition(
+                            position: animation.drive(Tween(begin: const Offset(0.0, 0.1), end: Offset.zero)),
+                            child: child,
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                }
+              : _enrollInCourse,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(_appState.isEnrolled(_course.id) ? Icons.play_arrow : Icons.school, size: 24, color: Colors.white),
+              const SizedBox(width: 12),
+              Text(
+                _appState.isEnrolled(_course.id) ? 'Continue Learning' : 'Enroll for the Module',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _enrollInCourse() {
     final userName = _appState.userName;
     final userGender = _appState.userGender;
@@ -106,7 +685,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     setState(() {
       _enrolledCount += 1;
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Successfully enrolled in course!'),
@@ -131,12 +710,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     if (_commentController.text.trim().isNotEmpty) {
       final newComment = Comment(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
-        username: 'You', // In a real app, this would be the current user's name
+        username: 'You',
         text: _commentController.text.trim(),
         timestamp: DateTime.now(),
         likes: 0,
       );
-      
+
       setState(() {
         _comments.insert(0, newComment);
         _commentController.clear();
@@ -156,751 +735,65 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
-    return Container(
-      decoration: null,
-      child: MainLayout(
-        currentIndex: 3, // Course tab
-        onTabChanged: (index) {
-          if (index != 3) {
-            Navigator.pop(context);
-          }
-        },
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            // Custom App Bar
-            SliverAppBar(
-              expandedHeight: 200,
-              pinned: true,
-            backgroundColor: themeProvider.themeMode == ThemeMode.dark
-                ? Colors.grey[800]
-                : const Color(0xFF2563EB),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+  Widget _buildCommentCard(Comment comment) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
+              child: Text(comment.username[0].toUpperCase(), style: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold)),
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  themeProvider.themeMode == ThemeMode.dark ? Icons.light_mode : Icons.dark_mode,
-                  color: Colors.white,
-                ),
-                onPressed: () {
-                  themeProvider.toggleTheme();
-                },
-              ),
-              IconButton(
-                icon: Icon(
-                  _appState.isFavorite(_course.id) ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.white,
-                ),
-                onPressed: _toggleFavorite,
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  _getCourseBannerImage(_course.title),
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withOpacity(0.3),
-                          Colors.black.withOpacity(0.1),
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Course Content
-          SliverToBoxAdapter(
-            child: Container(
-              decoration: BoxDecoration(
-                color: themeProvider.themeMode == ThemeMode.dark
-                    ? Colors.grey[900]
-                    : Colors.white,
-              ),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                        // Course Header
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
-                      // Course Title
-                      Text(
-                        _course.title,
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.white
-                              : const Color(0xFF1F2937),
-                          height: 1.2,
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 12),
-                      
-                      // Instructor and Meta Info
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
-                            child: Text(
-                              _course.instructor[0].toUpperCase(),
-                              style: const TextStyle(
-                                color: Color(0xFF2563EB),
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  _course.instructor,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: themeProvider.themeMode == ThemeMode.dark
-                                        ? Colors.white
-                                        : const Color(0xFF1F2937),
-                                  ),
-                                ),
-                                Text(
-                                  '${_course.duration} • ${_course.difficulty}',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: themeProvider.themeMode == ThemeMode.dark
-                                        ? Colors.grey[400]
-                                        : const Color(0xFF6B7280),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Rating and Enrolled Count
-                      Row(
-                        children: [
-                          Row(
-                            children: [
-                              ...List.generate(5, (index) {
-                                return Icon(
-                                  index < _course.rating.floor()
-                                      ? Icons.star
-                                      : Icons.star_border,
-                                  size: 20,
-                                  color: const Color(0xFFFBBF24),
-                                );
-                              }),
-                              const SizedBox(width: 8),
-                              Text(
-                                _course.rating.toString(),
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: themeProvider.themeMode == ThemeMode.dark
-                                      ? Colors.white
-                                      : const Color(0xFF1F2937),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 24),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.people_outline,
-                                size: 20,
-                                color: themeProvider.themeMode == ThemeMode.dark
-                                    ? Colors.grey[400]
-                                    : const Color(0xFF6B7280),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$_enrolledCount enrolled',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: themeProvider.themeMode == ThemeMode.dark
-                                      ? Colors.grey[400]
-                                      : const Color(0xFF6B7280),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                      Text(comment.username, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                      const SizedBox(width: 8),
+                      Text(_formatTimestamp(comment.timestamp), style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                     ],
                   ),
-                        ),
-                        
-                        // Course Description
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'About this Module',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.white
-                              : const Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _course.description,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.grey[400]
-                              : const Color(0xFF4B5563),
-                          height: 1.6,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                        // Prerequisites
-                        if (_course.prerequisites.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 4),
+                  Text(comment.text, style: const TextStyle(fontSize: 14, height: 1.4)),
+                  const SizedBox(height: 8),
+                  GestureDetector(
+                    onTap: () => _toggleLike(comment),
+                    child: Row(
                       children: [
-                        Text(
-                          'Prerequisites',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: themeProvider.themeMode == ThemeMode.dark
-                                ? Colors.white
-                                : const Color(0xFF1F2937),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        ...(_course.prerequisites.map((prereq) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.check_circle_outline,
-                                size: 16,
-                                color: Color(0xFF10B981),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  prereq,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: themeProvider.themeMode == ThemeMode.dark
-                                        ? Colors.grey[400]
-                                        : const Color(0xFF4B5563),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ))),
+                        Icon(comment.isLiked ? Icons.favorite : Icons.favorite_border, size: 16, color: comment.isLiked ? Colors.red : Colors.grey[600]),
+                        const SizedBox(width: 4),
+                        Text(comment.likes.toString(), style: TextStyle(fontSize: 12, color: comment.isLiked ? Colors.red : Colors.grey[600], fontWeight: FontWeight.w500)),
                       ],
                     ),
-                          ),
-                        
-                        // Course Sessions
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Module Sessions',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.white
-                              : const Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      SizedBox(
-                        height: 120,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _sessionTitles.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: Container(
-                                width: 140,
-                          decoration: BoxDecoration(
-                            gradient: null,
-                            color: themeProvider.themeMode == ThemeMode.dark
-                                ? Colors.grey[800]
-                                : const Color(0xFFF3F4F6),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                                color: themeProvider.themeMode == ThemeMode.dark
-                                    ? Colors.grey[700]!
-                                    : const Color(0xFFE5E7EB),
-                                width: 1),
-                          ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Container(
-                                      height: 70,
-                                      width: double.infinity,
-                                      decoration: BoxDecoration(
-                                        color: themeProvider.themeMode == ThemeMode.dark
-                                            ? Colors.grey[700]
-                                            : const Color(0xFFE5E7EB),
-                                        borderRadius: const BorderRadius.only(
-                                          topLeft: Radius.circular(12),
-                                          topRight: Radius.circular(12),
-                                        ),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${index + 1}',
-                                          style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: themeProvider.themeMode == ThemeMode.dark
-                                                ? Colors.grey[500]
-                                                : const Color(0xFF9CA3AF),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(8),
-                                        child: Text(
-                                          _sessionTitles[index],
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                            color: themeProvider.themeMode == ThemeMode.dark
-                                                ? Colors.white
-                                                : const Color(0xFF1F2937),
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
                   ),
-                ),
-                
-                        // Enroll/Join Button
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _appState.isEnrolled(_course.id) 
-                          ? () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => GotoCoursePage(
-                                    courseName: _course.title,
-                                    courseId: _course.id,
-                                  ),
-                                ),
-                              );
-                            }
-                          : _enrollInCourse,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: _appState.isEnrolled(_course.id) 
-                            ? const Color(0xFF10B981) 
-                            : const Color(0xFF2563EB),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            _appState.isEnrolled(_course.id) ? Icons.play_arrow : Icons.school,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            _appState.isEnrolled(_course.id) ? 'Join Now' : 'Enroll for the Module',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                
-                        // Comments Section
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            'Reviews & Comments',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: themeProvider.themeMode == ThemeMode.dark
-                                  ? Colors.white
-                                  : const Color(0xFF1F2937),
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            '${_comments.length} reviews',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: themeProvider.themeMode == ThemeMode.dark
-                                  ? Colors.grey[400]
-                                  : const Color(0xFF6B7280),
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 16),
-                      
-                      // Add Comment Input
-                      Row(
-                        children: [
-                          const CircleAvatar(
-                            radius: 16,
-                            backgroundColor: Color(0xFF2563EB),
-                            child: Icon(
-                              Icons.person,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextField(
-                              controller: _commentController,
-                              decoration: InputDecoration(
-                                hintText: 'Add a comment...',
-                                filled: true,
-                                fillColor: themeProvider.themeMode == ThemeMode.dark
-                                    ? Colors.grey[800]
-                                    : const Color(0xFFF9FAFB),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 12,
-                                ),
-                                suffixIcon: IconButton(
-                                  onPressed: _addComment,
-                                  icon: const Icon(
-                                    Icons.send,
-                                    color: Color(0xFF2563EB),
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                              maxLines: null,
-                              textCapitalization: TextCapitalization.sentences,
-                            ),
-                          ),
-                        ],
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Comments List
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: _comments.length,
-                        separatorBuilder: (context, index) => Divider(
-                          height: 32,
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.grey[800]
-                              : const Color(0xFFF3F4F6),
-                        ),
-                        itemBuilder: (context, index) {
-                          final comment = _comments[index];
-                          return _buildCommentCard(comment);
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-                
-                        // FAQ Section
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Frequently Asked Questions',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.white
-                              : const Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      ..._courseManager.getFAQItems(_course.id).map((faq) => _buildFAQItem(faq.question, faq.answer)),
-                    ],
-                  ),
-                ),
-                
-                        // Course Metadata
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Module Information',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.white
-                              : const Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildInfoRow('Category', _course.category),
-                      _buildInfoRow('Duration', _course.duration),
-                      _buildInfoRow('Difficulty Level', _course.difficulty),
-                      ..._courseManager.getCourseMetadata(_course.id).entries.map((entry) => _buildInfoRow(entry.key, entry.value)),
-                    ],
-                  ),
-                ),
-
-                        // User Gender Leaderboard
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Module Leaderboard',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: themeProvider.themeMode == ThemeMode.dark
-                              ? Colors.white
-                              : const Color(0xFF1F2937),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildUserGenderLeaderboard(),
-                    ],
-                  ),
-                ),
-
-                  const SizedBox(height: 24),
                 ],
               ),
             ),
-          ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCommentCard(Comment comment) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        CircleAvatar(
-          radius: 20,
-          backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
-          child: Text(
-            comment.username[0].toUpperCase(),
-            style: const TextStyle(
-              color: Color(0xFF2563EB),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    comment.username,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: themeProvider.themeMode == ThemeMode.dark
-                          ? Colors.white
-                          : const Color(0xFF1F2937),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _formatTimestamp(comment.timestamp),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: themeProvider.themeMode == ThemeMode.dark
-                          ? Colors.grey[400]
-                          : const Color(0xFF6B7280),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Text(
-                comment.text,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: themeProvider.themeMode == ThemeMode.dark
-                      ? Colors.grey[400]
-                      : const Color(0xFF4B5563),
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => _toggleLike(comment),
-                    child: Row(
-                      children: [
-                        Icon(
-                          comment.isLiked ? Icons.favorite : Icons.favorite_border,
-                          size: 16,
-                          color: comment.isLiked 
-                              ? const Color(0xFFEF4444) 
-                              : themeProvider.themeMode == ThemeMode.dark
-                                  ? Colors.grey[400]
-                                  : const Color(0xFF9CA3AF),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          comment.likes.toString(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: comment.isLiked 
-                                ? const Color(0xFFEF4444) 
-                                : themeProvider.themeMode == ThemeMode.dark
-                                    ? Colors.grey[400]
-                                    : const Color(0xFF9CA3AF),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  GestureDetector(
-                    onTap: () {
-                      // Reply functionality could be added here
-                    },
-                    child: Text(
-                      'Reply',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: themeProvider.themeMode == ThemeMode.dark
-                            ? Colors.grey[400]
-                            : const Color(0xFF6B7280),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildFAQItem(String question, String answer) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return ExpansionTile(
-      title: Text(
-        question,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w600,
-          color: themeProvider.themeMode == ThemeMode.dark
-              ? Colors.white
-              : const Color(0xFF1F2937),
-        ),
-      ),
+      title: Text(question, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: Text(
-            answer,
-            style: TextStyle(
-              fontSize: 14,
-              color: themeProvider.themeMode == ThemeMode.dark
-                  ? Colors.grey[400]
-                  : const Color(0xFF6B7280),
-              height: 1.4,
-            ),
-          ),
+          child: Text(answer, style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.4)),
         ),
       ],
       tilePadding: EdgeInsets.zero,
@@ -909,36 +802,12 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   }
 
   Widget _buildInfoRow(String label, String value) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                color: themeProvider.themeMode == ThemeMode.dark
-                    ? Colors.grey[400]
-                    : const Color(0xFF6B7280),
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: themeProvider.themeMode == ThemeMode.dark
-                    ? Colors.white
-                    : const Color(0xFF1F2937),
-              ),
-            ),
-          ),
+          SizedBox(width: 120, child: Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600]))),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
         ],
       ),
     );
@@ -946,34 +815,19 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
 
   Widget _getCourseBannerImage(String courseTitle) {
     if (courseTitle.toLowerCase().contains('javelin')) {
-      return Image.asset(
-        'assets/images/javeline.jpg',
-        fit: BoxFit.cover,
-      );
+      return Image.asset('assets/images/javeline.jpg', fit: BoxFit.cover);
     } else if (courseTitle.toLowerCase().contains('hurdle')) {
-      return Image.asset(
-        'assets/images/hurdle.jpg',
-        fit: BoxFit.cover,
-      );
+      return Image.asset('assets/images/hurdle.jpg', fit: BoxFit.cover);
     } else {
-      final themeProvider = Provider.of<ThemeProvider>(context);
       return Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: themeProvider.themeMode == ThemeMode.dark
-                ? [Colors.grey[800]!, Colors.grey[700]!]
-                : [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
+            colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
-        child: const Center(
-          child: Icon(
-            Icons.play_circle_outline,
-            size: 64,
-            color: Colors.white38,
-          ),
-        ),
+        child: const Center(child: Icon(Icons.play_circle_outline, size: 64, color: Colors.white38)),
       );
     }
   }
@@ -991,24 +845,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     }
   }
 
-  Widget _buildUserGenderLeaderboard() {
-    final userGender = _appState.userGender;
-    final genderData = {
-      'Male': {'icon': Icons.male, 'color': const Color(0xFF2563EB)},
-      'Female': {'icon': Icons.female, 'color': const Color(0xFFDC2626)},
-      'Other': {'icon': Icons.transgender, 'color': const Color(0xFF7C3AED)},
-    };
-
-    final data = genderData[userGender] ?? genderData['Other']!;
-    final icon = data['icon'] as IconData;
-    final color = data['color'] as Color;
-
-    return _buildGenderLeaderboard(userGender, icon, color);
-  }
-
   Widget _buildGenderLeaderboard(String gender, IconData icon, Color color) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    // Use real data from AppState instead of dummy data
     final enrolledUsers = _appState.getEnrolledUsersByGender(_course.id, gender) ?? [];
     final safeEnrolledUsers = enrolledUsers.where((user) => user != null && user.isNotEmpty).toList();
     final enrolledCount = safeEnrolledUsers.length;
@@ -1016,7 +853,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.withOpacity(0.3)),
       ),
@@ -1027,22 +864,9 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
             children: [
               Icon(icon, color: color, size: 20),
               const SizedBox(width: 8),
-              Text(
-                '$gender Leaderboard',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
+              Text('$gender Leaderboard', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
               const Spacer(),
-              Text(
-                '$enrolledCount enrolled',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: color.withOpacity(0.7),
-                ),
-              ),
+              Text('$enrolledCount enrolled', style: TextStyle(fontSize: 12, color: color.withOpacity(0.7))),
             ],
           ),
           const SizedBox(height: 12),
@@ -1050,86 +874,31 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
             Center(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  'No $gender users enrolled yet',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: color.withOpacity(0.6),
-                  ),
-                ),
+                child: Text('No $gender users enrolled yet', style: TextStyle(fontSize: 14, color: color.withOpacity(0.6))),
               ),
             )
           else
-            SizedBox(
-              height: 120,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: safeEnrolledUsers.length,
-                itemBuilder: (context, index) {
-                  if (index >= safeEnrolledUsers.length) return const SizedBox.shrink();
-                  final userName = safeEnrolledUsers[index] ?? 'Unknown';
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Container(
-                      width: 80,
-                      decoration: BoxDecoration(
-                        color: themeProvider.themeMode == ThemeMode.dark
-                            ? Colors.grey[800]
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: color.withOpacity(0.3)),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: color.withOpacity(0.2),
-                            child: Text(
-                              userName.isNotEmpty ? userName[0].toUpperCase() : '?',
-                              style: TextStyle(
-                                color: color,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            userName,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w500,
-                              color: themeProvider.themeMode == ThemeMode.dark
-                                  ? Colors.white
-                                  : const Color(0xFF1F2937),
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 2),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: color.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '${index + 1}',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color: color,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: safeEnrolledUsers.length > 5 ? 5 : safeEnrolledUsers.length, // Show top 5
+              itemBuilder: (context, index) {
+                final userName = safeEnrolledUsers[index] ?? 'Unknown';
+                return ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  leading: Text(
+                    '#${index + 1}',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+                  ),
+                  title: Text(userName),
+                  trailing: CircleAvatar(
+                    radius: 14,
+                    backgroundColor: color.withOpacity(0.2),
+                    child: Text(userName.isNotEmpty ? userName[0].toUpperCase() : '?', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                );
+              },
             ),
         ],
       ),
@@ -1139,7 +908,35 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> {
   @override
   void dispose() {
     _commentController.dispose();
-    _scrollController.dispose();
     super.dispose();
+  }
+}
+
+class _InfoPill extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  const _InfoPill({required this.icon, required this.text, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12),
+          ),
+        ],
+      ),
+    );
   }
 }
