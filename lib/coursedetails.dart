@@ -174,6 +174,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
         ),
       ],
       flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.parallax,
         background: Stack(
           fit: StackFit.expand,
           children: [
@@ -319,6 +320,13 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).shadowColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -347,11 +355,11 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
 
   Widget _buildCourseStats() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        _InfoPill(icon: Icons.star, text: '${_course.rating} Rating', color: const Color(0xFFFBBF24)),
+        _InfoPill(icon: Icons.star_rounded, text: '${_course.rating} Rating', color: const Color(0xFFFBBF24)),
         _InfoPill(icon: Icons.timer_outlined, text: _course.duration, color: const Color(0xFF10B981)),
-        _InfoPill(icon: Icons.bar_chart, text: _course.difficulty, color: const Color(0xFFEF4444)),
+        _InfoPill(icon: Icons.bar_chart_rounded, text: _course.difficulty, color: const Color(0xFFEF4444)),
       ],
     );
   }

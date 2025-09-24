@@ -27,16 +27,20 @@ class GotoCoursePage extends StatefulWidget {
 class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStateMixin {
   int currentSectionIndex = 0;
   bool showSectionOverlay = false;
-  bool showUnitsCard = false; // Controls visibility of units card in gamified view
+  bool showUnitsCard = false;
+  
   late AnimationController _overlayController;
   late AnimationController _unitController;
-  late AnimationController _breathingController; // For breathing animation
+  late AnimationController _breathingController;
+  late AnimationController _heroController;
+  late AnimationController _progressController;
+  
   late Animation<double> _overlayAnimation;
   late Animation<double> _unitAnimation;
-  late Animation<double> _breathingAnimation; // For breathing effect
+  late Animation<double> _breathingAnimation;
+  late Animation<double> _heroAnimation;
+  late Animation<double> _progressAnimation;
 
-  
-  // Track completion status for each unit in each section
   Map<int, Map<int, bool>> unitCompletionStatus = {};
 
   final CourseDataManager _courseManager = CourseDataManager();
@@ -78,58 +82,26 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     super.initState();
     _initializeSections();
     _updateSectionProgress();
-    _overlayController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 300),
-    );
-    _unitController = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 200),
-    );
-    _breathingController = AnimationController(
-      vsync: this,
-      duration: Duration(seconds: 2),
-    )..repeat(reverse: true);
     
-    _overlayAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _overlayController, curve: Curves.easeInOut),
-    );
-    _unitAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _unitController, curve: Curves.easeInOut),
-    );
-    _breathingAnimation = Tween<double>(begin: 0.9, end: 1.1).animate(
-      CurvedAnimation(
-        parent: _breathingController,
-        curve: Curves.easeInOut,
-      ),
-    );
+    _overlayController = AnimationController(vsync: this, duration: Duration(milliseconds: 400));
+    _unitController = AnimationController(vsync: this, duration: Duration(milliseconds: 600));
+    _breathingController = AnimationController(vsync: this, duration: Duration(seconds: 3))..repeat(reverse: true);
+    _heroController = AnimationController(vsync: this, duration: Duration(milliseconds: 800));
+    _progressController = AnimationController(vsync: this, duration: Duration(milliseconds: 1200));
     
+    _overlayAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _overlayController, curve: Curves.easeInOut));
+    _unitAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _unitController, curve: Curves.elasticOut));
+    _breathingAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(CurvedAnimation(parent: _breathingController, curve: Curves.easeInOut));
+    _heroAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _heroController, curve: Curves.easeOutBack));
+    _progressAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _progressController, curve: Curves.easeInOut));
 
     _unitController.forward();
-    
-    // Initialize overlay animation state
-    if (showSectionOverlay) {
-      _overlayController.forward();
-    } else {
-      _overlayController.reverse();
-    }
+    _heroController.forward();
+    _progressController.forward();
   }
-  
-  @override
-  void didUpdateWidget(GotoCoursePage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // Ensure overlay animation matches the current state
-    if (showSectionOverlay && _overlayController.status != AnimationStatus.forward) {
-      _overlayController.forward();
-    } else if (!showSectionOverlay && _overlayController.status != AnimationStatus.dismissed) {
-      _overlayController.reverse();
-    }
-  }
-  
-
 
   void _initializeSections() {
-    final courseId = widget.courseId ?? '1'; // Use provided courseId or default
+    final courseId = widget.courseId ?? '1';
     final courseSections = _courseManager.getCourseSections(courseId);
     sections = courseSections.map((sectionData) => CourseSection(
       title: sectionData.title,
@@ -138,7 +110,6 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       color: Color(0xFF2563EB),
     )).toList();
     
-    // Initialize sectionUnits from course data
     for (int i = 0; i < courseSections.length; i++) {
       sectionUnits[i] = courseSections[i].units.map((unitData) => Unit(
         unitData.name,
@@ -147,7 +118,6 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         Icons.fitness_center,
       )).toList();
       
-      // Initialize completion status for each section
       unitCompletionStatus[i] = {};
       for (int j = 0; j < sectionUnits[i]!.length; j++) {
         unitCompletionStatus[i]![j] = false;
@@ -155,7 +125,6 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
     }
   }
   
-  // Calculate section progress based on completed units
   void _updateSectionProgress() {
     for (int sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
       int completedUnits = 0;
@@ -174,104 +143,663 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       );
     }
   }
-  
-  // Get dynamic unit status based on completion and unlocking logic
+
+  @override
+  Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isStrengthAssessment = widget.courseId == '3';
+
+    return Scaffold(
+      backgroundColor: isDarkMode ? const Color(0xFF0A0A0A) : const Color(0xFFF8FAFE),
+      body: CustomScrollView(
+        slivers: [
+          
+          SliverAppBar(
+            backgroundColor: isDarkMode ? const Color(0xFF0A0A0A) : const Color(0xFFF8FAFE),
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: isDarkMode ? Colors.white : Colors.black),
+              onPressed: () => Navigator.pop(context),
+            ),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.more_vert, color: isDarkMode ? Colors.white : Colors.black),
+                onPressed: _showActionMenu,
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                if (isStrengthAssessment) ...[
+                  _buildStrengthAssessmentHeader(isDarkMode),
+                  _buildSingleUnitCard(isDarkMode),
+                ] else ...[
+                  _buildHeroSection(isDarkMode),
+                  _buildProgressOverview(isDarkMode),
+                  _buildSectionSelector(isDarkMode),
+                  _buildUnitsSection(isDarkMode),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEnhancedAppBar(bool isDarkMode) {
+    return SliverAppBar(
+      expandedHeight: 200,
+      pinned: true,
+      stretch: true,
+      backgroundColor: isDarkMode ? const Color(0xFF1A1A1A) : const Color(0xFF2563EB),
+      flexibleSpace: FlexibleSpaceBar(
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDarkMode 
+                    ? [const Color(0xFF1A1A1A), const Color(0xFF2D2D2D)]
+                    : [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
+                ),
+              ),
+            ),
+            Positioned(
+              right: -50,
+              top: -50,
+              child: AnimatedBuilder(
+                animation: _breathingAnimation,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withOpacity(0.1),
+                  ),
+                ),
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _breathingAnimation.value,
+                    child: child,
+                  );
+                },
+              ),
+            ),
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: AnimatedBuilder(
+                animation: _heroAnimation,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(0, 30 * (1 - _heroAnimation.value)),
+                    child: Opacity(
+                      opacity: _heroAnimation.value.clamp(0.0, 1.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: Colors.white.withOpacity(0.3)),
+                            ),
+                            child: Text(
+                              'TRAINING MODULE',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${widget.courseName} Training',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black26,
+                                  offset: Offset(0, 2),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withOpacity(0.3)),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onPressed: _showActionMenu,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroSection(bool isDarkMode) {
+    return AnimatedBuilder(
+      animation: _heroAnimation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, 20 * (1 - _heroAnimation.value)),
+          child: Opacity(
+            opacity: _heroAnimation.value.clamp(0.0, 1.0),
+            child: Container(
+              margin: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDarkMode 
+                    ? [const Color(0xFF1F1F1F), const Color(0xFF2A2A2A)]
+                    : [Colors.white, const Color(0xFFF8FAFE)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDarkMode ? Colors.black.withOpacity(0.3) : Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+                border: Border.all(
+                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2563EB).withOpacity(0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.fitness_center,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Current Progress',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          sections[currentSectionIndex].title,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      '${(sections[currentSectionIndex].progress * 100).toInt()}%',
+                      style: const TextStyle(
+                        color: Color(0xFF10B981),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildProgressOverview(bool isDarkMode) {
+    return AnimatedBuilder(
+      animation: _progressAnimation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, 30 * (1 - _progressAnimation.value)),
+          child: Opacity(
+            opacity: _progressAnimation.value.clamp(0.0, 1.0),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDarkMode ? const Color(0xFF1F1F1F) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDarkMode ? Colors.black.withOpacity(0.2) : Colors.black.withOpacity(0.08),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+                border: Border.all(
+                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Overall Progress',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: sections[currentSectionIndex].progress * _progressAnimation.value,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '${currentSectionIndex + 1}/${sections.length}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSectionSelector(bool isDarkMode) {
+    return Container(
+      height: 60,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        itemCount: sections.length,
+        itemBuilder: (context, index) {
+          final isSelected = index == currentSectionIndex;
+          final isUnlocked = _isSectionUnlocked(index);
+          final isCompleted = _isSectionCompleted(index);
+          
+          return GestureDetector(
+            onTap: () => _selectSection(index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.only(right: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                gradient: isSelected 
+                  ? const LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF3B82F6)])
+                  : null,
+                color: !isSelected 
+                  ? (isDarkMode ? const Color(0xFF1F1F1F) : Colors.white)
+                  : null,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: isSelected 
+                    ? Colors.transparent
+                    : (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.3)),
+                ),
+                boxShadow: isSelected ? [
+                  BoxShadow(
+                    color: const Color(0xFF2563EB).withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ] : [],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isCompleted)
+                    const Icon(Icons.check_circle, size: 18, color: Colors.white)
+                  else if (!isUnlocked)
+                    Icon(Icons.lock, size: 18, color: isSelected ? Colors.white : Colors.grey)
+                  else
+                    Icon(Icons.play_circle_fill, size: 18, color: isSelected ? Colors.white : const Color(0xFF2563EB)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Section ${index + 1}',
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : (isDarkMode ? Colors.white : Colors.black87),
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildUnitsSection(bool isDarkMode) {
+    List<Unit> currentUnits = sectionUnits[currentSectionIndex] ?? [];
+    
+    return AnimatedBuilder(
+      animation: _unitAnimation,
+      builder: (context, child) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.list_alt, color: Colors.white, size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Training Units',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: currentUnits.length,
+                itemBuilder: (context, index) {
+                  return Transform.translate(
+                    offset: Offset(0, 30 * (1 - _unitAnimation.value)),
+                    child: Opacity(
+                      opacity: _unitAnimation.value.clamp(0.0, 1.0),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: _buildEnhancedUnitCard(currentUnits[index], index, isDarkMode),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEnhancedUnitCard(Unit unit, int index, bool isDarkMode) {
+    UnitStatus dynamicStatus = _getUnitStatus(currentSectionIndex, index);
+    Color statusColor = _getStatusColor(dynamicStatus);
+    IconData statusIcon = _getStatusIcon(dynamicStatus);
+    bool isUnlocked = _isUnitUnlocked(currentSectionIndex, index);
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: isUnlocked 
+          ? LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDarkMode 
+                ? [const Color(0xFF1F1F1F), const Color(0xFF2A2A2A)]
+                : [Colors.white, const Color(0xFFF8FAFE)],
+            )
+          : null,
+        color: !isUnlocked 
+          ? (isDarkMode ? const Color(0xFF151515) : Colors.grey[100])
+          : null,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: dynamicStatus == UnitStatus.inProgress 
+            ? statusColor
+            : (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.grey.withOpacity(0.2)),
+          width: dynamicStatus == UnitStatus.inProgress ? 2 : 1,
+        ),
+        boxShadow: isUnlocked ? [
+          BoxShadow(
+            color: statusColor.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ] : [],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isUnlocked ? () => _openUnit(unit, index) : null,
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: isUnlocked 
+                      ? LinearGradient(colors: [statusColor, statusColor.withOpacity(0.8)])
+                      : null,
+                    color: !isUnlocked ? Colors.grey : null,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: isUnlocked ? [
+                      BoxShadow(
+                        color: statusColor.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ] : [],
+                  ),
+                  child: Icon(
+                    isUnlocked ? unit.icon : Icons.lock,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        unit.title,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isUnlocked 
+                            ? (isDarkMode ? Colors.white : Colors.black87)
+                            : Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        unit.description,
+                        style: TextStyle(
+                          color: isUnlocked 
+                            ? (isDarkMode ? Colors.grey[400] : Colors.grey[600])
+                            : Colors.grey,
+                          fontSize: 14,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: statusColor.withOpacity(0.3)),
+                  ),
+                  child: Icon(
+                    statusIcon,
+                    color: statusColor,
+                    size: 24,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper methods remain the same
   UnitStatus _getUnitStatus(int sectionIndex, int unitIndex) {
-    // Check if unit is completed
     if (unitCompletionStatus[sectionIndex]?[unitIndex] == true) {
       return UnitStatus.completed;
     }
-    
-    // Check if unit should be unlocked
     if (_isUnitUnlocked(sectionIndex, unitIndex)) {
-      // If it's the next unit to complete, mark as in progress
       if (_isNextUnitToComplete(sectionIndex, unitIndex)) {
         return UnitStatus.inProgress;
       }
-      return UnitStatus.inProgress; // Available to start
+      return UnitStatus.inProgress;
     }
-    
-    return UnitStatus.notStarted; // Locked
+    return UnitStatus.notStarted;
   }
   
-  // Check if a unit should be unlocked
   bool _isUnitUnlocked(int sectionIndex, int unitIndex) {
-    // First unit of first section is always unlocked
     if (sectionIndex == 0 && unitIndex == 0) return true;
-    
-    // For first unit of other sections, check if previous section is completed
     if (unitIndex == 0) {
       if (sectionIndex > 0) {
         return _isSectionCompleted(sectionIndex - 1);
       }
     }
-    
-    // For other units, check if previous unit is completed
     if (unitIndex > 0) {
       return unitCompletionStatus[sectionIndex]?[unitIndex - 1] == true;
     }
-    
     return false;
   }
   
-  // Check if this is the next unit to complete
   bool _isNextUnitToComplete(int sectionIndex, int unitIndex) {
-    // If previous unit is completed (or this is first unit), this could be next
     if (unitIndex == 0) {
       if (sectionIndex == 0) return true;
       return _isSectionCompleted(sectionIndex - 1);
     }
-    
     return unitCompletionStatus[sectionIndex]?[unitIndex - 1] == true;
   }
   
-  // Check if a section is completed
   bool _isSectionCompleted(int sectionIndex) {
     Map<int, bool>? sectionUnits = unitCompletionStatus[sectionIndex];
     if (sectionUnits == null || sectionUnits.isEmpty) return false;
     
-    // Get the actual number of units in this section
     int totalUnits = this.sectionUnits[sectionIndex]?.length ?? 0;
     if (totalUnits == 0) return false;
     
-    // Check if all units are completed
     for (int i = 0; i < totalUnits; i++) {
       if (sectionUnits[i] != true) {
         return false;
       }
     }
-    
-    print('Section $sectionIndex completed: $totalUnits units all done');
     return true;
   }
   
-  // Check if a section should be unlocked
   bool _isSectionUnlocked(int sectionIndex) {
-    // First section is always unlocked
     if (sectionIndex == 0) return true;
-    
-    // Other sections unlock when previous section is completed
     return _isSectionCompleted(sectionIndex - 1);
   }
   
-  // Mark unit as completed and update progress
   void _completeUnit(int sectionIndex, int unitIndex) {
     if (mounted) {
       setState(() {
-        // Ensure the section exists in completion status
         if (unitCompletionStatus[sectionIndex] == null) {
           unitCompletionStatus[sectionIndex] = {};
         }
         unitCompletionStatus[sectionIndex]![unitIndex] = true;
         _updateSectionProgress();
         
-        // Debug print to check completion status
-        print('Unit completed: Section $sectionIndex, Unit $unitIndex');
-        print('Section completion status: ${unitCompletionStatus[sectionIndex]}');
-        
-        // Check if section is now completed and show message
         if (_isSectionCompleted(sectionIndex)) {
-          print('Section $sectionIndex is now completed!');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('🎉 Section ${sectionIndex + 1} completed! Next section unlocked!'),
@@ -282,851 +810,6 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
           );
         }
       });
-    }
-  }
-
-  @override
-  void dispose() {
-    _overlayController.dispose();
-    _unitController.dispose();
-    _breathingController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
-
-    return MainLayout(
-      currentIndex: 3, // Course tab
-      onTabChanged: (index) {
-        if (index != 3) {
-          Navigator.pop(context);
-        }
-      },
-      child: Scaffold(
-        backgroundColor: isDarkMode ? Colors.grey[900] : Color(0xFFF8FAFE),
-        appBar: false ? null : AppBar(
-          title: Text(
-            '${widget.courseName} Training',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          backgroundColor: sections[currentSectionIndex].color,
-          elevation: 0,
-          actions: [
-            IconButton(
-              icon: Icon(Icons.info_outline),
-              onPressed: () => _showCourseInfo(),
-            ),
-          ],
-        ),
-        body: Stack(
-          children: [
-            // Show either gamified view or regular view with section bar
-            false 
-              ? _buildGamifiedCourseView()
-              : Column(
-                  children: [
-                    _buildSectionBar(),
-                    Expanded(
-                      child: _buildUnitsSection(),
-                    ),
-                  ],
-                ),
-            if (showSectionOverlay && !false) _buildSectionOverlay(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionBar() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
-    return Container(
-      height: 80,
-      decoration: BoxDecoration(
-        color: sections[currentSectionIndex].color,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 4,
-            child: GestureDetector(
-              onTap: _toggleSectionOverlay,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            sections[currentSectionIndex].title,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: LinearProgressIndicator(
-                                  value: sections[currentSectionIndex].progress,
-                                  backgroundColor: Colors.white.withOpacity(0.3),
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Text(
-                                '${(sections[currentSectionIndex].progress * 100).toInt()}%',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      showSectionOverlay ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Container(width: 1, color: Colors.white.withOpacity(0.3)),
-          Expanded(
-            flex: 1,
-            child: GestureDetector(
-              onTap: () => _showActionMenu(),
-              child: Container(
-                padding: EdgeInsets.all(16),
-                child: Icon(
-                  Icons.more_vert,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionOverlay() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-
-    return AnimatedSwitcher(
-      duration: Duration(milliseconds: 300),
-      child: showSectionOverlay ? GestureDetector(
-        onTap: _toggleSectionOverlay,
-        child: AnimatedBuilder(
-          animation: _overlayAnimation,
-          builder: (context, child) {
-            return Container(
-              color: Colors.black.withOpacity(0.5 * _overlayAnimation.value),
-              child: Column(
-                children: [
-                  SizedBox(height: 80), // Account for section bar
-                  Expanded(
-                    child: Transform.translate(
-                      offset: Offset(0, 50 * (1 - _overlayAnimation.value)),
-                      child: Opacity(
-                        opacity: _overlayAnimation.value.clamp(0.0, 1.0),
-                        child: Container(
-                          margin: EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDarkMode ? Colors.grey[900] : Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 10,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(16),
-                            child: ListView.builder(
-                              padding: EdgeInsets.zero,
-                              itemCount: sections.length,
-                              itemBuilder: (context, index) {
-                                return _buildSectionCard(sections[index], index);
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ) : SizedBox.shrink(),
-    );
-  }
-
-  Widget _buildSectionCard(CourseSection section, int index) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    bool isSelected = index == currentSectionIndex;
-    
-    return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _selectSection(index),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.grey[800] : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: isSelected ? Border.all(color: section.color, width: 3) : null,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: section.color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    Icons.fitness_center,
-                    color: section.color,
-                    size: 24,
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        section.title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: isDarkMode ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        section.description,
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                          fontSize: 14,
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: LinearProgressIndicator(
-                              value: section.progress,
-                              backgroundColor: isDarkMode ? Colors.grey[700] : Colors.grey[200],
-                              valueColor: AlwaysStoppedAnimation<Color>(section.color),
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            '${(section.progress * 100).toInt()}%',
-                            style: TextStyle(
-                              color: section.color,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                if (isSelected)
-                  Icon(
-                    Icons.check_circle,
-                    color: section.color,
-                    size: 24,
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGamifiedCourseView() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    
-    return Stack(
-      children: [
-        // Background with WebView animation
-        Positioned.fill(
-          child: Stack(
-            children: [
-              // Always show gradient background
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Color(0xFF1a237e), Color(0xFF000000)],
-                  ),
-                ),
-              ),
-
-            ],
-          ),
-        ),
-        
-        // Wavy path overlay
-        Positioned.fill(
-          child: _buildWavyPathSections(),
-        ),
-        
-        // Content overlay
-        Positioned.fill(
-          child: Container(
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top - 3, left: 16, right: 16, bottom: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Top bar with title and button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${widget.courseName} Adventure',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.5),
-                                  offset: Offset(1, 1),
-                                  blurRadius: 3,
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 4),
-
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          showUnitsCard = !showUnitsCard;
-                        });
-                      },
-                      icon: Icon(
-                        showUnitsCard ? Icons.visibility_off : Icons.visibility,
-                        size: 20,
-                      ),
-                      label: Text(showUnitsCard ? 'Hide' : 'Show'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.1),
-                        foregroundColor: Colors.white,
-                        elevation: 4,
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        splashFactory: NoSplash.splashFactory,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 20),
-                SizedBox(height: 12),
-                Expanded(
-                  child: Stack(
-                    children: [
-                      if (showUnitsCard)
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                              child: Container(
-                                height: 150,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.4),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, -8),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Units in this section',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        shadows: [
-                                          Shadow(
-                                            color: Colors.black.withOpacity(0.5),
-                                            offset: Offset(1, 1),
-                                            blurRadius: 2,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    SizedBox(height: 4),
-                                    Expanded(child: _buildGamifiedUnitsRow()),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildWavyPathSections() {
-    return Container(
-      width: double.infinity,
-      child: Stack(
-        children: _buildWavyPathNodes(),
-      ),
-    );
-  }
-
-  List<Widget> _buildWavyPathNodes() {
-    List<Widget> nodes = [];
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height - 300; // Account for header and footer
-    
-    // Wavy path coordinates that match the HTML SVG path
-    List<Map<String, double>> pathPoints = [
-      {'x': 0.75, 'y': 0.15},   // Section 1: Left side, top
-      {'x': 0.15, 'y': 0.4},  // Section 2: Right side
-      {'x': 0.75, 'y': 0.65},   // Section 3: Left side
-      {'x': 0.15, 'y': 0.9},  // Section 4: Right side
-      {'x': 0.75, 'y': 1},   // Section 5: Left side
-      {'x': 0.8, 'y': 0.85},  // Section 6: Right side, bottom
-    ];
-    
-    for (int i = 0; i < sections.length && i < pathPoints.length; i++) {
-      double x = screenWidth * pathPoints[i]['x']! - 40; // Center the 80px icon
-      double y = screenHeight * pathPoints[i]['y']!;
-      
-      bool isCompleted = _isSectionCompleted(i);
-      bool isUnlocked = _isSectionUnlocked(i);
-      
-      Widget icon;
-      if (isCompleted) {
-        icon = GestureDetector(
-          onTap: () => _selectSection(i),
-          child: Icon(Icons.star, size: 80, color: Colors.yellow),
-        );
-      } else if (isUnlocked) {
-        icon = GestureDetector(
-          onTap: () => _selectSection(i),
-          child: Icon(Icons.emoji_events, size: 80, color: Colors.blue),
-        );
-      } else {
-        icon = ColorFiltered(
-          colorFilter: ColorFilter.matrix([
-            0.2126, 0.7152, 0.0722, 0, 0,
-            0.2126, 0.7152, 0.0722, 0, 0,
-            0.2126, 0.7152, 0.0722, 0, 0,
-            0, 0, 0, 1, 0,
-          ]),
-          child: GestureDetector(
-            onTap: () => _selectSection(i),
-            child: Icon(Icons.emoji_events, size: 80, color: Colors.grey),
-          ),
-        );
-      }
-      
-      nodes.add(
-        Positioned(
-          left: x,
-          top: y,
-          child: Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 15,
-                      offset: Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: icon,
-              ),
-              SizedBox(height: 8),
-              Container(
-                width: 120,
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 8,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  sections[i].title,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: isUnlocked ? Colors.black87 : Colors.grey,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    
-    return nodes;
-  }
-
-  Widget _buildGamifiedUnitsRow() {
-    List<Unit> currentUnits = sectionUnits[currentSectionIndex] ?? [];
-    
-    return ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemCount: currentUnits.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: EdgeInsets.only(right: 16),
-          child: _buildGamifiedUnitCard(currentUnits[index], index),
-        );
-      },
-    );
-  }
-
-  Widget _buildGamifiedUnitCard(Unit unit, int index) {
-    UnitStatus dynamicStatus = _getUnitStatus(currentSectionIndex, index);
-    bool isUnlocked = _isUnitUnlocked(currentSectionIndex, index);
-    
-    Widget icon;
-    if (dynamicStatus == UnitStatus.completed) {
-      // Use star for completed units
-      icon = GestureDetector(
-        onTap: () => _openUnit(unit, index),
-        child: Icon(Icons.star, size: 60, color: Colors.yellow),
-      );
-    } else if (isUnlocked) {
-      // Use colorful treasure for unlocked incomplete units
-      icon = GestureDetector(
-        onTap: () => _openUnit(unit, index),
-        child: Icon(Icons.emoji_events, size: 60, color: Colors.blue),
-      );
-    } else {
-      // Use black and white treasure for locked units
-      icon = ColorFiltered(
-        colorFilter: ColorFilter.matrix([
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0, 0, 0, 1, 0,
-        ]),
-        child: Icon(Icons.emoji_events, size: 60, color: Colors.grey),
-      );
-    }
-    
-    return Container(
-      width: 100,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          icon,
-          SizedBox(height: 8),
-          Text(
-            unit.title,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: isUnlocked ? Colors.white : Colors.grey[400],
-              shadows: [
-                Shadow(
-                  color: Colors.black.withOpacity(0.7),
-                  offset: Offset(1, 1),
-                  blurRadius: 2,
-                ),
-              ],
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUnitsSection() {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    List<Unit> currentUnits = sectionUnits[currentSectionIndex] ?? [];
-    
-    return AnimatedBuilder(
-      animation: _unitAnimation,
-      builder: (context, child) {
-        return Container(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Training Units',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.white : Colors.black87,
-                ),
-              ),
-              SizedBox(height: 16),
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: currentUnits.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 8),
-                      child: Transform.translate(
-                        offset: Offset(0, 50 * (1 - _unitAnimation.value)),
-                        child: Opacity(
-                          opacity: _unitAnimation.value.clamp(0.0, 1.0),
-                          child: _buildUnitCard(currentUnits[index], index),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildUnitCard(Unit unit, int index) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    UnitStatus dynamicStatus = _getUnitStatus(currentSectionIndex, index);
-    Color cardColor = _getUnitColor(dynamicStatus, isDarkMode);
-    IconData statusIcon = _getStatusIcon(dynamicStatus);
-    Color statusColor = _getStatusColor(dynamicStatus);
-    bool isUnlocked = _isUnitUnlocked(currentSectionIndex, index);
-
-    return Container(
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: isUnlocked ? () => _openUnit(unit, index) : null,
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: cardColor,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: isUnlocked ? [
-                BoxShadow(
-                  color: statusColor.withOpacity(0.2),
-                  blurRadius: 12,
-                  offset: Offset(0, 6),
-                ),
-              ] : [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: Offset(0, 2),
-                ),
-              ],
-              border: dynamicStatus == UnitStatus.inProgress 
-                ? Border.all(color: sections[currentSectionIndex].color, width: 2)
-                : null,
-            ),
-            child: Stack(
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Icon(
-                        unit.icon,
-                        color: statusColor,
-                        size: 28,
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            unit.title,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            unit.description,
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: statusColor.withOpacity(0.1),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        statusIcon,
-                        color: statusColor,
-                        size: 24,
-                      ),
-
-                    ),
-                  ],
-                ),
-                if (!isUnlocked)
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: isDarkMode ? Colors.black.withOpacity(0.7) : Colors.white.withOpacity(0.8),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.lock,
-                          color: isDarkMode ? Colors.white : Colors.grey[600],
-                          size: 32,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Color _getUnitColor(UnitStatus status, bool isDarkMode) {
-    if (isDarkMode) {
-      switch (status) {
-        case UnitStatus.completed:
-          return Colors.green[900]!;
-        case UnitStatus.inProgress:
-          return Colors.blue[900]!;
-        case UnitStatus.notStarted:
-          return Colors.grey[800]!;
-      }
-    } else {
-      switch (status) {
-        case UnitStatus.completed:
-          return Colors.green[50]!;
-        case UnitStatus.inProgress:
-          return Colors.blue[50]!;
-        case UnitStatus.notStarted:
-          return Colors.grey[100]!;
-      }
     }
   }
 
@@ -1144,39 +827,19 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
   Color _getStatusColor(UnitStatus status) {
     switch (status) {
       case UnitStatus.completed:
-        return Colors.green[600]!;
+        return const Color(0xFF10B981);
       case UnitStatus.inProgress:
-        return sections[currentSectionIndex].color;
+        return const Color(0xFF2563EB);
       case UnitStatus.notStarted:
         return Colors.grey[500]!;
-    }
-  }
-
-  void _toggleSectionOverlay() {
-    if (!mounted) return;
-    
-    setState(() {
-      showSectionOverlay = !showSectionOverlay;
-    });
-    
-    // Handle animation based on the new state
-    if (showSectionOverlay) {
-      _overlayController.forward();
-    } else {
-      _overlayController.reverse();
     }
   }
 
   void _selectSection(int index) {
     if (!mounted) return;
     
-    // Don't do anything if selecting the current section
-    if (index == currentSectionIndex) {
-      _toggleSectionOverlay();
-      return;
-    }
+    if (index == currentSectionIndex) return;
     
-    // Check if section is unlocked before allowing selection
     if (!_isSectionUnlocked(index)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1188,110 +851,55 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       return;
     }
     
-    // Close the overlay with animation
-    _overlayController.reverse().then((_) {
-      if (!mounted) return;
-      
-      // Update the current section
-      setState(() {
-        currentSectionIndex = index;
-        showSectionOverlay = false;
-      });
-      
-      // Animate the unit list
-      _unitController.reset();
-      _unitController.forward();
-      
-      // Show success message when opening a new section
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Opened ${sections[index].title}! Start your training.'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
-      );
+    setState(() {
+      currentSectionIndex = index;
     });
-  }
-
-  void _moveToNextSection() {
-    if (currentSectionIndex < sections.length - 1) {
-      setState(() {
-        currentSectionIndex++;
-        showSectionOverlay = false;
-      });
-      _unitController.reset();
-      _unitController.forward();
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Section completed! Welcome to ${sections[currentSectionIndex].title}'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } else {
-      // All sections completed - generate certificate
-      final appState = AppState.instance;
-      appState.completeCourse(widget.courseId ?? '1', widget.courseName);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Congratulations! You have completed all sections! 🎉\nCertificate earned!'),
-            backgroundColor: Colors.green,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
+    
+    _unitController.reset();
+    _unitController.forward();
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Opened ${sections[index].title}! Start your training.'),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: Duration(seconds: 2),
+      ),
+    );
   }
 
   void _showActionMenu() {
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
+    final isDarkMode = Provider.of<ThemeProvider>(context, listen: false).themeMode == ThemeMode.dark;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[800] : Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          color: isDarkMode ? const Color(0xFF1F1F1F) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         ),
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.download, color: sections[currentSectionIndex].color),
+              leading: Icon(Icons.download, color: const Color(0xFF2563EB)),
               title: Text('Download for Offline', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: Icon(Icons.share, color: sections[currentSectionIndex].color),
+              leading: Icon(Icons.share, color: const Color(0xFF2563EB)),
               title: Text('Share Course', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: Icon(Icons.bookmark, color: sections[currentSectionIndex].color),
+              leading: Icon(Icons.bookmark, color: const Color(0xFF2563EB)),
               title: Text('Bookmark', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
               onTap: () => Navigator.pop(context),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showCourseInfo() {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Course information'),
-        backgroundColor: sections[currentSectionIndex].color,
       ),
     );
   }
@@ -1303,7 +911,6 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
       final currentSection = courseSections[currentSectionIndex];
       final currentUnit = currentSection.units[unitIndex];
       
-      // Add video for Javelin course first unit only
       String? videoUrl;
       if (widget.courseName.toLowerCase().contains('javelin') && 
           currentSectionIndex == 0 && unitIndex == 0) {
@@ -1328,7 +935,6 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
         ),
       );
       
-      // Handle different completion results
       if (result == true) {
         _completeUnit(currentSectionIndex, unitIndex);
         if (mounted) {
@@ -1340,78 +946,64 @@ class _GotoCoursePageState extends State<GotoCoursePage> with TickerProviderStat
             ),
           );
         }
-      } else if (result == 'section_complete') {
-        _completeUnit(currentSectionIndex, unitIndex);
-        
-        // In gamified mode, move to next section when "Go to Next Section" is clicked
-        final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-        if (false) {
-          // For gamified mode, move to next section and show it's unlocked
-          _moveToNextSection();
-        } else {
-          _moveToNextSection();
-        }
       }
     } catch (e) {
-      // Handle navigation errors silently
       print('Navigation error: $e');
     }
   }
-  
-  void _showUnitDialog(Unit unit, int unitIndex) {
-    if (!mounted) return;
-    final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
-    final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
-    
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: isDarkMode ? Colors.grey[800] : Colors.white,
-          title: Text(unit.title, style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(unit.description, style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
-              SizedBox(height: 16),
-              Text(
-                'This unit is not yet implemented. Would you like to mark it as completed for demo purposes?',
-                style: TextStyle(fontSize: 14, color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),
-              ),
-            ],
+
+  Widget _buildStrengthAssessmentHeader(bool isDarkMode) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [const Color(0xFF2563EB), const Color(0xFF3B82F6)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Strength Assessment',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel', style: TextStyle(color: isDarkMode ? Colors.white : Colors.black87)),
+          const SizedBox(height: 8),
+          Text(
+            'Complete your baseline assessment',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.white70,
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _completeUnit(currentSectionIndex, unitIndex);
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${unit.title} completed! 🎉'),
-                      backgroundColor: Colors.green,
-                      behavior: SnackBarBehavior.floating,
-                    ),
-                  );
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: sections[currentSectionIndex].color,
-                foregroundColor: Colors.white,
-              ),
-              child: Text('Mark Complete'),
-            ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
     );
   }
-}
 
-// Data Models
-// Classes moved to course_models.dart
+  Widget _buildSingleUnitCard(bool isDarkMode) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      child: _buildEnhancedUnitCard(
+        Unit("Assessment Test", "Complete your strength assessment", UnitStatus.inProgress, Icons.assessment),
+        0,
+        isDarkMode,
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _overlayController.dispose();
+    _unitController.dispose();
+    _breathingController.dispose();
+    _heroController.dispose();
+    _progressController.dispose();
+    super.dispose();
+  }
+}

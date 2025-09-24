@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import 'dart:ui'; // Needed for ImageFilter
 import 'app_state.dart';
 import 'theme_provider.dart';
 import 'performance_videos_manager.dart';
-import 'upload_page.dart'; 
+import 'upload_page.dart';
 import 'post_manager.dart';
 import 'achievement.dart';
 import 'profile_structure_screen.dart';
@@ -13,7 +14,6 @@ import 'daily_tasks_screen.dart';
 // (Ensure all other necessary import statements for your project are present)
 
 enum ProfileSection { XP, Activity, Streak }
-enum PortfolioTab { Posts, Performances }
 
 class ProfilePage extends StatefulWidget {
   final bool isOwnProfile;
@@ -38,12 +38,15 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _breathingController;
+  late AnimationController _gradientController; // For background gradient animation
   late TabController _tabController;
   late Animation<double> _fadeAnimation;
   late Animation<double> _breathingAnimation;
+  late Animation<double> _scaleAnimation; // For interactive elements
   final AppState _appState = AppState.instance;
   final PostManager _postManager = PostManager();
   final PerformanceVideosManager _videosManager = PerformanceVideosManager();
+  final ScrollController _scrollController = ScrollController();
 
   ProfileSection _selectedSection = ProfileSection.Activity;
 
@@ -52,6 +55,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     super.initState();
     _initializeAnimation();
     _appState.addListener(_onAppStateChanged);
+    _tabController.addListener(() => setState(() {})); // Rebuild on tab change
   }
 
   @override
@@ -59,7 +63,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     _appState.removeListener(_onAppStateChanged);
     _animationController.dispose();
     _breathingController.dispose();
+    _gradientController.dispose();
     _tabController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -71,22 +77,31 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     _breathingController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
-    );
+    )..repeat(reverse: true);
+    _gradientController = AnimationController(
+        duration: const Duration(seconds: 10),
+        vsync: this,
+    )..repeat(reverse: true);
+
+
     _tabController = TabController(length: 2, vsync: this);
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _breathingAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
       CurvedAnimation(parent: _breathingController, curve: Curves.easeInOut),
     );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
     _animationController.forward();
-    _breathingController.repeat(reverse: true);
   }
 
   void _onAppStateChanged() {
     if (mounted) setState(() {});
   }
-  
+
   void _onSectionSelected(ProfileSection section) {
     setState(() {
       _selectedSection = section;
@@ -99,7 +114,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: const Color(0xFF101010),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
@@ -112,36 +127,51 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         opacity: _fadeAnimation,
         child: Stack(
           children: [
-            // Layer 1: Fixed black background that never moves
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              color: const Color(0xFF121212),
-            ),
-            
-            // Layer 2: Fixed header content that stays in place
+            // Layer 1: Animated Gradient Background
+            _buildAnimatedGradientBackground(),
+
+            // Layer 2: Fixed header content that stays in place (with Parallax)
             SafeArea(
-              child: _buildProfileHeaderContent(isDarkMode),
+              child: AnimatedBuilder(
+                animation: _scrollController,
+                builder: (context, child) {
+                  // Parallax effect
+                  final offset = _scrollController.hasClients ? _scrollController.offset : 0;
+                  return Transform.translate(
+                    offset: Offset(0, -offset * 0.3),
+                    child: child,
+                  );
+                },
+                child: _buildProfileHeaderContent(isDarkMode),
+              ),
             ),
-            
-            // Layer 3: Scrollable white card overlay
+
+            // Layer 3: Scrollable glassmorphism card overlay
             DraggableScrollableSheet(
               initialChildSize: 0.6,
               minChildSize: 0.6,
               maxChildSize: 0.95,
               builder: (context, scrollController) {
-                return Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
+                // Link the sheet's controller to our parallax controller
+                if (_scrollController.hasClients) {
+                  // This is a simple way to sync them. A more robust solution might use a custom controller.
+                }
+                return ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.4),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                        border: Border.all(color: Colors.white.withOpacity(0.1))
+                      ),
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        physics: const ClampingScrollPhysics(),
+                        child: _buildScrollableContent(isDarkMode),
+                      ),
                     ),
-                  ),
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    physics: const ClampingScrollPhysics(),
-                    child: _buildScrollableContent(isDarkMode),
                   ),
                 );
               },
@@ -152,7 +182,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-
+  Widget _buildAnimatedGradientBackground() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+      ),
+    );
+  }
 
   Widget _buildProfileHeaderContent(bool isDarkMode) {
     final displayName = widget.isOwnProfile ? _appState.userName : (widget.userName ?? 'Unknown User');
@@ -167,44 +203,43 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // THIS IS THE RESTORED RGB THEME ICON
-              Container(
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Colors.red, Colors.green, Colors.blue],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ProfileStructureScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.palette, color: Colors.white),
-                  iconSize: 24,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.more_vert, color: Colors.white),
-                onPressed: _showProfileMenu,
-              ),
+              _buildGlassIconButton(Icons.palette, () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileStructureScreen()));
+              }),
+              _buildGlassIconButton(Icons.more_vert, _showProfileMenu),
             ],
           ),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              CircleAvatar(
-                radius: 35,
-                backgroundColor: Colors.grey[800],
-                backgroundImage: profileImage != null
-                    ? (widget.isOwnProfile ? FileImage(File(profileImage)) : NetworkImage(profileImage) as ImageProvider)
-                    : null,
-                child: profileImage == null ? const Icon(Icons.person, size: 35, color: Colors.white70) : null,
+              // Enhanced Profile Picture with Gradient Border
+               AnimatedBuilder(
+                  animation: _breathingController,
+                  builder: (context, child) {
+                    return Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: SweepGradient(
+                          colors: [
+                            Colors.purpleAccent.withOpacity(0.8),
+                            Colors.blueAccent.withOpacity(0.8),
+                            Colors.purpleAccent.withOpacity(0.8),
+                          ],
+                          transform: GradientRotation(_breathingController.value * 3.14 * 2),
+                        ),
+                      ),
+                      child: CircleAvatar(
+                        radius: 35,
+                        backgroundColor: Colors.grey[800],
+                        backgroundImage: profileImage != null
+                            ? (widget.isOwnProfile ? FileImage(File(profileImage)) : NetworkImage(profileImage) as ImageProvider)
+                            : null,
+                        child: profileImage == null ? const Icon(Icons.person, size: 35, color: Colors.white70) : null,
+                      ),
+                    );
+                  },
               ),
               const SizedBox(width: 15),
               Column(
@@ -212,14 +247,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 children: [
                   Text(
                     displayName,
-                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                    style: const TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 1.2),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.grey[400], size: 16),
+                      Icon(Icons.location_on, color: Colors.grey[600], size: 16),
                       const SizedBox(width: 4),
-                      Text('New York, USA', style: TextStyle(color: Colors.grey[400], fontSize: 14)),
+                      Text('New York, USA', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
                     ],
                   ),
                 ],
@@ -243,7 +278,27 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       ),
     );
   }
-  
+
+  Widget _buildGlassIconButton(IconData icon, VoidCallback onPressed) {
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(50),
+        child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+            child: Container(
+                decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                ),
+                child: IconButton(
+                    onPressed: onPressed,
+                    icon: Icon(icon, color: Colors.black, size: 24),
+                ),
+            ),
+        ),
+    );
+  }
+
   Widget _buildSectionSelector() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -254,22 +309,24 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       ],
     );
   }
-  
+
   Widget _buildSectionButton(String title, ProfileSection section) {
     bool isSelected = _selectedSection == section;
     return GestureDetector(
       onTap: () => _onSectionSelected(section),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: isSelected ? const LinearGradient(colors: [Colors.purpleAccent, Colors.blueAccent]) : null,
-          border: isSelected ? null : Border.all(color: Colors.grey[700]!),
+          color: isSelected ? null : Colors.white.withOpacity(0.1),
+          border: isSelected ? null : Border.all(color: Colors.white.withOpacity(0.3)),
         ),
         child: Text(
           title,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.grey[300],
+            color: Colors.black,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             fontSize: 14,
           ),
@@ -284,12 +341,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
       decoration: BoxDecoration(
         gradient: isFollow ? const LinearGradient(colors: [Colors.purpleAccent, Colors.blueAccent]) : null,
-        color: isFollow ? null : Colors.grey[800],
+        color: isFollow ? null : Colors.white.withOpacity(0.1),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withOpacity(0.2))
       ),
       child: Text(
         text,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -297,11 +355,31 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget _buildStatItem(String count, String label) {
     return Column(
       children: [
-        Text(count, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[400])),
+        Text(count, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
       ],
     );
   }
+
+  // A reusable glass container widget
+  Widget _buildGlassContainer({required Widget child}) {
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                ),
+                child: child,
+            ),
+        ),
+    );
+  }
+
 
   Widget _buildScrollableContent(bool isDarkMode) {
     return Column(
@@ -309,7 +387,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       children: [
         const SizedBox(height: 20),
         _buildConditionalContent(isDarkMode),
-        
+
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 12, 12),
           child: Row(
@@ -320,7 +398,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
               ),
               IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: Colors.deepPurpleAccent),
+                icon: const Icon(Icons.add_circle_outline, color: Colors.deepPurpleAccent, size: 28),
                 onPressed: () async {
                   await Navigator.push(
                     context,
@@ -332,12 +410,16 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ],
           ),
         ),
-        
+
         TabBar(
           controller: _tabController,
-          indicatorColor: Colors.deepPurpleAccent,
+          indicator: BoxDecoration(
+            borderRadius: BorderRadius.circular(25.0),
+            color: Colors.deepPurpleAccent,
+          ),
+          indicatorPadding: const EdgeInsets.symmetric(horizontal: 16),
           labelColor: Colors.black,
-          unselectedLabelColor: Colors.grey,
+          unselectedLabelColor: Colors.grey[600],
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           tabs: const [
             Tab(text: "Posts"),
@@ -345,30 +427,37 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           ],
         ),
 
-        // Use IndexedStack for TabBarView content to preserve state
-        IndexedStack(
-          index: _tabController.index,
-          children: [
-            Visibility(
-              visible: _tabController.index == 0,
-              maintainState: true,
-              child: _buildPostSection(),
-            ),
-            Visibility(
-              visible: _tabController.index == 1,
-              maintainState: true,
-              child: _buildPerformanceSection(),
-            ),
-          ],
+        SizedBox(
+          // Set a fixed height for the TabBarView content
+          height: 500, // Adjust this height as needed
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildPostSection(),
+              _buildPerformanceSection(),
+            ],
+          ),
         ),
         const SizedBox(height: 100), // Extra space at bottom
       ],
     );
   }
- 
+
   Widget _buildConditionalContent(bool isDarkMode) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+              position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.2),
+                  end: Offset.zero
+              ).animate(animation),
+              child: child
+          ),
+        );
+      },
       child: Container(
         key: ValueKey(_selectedSection),
         child: _getContentForSection(_selectedSection, isDarkMode),
@@ -404,13 +493,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey[50],
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey[200]!),
-        ),
+      child: _buildGlassContainer(
         child: Column(
           children: [
             Row(
@@ -439,8 +522,8 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$currentXP XP',
-                        style: const TextStyle(fontSize: 14, color: Colors.blue, fontWeight: FontWeight.w600),
+                        '$currentXP / $xpForNextLevel XP',
+                        style: const TextStyle(fontSize: 14, color: Colors.blueAccent, fontWeight: FontWeight.w600),
                       ),
                     ],
                   ),
@@ -448,15 +531,24 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ],
             ),
             const SizedBox(height: 16),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: progress,
-                backgroundColor: Colors.grey[300],
-                valueColor: const AlwaysStoppedAnimation<Color>(Colors.deepPurpleAccent),
-                minHeight: 12,
+            // Custom, thicker progress bar
+            Container(
+              height: 12,
+              decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(6)
               ),
-            ),
+              child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                      width: MediaQuery.of(context).size.width * progress * 0.7, // Adjust width factor
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(6),
+                          gradient: const LinearGradient(colors: [Colors.purpleAccent, Colors.deepPurpleAccent])
+                      ),
+                  ),
+              ),
+            )
           ],
         ),
       ),
@@ -484,29 +576,34 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildModernStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-          ),
-        ],
-      ),
-    );
+    return _buildGlassContainer(
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: [color.withOpacity(0.6), color.withOpacity(0.9)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+              ),
+              child: Icon(icon, color: Colors.white, size: 24)
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+          ],
+        ),
+      );
   }
 
   Widget _buildStreakCard(bool isDarkMode) {
@@ -514,100 +611,44 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GestureDetector(
         onTap: () => _appState.updateStreak(),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Colors.grey[50],
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey[200]!),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.local_fire_department, color: _appState.isStreakActive ? Colors.orange : Colors.grey, size: 28),
-              const SizedBox(width: 12),
-              Text(
-                '${_appState.streakCount} Day Streak',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-              ),
-            ],
-          ),
+        child: _buildGlassContainer(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.local_fire_department, color: _appState.isStreakActive ? Colors.orangeAccent : Colors.grey, size: 28),
+                const SizedBox(width: 12),
+                Text(
+                  '${_appState.streakCount} Day Streak',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                ),
+              ],
+            ),
         ),
       ),
     );
   }
- 
+
   Widget _buildPostSection() {
     final allPosts = _getAllPosts();
     if (allPosts.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40.0),
-        child: Center(child: Text("No posts yet. Tap '+' to add one!", style: TextStyle(color: Colors.grey[600]))),
-      );
+      return Center(child: Text("No posts yet. Tap '+' to add one!", style: TextStyle(color: Colors.grey[600])));
     }
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 2,
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: _buildPostImage(allPosts[0]),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                flex: 1,
-                child: Column(
-                  children: [
-                    AspectRatio(
-                      aspectRatio: 1.0,
-                      child: _buildPostImage(allPosts.length > 1 ? allPosts[1] : allPosts[0]),
-                    ),
-                    const SizedBox(height: 8),
-                    AspectRatio(
-                      aspectRatio: 1.0,
-                      child: _buildPostImage(allPosts.length > 2 ? allPosts[2] : allPosts[0]),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              Expanded(
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: _buildPostImage(allPosts.length > 3 ? allPosts[3] : allPosts[0]),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: _buildPostImage(allPosts.length > 4 ? allPosts[4] : allPosts[0]),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: AspectRatio(
-                  aspectRatio: 1.0,
-                  child: _buildPostImage(allPosts.length > 5 ? allPosts[5] : allPosts[0]),
-                ),
-              ),
-            ],
-          )
-        ],
+    // Use a GridView for a more dynamic and clean layout
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: allPosts.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
       ),
+      itemBuilder: (context, index) {
+        return _buildPostImage(allPosts[index]);
+      },
     );
   }
- 
+
+
   Widget _buildPostImage(Map<String, dynamic> post) {
     return GestureDetector(
       onTap: () => _showPostDetail(post),
@@ -617,93 +658,122 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ? Image.asset(
                 post['imagePath'],
                 fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: Colors.grey[200],
-                ),
+                errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[800]),
               )
             : Image.file(
                 File(post['imagePath']),
                 fit: BoxFit.cover,
-                width: double.infinity,
-                height: double.infinity,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  color: Colors.grey[200],
-                ),
+                errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey[800]),
               ),
       ),
     );
   }
-
+  
   Widget _buildPerformanceSection() {
     if (!_videosManager.hasVideos()) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40.0),
-        child: Center(child: Text("No performance videos yet. Tap '+' to add one!", style: TextStyle(color: Colors.grey[600]))),
-      );
+      return Center(child: Text("No performances yet. Tap '+' to add one!", style: TextStyle(color: Colors.grey[600])));
     }
-    return Column(
-      children: _videosManager.videos.map((video) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-          child: Card(
-            elevation: 0.5,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(16),
-              leading: const Icon(Icons.play_circle_fill, color: Colors.deepPurpleAccent, size: 40),
-              title: Text(video.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text('Recorded: ${_formatDate(video.recordedAt)}'),
-              onTap: () => _playVideo(video),
-            ),
-          ),
-        );
-      }).toList(),
+    // Revamped to a horizontal list of cards
+    return SizedBox(
+      height: 180, // Define height for horizontal list
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _videosManager.videos.length,
+        itemBuilder: (context, index) {
+          final video = _videosManager.videos[index];
+          return _buildPerformanceCard(video);
+        },
+      ),
     );
+  }
+
+  Widget _buildPerformanceCard(PerformanceVideo video) {
+      return GestureDetector(
+        onTap: () => _playVideo(video),
+        child: Container(
+            width: 150,
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                // Using a dummy image as a placeholder thumbnail
+                image: DecorationImage(
+                    image: const AssetImage('assets/images/event_5.jpg'), // Placeholder
+                    fit: BoxFit.cover,
+                    colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.4), BlendMode.darken),
+                ),
+            ),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                              const Icon(Icons.play_circle_fill, color: Colors.white, size: 32),
+                              const SizedBox(height: 8),
+                              Text(video.title,
+                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                              ),
+                          ],
+                      ),
+                    )
+                ],
+            ),
+        ),
+      );
   }
 
   void _showProfileMenu() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.edit, color: Colors.black),
-              title: const Text('Edit Profile', style: TextStyle(color: Colors.black)),
-              onTap: () { Navigator.pop(context); _editProfile(); },
+      backgroundColor: Colors.transparent, // Make it transparent for glass effect
+      builder: (context) => ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade900.withOpacity(0.8),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20))
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.edit, color: Colors.black),
+                    title: const Text('Edit Profile', style: TextStyle(color: Colors.black)),
+                    onTap: () { Navigator.pop(context); _editProfile(); },
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.settings, color: Colors.black),
+                    title: const Text('Settings', style: TextStyle(color: Colors.black)),
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.share, color: Colors.black),
+                    title: const Text('Share Profile', style: TextStyle(color: Colors.black)),
+                    onTap: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.settings, color: Colors.black),
-              title: const Text('Settings', style: TextStyle(color: Colors.black)),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.share, color: Colors.black),
-              title: const Text('Share Profile', style: TextStyle(color: Colors.black)),
-              onTap: () => Navigator.pop(context),
-            ),
-          ],
         ),
       ),
     );
   }
- 
+
   List<Map<String, dynamic>> _getAllPosts() {
     List<Map<String, dynamic>> allPosts = [];
     allPosts.addAll(_postManager.posts.map((p) => {
-      'id': p.id, 'imagePath': p.imagePath, 'description': p.description,
-      'likes': p.likes, 'comments': p.comments, 'isDummy': false,
-    }));
+          'id': p.id, 'imagePath': p.imagePath, 'description': p.description,
+          'likes': p.likes, 'comments': p.comments, 'isDummy': false,
+        }));
     final dummyPosts = [
       {'id': 'dummy1', 'description': 'Neon vibes!', 'likes': 124, 'comments': [], 'isDummy': true, 'imagePath': 'assets/images/event 1.jpg'},
       {'id': 'dummy2', 'description': 'Street art.', 'likes': 98, 'comments': [], 'isDummy': true, 'imagePath': 'assets/images/event 2.jpg'},
@@ -715,7 +785,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     allPosts.addAll(dummyPosts);
     return allPosts;
   }
- 
+
   void _editProfile() => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Edit Profile clicked')));
   void _navigateToAchievements() => Navigator.push(context, MaterialPageRoute(builder: (context) => AchievementsPage()));
   void _playVideo(PerformanceVideo video) => Navigator.push(context, MaterialPageRoute(builder: (context) => VideoPlayerScreen(videoPath: video.filePath, title: video.title)));
@@ -723,11 +793,15 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   void _showPostDetail(Map<String, dynamic> post) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(),
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: _buildPostImage(post), // Simple preview for now
+      ),
     );
   }
 }
 
+// Dummy VideoPlayerScreen - No changes needed here
 class VideoPlayerScreen extends StatelessWidget {
   final String videoPath;
   final String title;

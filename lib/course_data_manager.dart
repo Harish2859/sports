@@ -33,6 +33,20 @@ class CourseDataManager {
       prerequisites: ['Sub-12 second 100m', 'Flexibility training', 'Sprint experience'],
       description: 'Advanced hurdle training focusing on race strategy, technical precision, and speed endurance. Master 110m and 100m hurdle events with professional coaching methods.',
     ),
+    Course(
+      id: '3',
+      title: 'Strength Assessment',
+      instructor: 'Coach Alpha',
+      summary: 'Assess and improve your athletic strength with targeted exercises.',
+      rating: 4.7,
+      difficulty: 'Beginner',
+      enrolledCount: 150,
+      duration: '1 day',
+      category: 'Fitness',
+      prerequisites: ['None'],
+      description: 'A comprehensive module to assess your current strength levels across key athletic movements. Includes sit-ups, vertical jumps, shuttle runs, and height measurement.',
+      isHighlighted: true,
+    ),
   ];
 
   final Map<String, CourseDetails> _courseDetails = {};
@@ -48,20 +62,6 @@ class CourseDataManager {
   }
 
   List<String> getSessionTitles(String courseId) {
-    final details = _courseDetails[courseId];
-    if (details != null && details.sessionTitles.isNotEmpty) {
-      return details.sessionTitles;
-    }
-    
-    // Return specific session titles based on course ID
-    if (courseId == '2') {
-      // Hurdles course - only 1 session
-      return [
-        'Sprint Hurdle Mastery',
-      ];
-    }
-    
-    // Default for other courses
     return [
       'Fundamentals & Assessment',
       'Technical Development',
@@ -72,17 +72,6 @@ class CourseDataManager {
   }
 
   List<FAQItem> getFAQItems(String courseId) {
-    final details = _courseDetails[courseId];
-    if (details != null && details.faqQuestions.isNotEmpty) {
-      List<FAQItem> faqs = [];
-      for (int i = 0; i < details.faqQuestions.length; i++) {
-        faqs.add(FAQItem(
-          question: details.faqQuestions[i],
-          answer: i < details.faqAnswers.length ? details.faqAnswers[i] : '',
-        ));
-      }
-      return faqs;
-    }
     return [
       FAQItem(
         question: 'What equipment do I need for training?',
@@ -100,13 +89,6 @@ class CourseDataManager {
   }
 
   Map<String, String> getCourseMetadata(String courseId) {
-    final details = _courseDetails[courseId];
-    if (details != null) {
-      return {
-        'Last Updated': details.lastUpdated,
-        'Release Date': details.releaseDate,
-      };
-    }
     return {
       'Last Updated': 'January 2025',
       'Release Date': 'March 2024',
@@ -114,233 +96,26 @@ class CourseDataManager {
   }
 
   List<CourseSectionData> getCourseSections(String courseId) {
-    final details = _courseDetails[courseId];
-    if (details != null && details.sections.isNotEmpty) {
-      return details.sections;
-    }
-
-    // Return specific sections based on course ID
-    if (courseId == '1') {
-      // Javelin Throw Course Sections
+    if (courseId == '3') { // Strength Assessment
       return [
         CourseSectionData(
           id: '1',
-          title: 'Section 1: Biomechanics & Foundation',
-          description: 'Master throwing biomechanics and establish proper foundation',
+          title: 'Strength Assessment Session',
+          description: 'Complete strength evaluation',
           units: [
             UnitData(
               id: '1',
-              name: 'Javelin Grip Basics',
-              description: 'Learn the correct way to hold the javelin',
-              objectives: ['Position hand correctly', 'Maintain secure grip'],
-              dos: ['Use binding tape', 'Keep wrist straight'],
-              donts: ['Don\'t grip too tightly', 'Avoid bent wrist'],
-            ),
-            UnitData(
-              id: '2',
-              name: 'Stance Setup',
-              description: 'Establish proper throwing stance and positioning',
-              objectives: ['Position feet correctly', 'Align body properly'],
-              dos: ['Keep feet shoulder-width', 'Face throwing direction'],
-              donts: ['Don\'t stand too narrow', 'Avoid incorrect alignment'],
-            ),
-            UnitData(
-              id: '3',
-              name: 'Balance and Posture',
-              description: 'Develop balance and maintain proper posture',
-              objectives: ['Find center of gravity', 'Maintain stability'],
-              dos: ['Keep core engaged', 'Distribute weight evenly'],
-              donts: ['Don\'t lean excessively', 'Avoid unstable positions'],
-            ),
-            UnitData(
-              id: '4',
-              name: 'Grip and Stance Drills',
-              description: 'Practice fundamental grip and stance exercises',
-              objectives: ['Build muscle memory', 'Ensure consistency'],
-              dos: ['Practice slowly', 'Focus on form'],
-              donts: ['Don\'t rush', 'Avoid bad habits'],
-            ),
-          ],
-        ),
-        CourseSectionData(
-          id: '2',
-          title: 'Section 2: Dynamic Approach System',
-          description: 'Master the dynamic approach run and acceleration patterns',
-          units: [
-            UnitData(
-              id: '5',
-              name: 'Approach Run Setup',
-              description: 'Learn the approach run starting position and initial movement',
-              objectives: ['Establish starting point', 'Begin with correct posture'],
-              dos: ['Start with javelin up', 'Maintain balance'],
-              donts: ['Don\'t start too close', 'Avoid poor posture'],
-            ),
-            UnitData(
-              id: '6',
-              name: 'Acceleration Phase',
-              description: 'Build speed through the approach run',
-              objectives: ['Achieve optimal speed', 'Maintain control'],
-              dos: ['Drive with arms', 'Keep strides consistent'],
-              donts: ['Don\'t decelerate', 'Avoid losing control'],
-            ),
-            UnitData(
-              id: '7',
-              name: 'Transition to Throw',
-              description: 'Smoothly transition from run to throwing position',
-              objectives: ['Time the crossover', 'Maintain momentum'],
-              dos: ['Plant support foot', 'Transfer weight smoothly'],
-              donts: ['Don\'t stop abruptly', 'Avoid jerky movements'],
-            ),
-            UnitData(
-              id: '8',
-              name: 'Approach Run Drills',
-              description: 'Practice approach run with specific focus exercises',
-              objectives: ['Perfect timing', 'Build consistency'],
-              dos: ['Use markers', 'Practice repeatedly'],
-              donts: ['Don\'t sacrifice form', 'Avoid fatigue'],
-            ),
-          ],
-        ),
-        CourseSectionData(
-          id: '3',
-          title: 'Section 3: Power Transfer & Release',
-          description: 'Optimize power transfer through kinetic chain and perfect release mechanics',
-          units: [
-            UnitData(
-              id: '9',
-              name: 'Throwing Motion',
-              description: 'Learn the fundamental throwing movement',
-              objectives: ['Generate power', 'Maintain control'],
-              dos: ['Use full body', 'Keep arm extended'],
-              donts: ['Don\'t throw with arm only', 'Avoid early release'],
-            ),
-            UnitData(
-              id: '10',
-              name: 'Release Point',
-              description: 'Master the critical release timing and technique',
-              objectives: ['Find optimal release angle', 'Control javelin direction'],
-              dos: ['Release at right moment', 'Maintain follow-through'],
-              donts: ['Don\'t release too early', 'Avoid dropping javelin'],
-            ),
-            UnitData(
-              id: '11',
-              name: 'Power Generation',
-              description: 'Develop maximum throwing power through proper mechanics',
-              objectives: ['Utilize body segments', 'Generate torque'],
-              dos: ['Use hip drive', 'Maintain sequence'],
-              donts: ['Don\'t neglect legs', 'Avoid arm-dominant throws'],
-            ),
-            UnitData(
-              id: '12',
-              name: 'Throwing Drills',
-              description: 'Practice throwing technique with progressive exercises',
-              objectives: ['Build confidence', 'Perfect form'],
-              dos: ['Start with light javelins', 'Focus on technique'],
-              donts: ['Don\'t skip fundamentals', 'Avoid bad habits'],
-            ),
-          ],
-        ),
-        CourseSectionData(
-          id: '4',
-          title: 'Section 4: Athletic Performance Development',
-          description: 'Develop sport-specific strength, power, and conditioning for elite performance',
-          units: [
-            UnitData(
-              id: '13',
-              name: 'Core Strength',
-              description: 'Develop core strength essential for throwing power',
-              objectives: ['Build rotational strength', 'Improve stability'],
-              dos: ['Use compound movements', 'Progress gradually'],
-              donts: ['Don\'t neglect recovery', 'Avoid poor form'],
-            ),
-            UnitData(
-              id: '14',
-              name: 'Upper Body Power',
-              description: 'Strengthen upper body for better throwing performance',
-              objectives: ['Build shoulder strength', 'Improve arm speed'],
-              dos: ['Focus on functional strength', 'Include recovery'],
-              donts: ['Don\'t overtrain', 'Avoid imbalanced training'],
-            ),
-            UnitData(
-              id: '15',
-              name: 'Lower Body Power',
-              description: 'Develop explosive lower body strength',
-              objectives: ['Build leg power', 'Improve drive'],
-              dos: ['Include plyometrics', 'Maintain balance'],
-              donts: ['Don\'t neglect flexibility', 'Avoid injury'],
-            ),
-            UnitData(
-              id: '16',
-              name: 'Conditioning Program',
-              description: 'Implement comprehensive conditioning for peak performance',
-              objectives: ['Build endurance', 'Prevent injury'],
-              dos: ['Include mobility work', 'Monitor progress'],
-              donts: ['Don\'t overdo it', 'Avoid neglecting nutrition'],
-            ),
-          ],
-        ),
-        CourseSectionData(
-          id: '5',
-          title: 'Section 5: Elite Competition Strategy',
-          description: 'Master competition psychology, advanced techniques, and performance optimization',
-          units: [
-            UnitData(
-              id: '17',
-              name: 'Competition Preparation',
-              description: 'Mental and physical preparation for competitions',
-              objectives: ['Develop competition routine', 'Manage pressure'],
-              dos: ['Visualize success', 'Follow preparation routine'],
-              donts: ['Don\'t change technique', 'Avoid negative thinking'],
-            ),
-            UnitData(
-              id: '18',
-              name: 'Advanced Techniques',
-              description: 'Learn advanced throwing techniques and refinements',
-              objectives: ['Optimize technique', 'Improve consistency'],
-              dos: ['Film and analyze', 'Make gradual changes'],
-              donts: ['Don\'t overhaul technique', 'Avoid experimental changes'],
-            ),
-            UnitData(
-              id: '19',
-              name: 'Performance Analysis',
-              description: 'Analyze performance and identify improvement areas',
-              objectives: ['Track progress', 'Identify weaknesses'],
-              dos: ['Use objective measures', 'Keep training log'],
-              donts: ['Don\'t be discouraged', 'Avoid comparison traps'],
-            ),
-            UnitData(
-              id: '20',
-              name: 'Competition Execution',
-              description: 'Strategies for successful competition performance',
-              objectives: ['Optimize performance', 'Handle variables'],
-              dos: ['Stay focused', 'Trust training'],
-              donts: ['Don\'t panic', 'Avoid last-minute changes'],
-            ),
-          ],
-        ),
-      ];
-    } else if (courseId == '2') {
-      // Hurdles Course Sections
-      return [
-        CourseSectionData(
-          id: '1',
-          title: 'Section 1: Sprint Hurdle Mastery',
-          description: 'Master elite sprint hurdle technique and race strategy',
-          units: [
-            UnitData(
-              id: '1',
-              name: 'Advanced Hurdle Clearance',
-              description: 'Perfect the technical aspects of hurdle clearance at race pace',
-              objectives: ['Minimize clearance time', 'Maintain sprint rhythm'],
-              dos: ['Attack the hurdle', 'Drive through with speed'],
-              donts: ['Don\'t decelerate before hurdles', 'Avoid excessive height'],
+              name: 'Complete Assessment',
+              description: 'Comprehensive strength and fitness evaluation',
+              objectives: ['Complete all assessment exercises', 'Record accurate measurements'],
+              dos: ['Follow proper form', 'Give maximum effort', 'Rest between exercises'],
+              donts: ['Skip warm-up', 'Rush through exercises', 'Ignore safety guidelines'],
             ),
           ],
         ),
       ];
     }
-
-    // Default fallback
+    
     return [
       CourseSectionData(
         id: '1',

@@ -414,24 +414,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   );
                 },
               ),
-              _buildDrawerItem(
-                context,
-                Icons.assessment,
-                'Standard Assessment',
-                () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/assessment');
-                },
-              ),
-              _buildDrawerItem(
-                context,
-                Icons.quiz,
-                'Test',
-                () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, '/test');
-                },
-              ),
+
               
               const Divider(),
               _buildDrawerItem(

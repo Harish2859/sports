@@ -20,6 +20,7 @@ class Course {
   final List<String> prerequisites;
   final String description;
   final bool isEnrolled;
+  final bool isHighlighted;
 
   Course({
     required this.id,
@@ -34,6 +35,7 @@ class Course {
     required this.prerequisites,
     required this.description,
     this.isEnrolled = false,
+    this.isHighlighted = false,
   });
 
   Course copyWith({
@@ -49,6 +51,7 @@ class Course {
     List<String>? prerequisites,
     String? description,
     bool? isEnrolled,
+    bool? isHighlighted,
   }) {
     return Course(
       id: id ?? this.id,
@@ -63,6 +66,7 @@ class Course {
       prerequisites: prerequisites ?? this.prerequisites,
       description: description ?? this.description,
       isEnrolled: isEnrolled ?? this.isEnrolled,
+      isHighlighted: isHighlighted ?? this.isHighlighted,
     );
   }
 }
@@ -333,6 +337,9 @@ class _CoursePageState extends State<CoursePage> with TickerProviderStateMixin {
                 spreadRadius: 0,
               ),
             ],
+            border: course.isHighlighted
+                ? Border.all(color: Theme.of(context).colorScheme.secondary, width: 3)
+                : null,
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(20),
