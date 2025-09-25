@@ -154,6 +154,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
     return Scaffold(
       backgroundColor: const Color(0xFF101010),
+      drawer: _buildDrawer(context),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.push(
           context,
@@ -168,17 +169,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           children: [
             _buildAnimatedGradientBackground(),
             SafeArea(
-              child: AnimatedBuilder(
-                animation: _scrollController,
-                builder: (context, child) {
-                  final offset = _scrollController.hasClients ? _scrollController.offset : 0;
-                  return Transform.translate(
-                    offset: Offset(0, -offset * 0.3),
-                    child: child,
-                  );
-                },
-                child: _buildProfileHeaderContent(isDarkMode),
-              ),
+              child: _buildProfileHeaderContent(isDarkMode),
             ),
             DraggableScrollableSheet(
               initialChildSize: 0.6,
@@ -216,7 +207,20 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 20),
-        _buildConditionalContent(isDarkMode),
+        Center(child: _buildSectionSelector()),
+        const SizedBox(height: 16),
+        GestureDetector(
+          onHorizontalDragEnd: (details) {
+            if (details.primaryVelocity! > 0) {
+              // Swipe right - go to XP
+              _onSectionSelected(ProfileSection.XP);
+            } else if (details.primaryVelocity! < 0) {
+              // Swipe left - go to Activity
+              _onSectionSelected(ProfileSection.Activity);
+            }
+          },
+          child: _buildConditionalContent(isDarkMode),
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 12, 12),
           child: Row(
@@ -241,7 +245,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         ),
         _buildMediaControls(),
         _buildMediaGrid(),
-        const SizedBox(height: 100), // Extra space at bottom
+        const SizedBox(height: 120), // Extra space for bottom navigation
       ],
     );
   }
@@ -286,17 +290,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
-      // Using StaggeredGrid with a custom pattern
+      padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 0),
       child: StaggeredGrid.count(
-        crossAxisCount: 3, // A 3-column layout provides flexibility for patterns
+        crossAxisCount: 3,
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
         children: _combinedMedia.asMap().entries.map((entry) {
           int index = entry.key;
           Map<String, dynamic> media = entry.value;
-
-          // Apply the repeating pattern to each item
           final tilePattern = pattern[index % pattern.length];
 
           return StaggeredGridTile.count(
@@ -432,8 +433,32 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Builder(
+                    builder: (context) => _buildGlassIconButton(Icons.menu, () => Scaffold.of(context).openDrawer()),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'John Doe',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      shadows: [
+                        Shadow(
+                          color: Colors.white,
+                          blurRadius: 2,
+                          offset: Offset(1, 1),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               _buildGlassIconButton(Icons.more_vert, _showProfileMenu),
             ],
           ),
@@ -472,9 +497,22 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    displayName,
-                    style: const TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                  const Text(
+                    'John Doe',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    '25 years old',
+                    style: TextStyle(
+                      color: Colors.black, 
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -489,18 +527,18 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ],
           ),
           const SizedBox(height: 15),
+          _buildAboutSection(),
+          const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _buildStatItem('17K', 'friends'),
               _buildStatItem('$followingCount', 'post'),
-              widget.isOwnProfile
-                  ? _buildProfileActionButton('Edit Profile', null, isDarkMode)
-                  : _buildProfileActionButton('Follow', null, isDarkMode),
+              if (!widget.isOwnProfile)
+                _buildProfileActionButton('Follow', null, isDarkMode),
             ],
           ),
           const SizedBox(height: 15),
-          _buildSectionSelector(),
         ],
       ),
     );
@@ -527,12 +565,19 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildSectionSelector() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildSectionButton("XP", ProfileSection.XP),
-        _buildSectionButton("Activity", ProfileSection.Activity),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(25),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildSectionButton("XP", ProfileSection.XP),
+          _buildSectionButton("Activity", ProfileSection.Activity),
+        ],
+      ),
     );
   }
 
@@ -574,6 +619,52 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       child: Text(
         text,
         style: TextStyle(color: isFollow ? Colors.white : Colors.black, fontWeight: FontWeight.w600),
+      ),
+    );
+  }
+
+  Widget _buildAboutSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Passionate athlete and fitness enthusiast 💪',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 14,
+            height: 1.3,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          children: [
+            _buildInfoChip('🏃‍♂️ Running'),
+            _buildInfoChip('🏋️‍♀️ Fitness'),
+            _buildInfoChip('⚽ Football'),
+            _buildInfoChip('📍 25 years old'),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoChip(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.grey[700],
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
+        ),
       ),
     );
   }
@@ -635,90 +726,63 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.deepPurple.withOpacity(0.8), Colors.blue.withOpacity(0.8)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _breathingAnimation,
+                builder: (context, child) => Transform.scale(
+                  scale: _breathingAnimation.value,
+                  child: Image.asset(
+                    getBadgeImage(currentLevel),
+                    width: 60,
+                    height: 60,
+                    errorBuilder: (context, error, stackTrace) =>
+                      const Icon(Icons.emoji_events, color: Colors.deepPurple, size: 60),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 20),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${getLevelName(currentLevel)} Level $currentLevel',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '$currentXP / $xpForNextLevel XP',
+                    style: const TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+            ],
           ),
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.deepPurple.withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+          const SizedBox(height: 20),
+          Container(
+            height: 8,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(4),
             ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withOpacity(0.3), width: 2),
-                  ),
-                  child: AnimatedBuilder(
-                    animation: _breathingAnimation,
-                    builder: (context, child) => Transform.scale(
-                      scale: _breathingAnimation.value,
-                      child: Image.asset(
-                        getBadgeImage(currentLevel),
-                        width: 40,
-                        height: 40,
-                        errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.emoji_events, color: Colors.white, size: 40),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${getLevelName(currentLevel)} Level $currentLevel',
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        '$currentXP / $xpForNextLevel XP',
-                        style: const TextStyle(fontSize: 16, color: Colors.white70, fontWeight: FontWeight.w500),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            Container(
-              height: 8,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 800),
-                  width: MediaQuery.of(context).size.width * progress * 0.7,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(4),
-                    gradient: const LinearGradient(
-                      colors: [Colors.white, Colors.white70],
-                    ),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 800),
+                width: MediaQuery.of(context).size.width * progress * 0.7,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  gradient: const LinearGradient(
+                    colors: [Colors.deepPurple, Colors.blue],
                   ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -727,16 +791,43 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: _buildModernStatCard('Tests', '5', Icons.quiz_outlined, Colors.blue)),
+          Expanded(child: _buildSimpleStatCard('Tests', '5', Icons.quiz_outlined)),
           const SizedBox(width: 12),
-          Expanded(child: _buildModernStatCard('Rating', '8.7/10', Icons.trending_up, Colors.green)),
+          Expanded(child: _buildSimpleStatCard('Rating', '8.7/10', Icons.trending_up)),
           const SizedBox(width: 12),
           Expanded(
             child: GestureDetector(
               onTap: () => _navigateToAchievements(),
-              child: _buildModernStatCard('Badges', '1', Icons.emoji_events, Colors.orange),
+              child: _buildSimpleStatCard('Badges', '1', Icons.emoji_events),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSimpleStatCard(String title, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.deepPurple, size: 32),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
           ),
         ],
       ),
@@ -783,6 +874,93 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             style: const TextStyle(fontSize: 14, color: Colors.white70, fontWeight: FontWeight.w500),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: Container(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor,
+              ),
+              child: Consumer<AppState>(
+                builder: (context, appState, child) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Theme.of(context).colorScheme.onPrimary.withOpacity(0.2),
+                            child: Icon(
+                              Icons.person,
+                              size: 32,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        appState.userName,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Findrly - Empowering Talent',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.palette),
+              title: const Text('Theme'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileStructureScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Profile'),
+              onTap: () { Navigator.pop(context); _editProfile(); },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.share),
+              title: const Text('Share Profile'),
+              onTap: () => Navigator.pop(context),
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Logout'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.of(context).pushNamedAndRemoveUntil('/login', (Route<dynamic> route) => false);
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -904,179 +1082,198 @@ class _PostDetailOverlayState extends State<PostDetailOverlay> with SingleTicker
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.black,
       body: GestureDetector(
         onTap: () => Navigator.pop(context),
-        child: Container(
-          color: Colors.black87,
-          child: SafeArea(
-            child: AnimatedBuilder(
-              animation: _scaleAnimation,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _scaleAnimation.value,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: Colors.white,
-                              backgroundImage: widget.userProfile['image'] != null
-                                  ? (widget.userProfile['isOwnProfile'] 
-                                      ? FileImage(File(widget.userProfile['image'])) 
-                                      : NetworkImage(widget.userProfile['image']) as ImageProvider)
-                                  : null,
-                              child: widget.userProfile['image'] == null 
-                                  ? Icon(Icons.person, color: Colors.grey[600]) 
-                                  : null,
+        child: SafeArea(
+          child: AnimatedBuilder(
+            animation: _scaleAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _scaleAnimation.value,
+                child: Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.8),
+                        border: Border(bottom: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [Colors.purpleAccent, Colors.blueAccent],
+                              ),
                             ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            child: CircleAvatar(
+                              radius: 22,
+                              backgroundColor: Colors.black,
+                              child: CircleAvatar(
+                                radius: 20,
+                                backgroundColor: Colors.grey[300],
+                                backgroundImage: widget.userProfile['image'] != null
+                                    ? (widget.userProfile['isOwnProfile'] 
+                                        ? FileImage(File(widget.userProfile['image'])) 
+                                        : NetworkImage(widget.userProfile['image']) as ImageProvider)
+                                    : null,
+                                child: widget.userProfile['image'] == null 
+                                    ? Icon(Icons.person, color: Colors.grey[600]) 
+                                    : null,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.userProfile['name']?.toString() ?? 'User',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '2 hours ago',
+                                  style: TextStyle(
+                                    color: Colors.grey[400],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.grey[800],
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              onPressed: () => Navigator.pop(context),
+                              icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Container(
+                        width: double.infinity,
+                        child: Hero(
+                          tag: widget.post['id'] ?? 'default',
+                          child: (widget.post['isDummy'] == true)
+                              ? Image.asset(
+                                  widget.post['imagePath'] ?? 'assets/images/event_1.jpg',
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    color: Colors.grey[800],
+                                    child: const Icon(Icons.image, color: Colors.white, size: 50),
+                                  ),
+                                )
+                              : Image.file(
+                                  File(widget.post['imagePath'] ?? ''),
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    color: Colors.grey[800],
+                                    child: const Icon(Icons.image, color: Colors.white, size: 50),
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.9),
+                        border: Border(top: BorderSide(color: Colors.grey[800]!, width: 0.5)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  setState(() {
+                                    _isLiked = !_isLiked;
+                                    _likes += _isLiked ? 1 : -1;
+                                  });
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Icon(
+                                    _isLiked ? Icons.favorite : Icons.favorite_border,
+                                    color: _isLiked ? Colors.red : Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 20),
+                              Icon(Icons.chat_bubble_outline, color: Colors.white, size: 26),
+                              const SizedBox(width: 20),
+                              Icon(Icons.share_outlined, color: Colors.white, size: 26),
+                              const Spacer(),
+                              Icon(Icons.bookmark_border, color: Colors.white, size: 26),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            '$_likes likes',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (widget.post['description'] != null && widget.post['description'].isNotEmpty)
+                            RichText(
+                              text: TextSpan(
                                 children: [
-                                  Text(
-                                    widget.userProfile['name']?.toString() ?? 'User',
+                                  TextSpan(
+                                    text: '${widget.userProfile['name']?.toString() ?? 'User'} ',
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                     ),
                                   ),
-                                  Text(
-                                    '2 hours ago',
-                                    style: TextStyle(
-                                      color: Colors.grey[400],
-                                      fontSize: 12,
+                                  TextSpan(
+                                    text: widget.post['description']?.toString() ?? '',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 14,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            IconButton(
-                              onPressed: () => Navigator.pop(context),
-                              icon: const Icon(Icons.close, color: Colors.white),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {},
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Hero(
-                              tag: widget.post['id'] ?? 'default',
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(20),
-                                child: (widget.post['isDummy'] == true)
-                                    ? Image.asset(
-                                        widget.post['imagePath'] ?? 'assets/images/event_1.jpg',
-                                        fit: BoxFit.contain,
-                                        width: double.infinity,
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                          height: 300,
-                                          color: Colors.grey[800],
-                                          child: const Icon(Icons.image, color: Colors.white, size: 50),
-                                        ),
-                                      )
-                                    : Image.file(
-                                        File(widget.post['imagePath'] ?? ''),
-                                        fit: BoxFit.contain,
-                                        width: double.infinity,
-                                        errorBuilder: (context, error, stackTrace) => Container(
-                                          height: 300,
-                                          color: Colors.grey[800],
-                                          child: const Icon(Icons.image, color: Colors.white, size: 50),
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    setState(() {
-                                      _isLiked = !_isLiked;
-                                      _likes += _isLiked ? 1 : -1;
-                                    });
-                                  },
-                                  child: AnimatedContainer(
-                                    duration: const Duration(milliseconds: 200),
-                                    child: Icon(
-                                      _isLiked ? Icons.favorite : Icons.favorite_border,
-                                      color: _isLiked ? Colors.red : Colors.white,
-                                      size: 28,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Icon(Icons.chat_bubble_outline, color: Colors.white, size: 26),
-                                const SizedBox(width: 16),
-                                Icon(Icons.share_outlined, color: Colors.white, size: 26),
-                                const Spacer(),
-                                Icon(Icons.bookmark_border, color: Colors.white, size: 26),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              '$_likes likes',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            if (widget.post['description'] != null && widget.post['description'].isNotEmpty)
-                              RichText(
-                                text: TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: '${widget.userProfile['name']?.toString() ?? 'User'} ',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: widget.post['description']?.toString() ?? '',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            const SizedBox(height: 8),
-                            Text(
+                          const SizedBox(height: 12),
+                          GestureDetector(
+                            onTap: () {},
+                            child: Text(
                               'View all comments',
                               style: TextStyle(
                                 color: Colors.grey[400],
                                 fontSize: 14,
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ),
       ),
