@@ -53,43 +53,16 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Module Image Card
-            Container(
-              width: double.infinity,
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.green,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 4),
-                  ),
+            // Swipeable Cards Section
+            SizedBox(
+              height: 240,
+              child: PageView(
+                children: [
+                  _buildImageCard(),
+                  _buildModuleHeader(context),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.asset(
-                  widget.module['image'],
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: Colors.green,
-                      child: const Icon(
-                        Icons.sports,
-                        color: Colors.white,
-                        size: 60,
-                      ),
-                    );
-                  },
-                ),
-              ),
             ),
-            const SizedBox(height: 20),
-            
-            // Module Header Section
-            _buildModuleHeader(context),
             const SizedBox(height: 20),
             
             // Enrollment Stats Card
@@ -108,18 +81,54 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
     );
   }
 
+  Widget _buildImageCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: Colors.green,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.asset(
+          widget.module['image'],
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: Colors.green,
+              child: const Icon(
+                Icons.sports,
+                color: Colors.white,
+                size: 60,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildModuleHeader(BuildContext context) {
     final theme = Theme.of(context);
     
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        padding: const EdgeInsets.all(20),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: const LinearGradient(
-            colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+            colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -165,7 +174,7 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 12),
             Row(
               children: [
                 _buildQuickStat('Enrollments', '156', Icons.people, Colors.white),
@@ -174,6 +183,7 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
               ],
             ),
           ],
+        ),
         ),
       ),
     );

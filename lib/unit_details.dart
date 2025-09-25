@@ -133,44 +133,34 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final Color primaryColor = Color(0xFF007BFF); // A vibrant blue for primary actions
-    final Color backgroundColor = Color(0xFF121212); // A deep, dark grey for the background
-
-    return Theme(
-      data: theme.copyWith(
-        primaryColor: primaryColor,
-        scaffoldBackgroundColor: backgroundColor,
-        brightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildVideoHero(context),
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildUnitInfo(),
-                    _buildDivider(),
-                    _buildSectionHeader("Record Your Performance"),
-                    SizedBox(height: 16),
-                    _buildRecordingSection(),
-                    _buildDivider(),
-                    _buildDosAndDontsSection(), // **NEW SECTION**
-                    _buildDivider(),
-                    _buildSectionHeader("Learning Objectives"),
-                    SizedBox(height: 16),
-                    _buildObjectives(),
-                    SizedBox(height: 32),
-                  ],
-                ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildVideoHero(context),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildUnitInfo(),
+                  _buildDivider(),
+                  _buildSectionHeader("Record Your Performance"),
+                  SizedBox(height: 16),
+                  _buildRecordingSection(),
+                  _buildDivider(),
+                  _buildDosAndDontsSection(),
+                  _buildDivider(),
+                  _buildSectionHeader("Learning Objectives"),
+                  SizedBox(height: 16),
+                  _buildObjectives(),
+                  SizedBox(height: 32),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -323,7 +313,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         Text(
           widget.unitName,
           style: TextStyle(
-            color: Colors.white,
+            color: Colors.black87,
             fontSize: 32,
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
@@ -341,7 +331,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         Text(
           widget.unitDescription,
           style: TextStyle(
-            color: Colors.grey[400],
+            color: Colors.grey[600],
             fontSize: 16,
             height: 1.6,
           ),
@@ -361,7 +351,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         children: [
           Icon(icon, color: Colors.grey[400], size: 16),
           SizedBox(width: 8),
-          Text(text, style: TextStyle(color: Colors.grey[300], fontSize: 14)),
+          Text(text, style: TextStyle(color: Colors.grey[700], fontSize: 14)),
         ],
       ),
     );
@@ -376,7 +366,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
     return Text(
       title,
       style: TextStyle(
-        color: Colors.white,
+        color: Colors.black87,
         fontSize: 22,
         fontWeight: FontWeight.bold
       ),
@@ -543,7 +533,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
   
   Widget _buildAnalysisResultCard() {
     final bool isSuccess = !_hasMalpractice;
-    final Color cardColor = isSuccess ? Color(0xFF1A3D1A) : Color(0xFF4D1A1A);
+    final Color cardColor = isSuccess ? Colors.green.shade50 : Colors.red.shade50;
     final Color borderColor = isSuccess ? Colors.green.shade400 : Colors.red.shade400;
     final String title = isSuccess ? 'Face Matched Successfully!' : 'Issues Detected';
 
@@ -563,7 +553,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
             ],
@@ -571,7 +561,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
           SizedBox(height: 12),
           Text(
             _analysisResult ?? '',
-            style: TextStyle(color: Colors.white.withOpacity(0.9), height: 1.5),
+            style: TextStyle(color: Colors.black87, height: 1.5),
           ),
           if (!isSuccess) ...[
             SizedBox(height: 20),
@@ -650,7 +640,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
             children: [
               Icon(icon, color: color, size: 20),
               SizedBox(width: 10),
-              Expanded(child: Text(item, style: TextStyle(color: Colors.grey[300], height: 1.4))),
+              Expanded(child: Text(item, style: TextStyle(color: Colors.grey[700], height: 1.4))),
             ],
           ),
         )).toList(),
@@ -671,7 +661,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey.withOpacity(0.15),
+        color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -684,7 +674,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
               objective,
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey[300],
+                color: Colors.grey[700],
                 height: 1.5,
               ),
             ),
@@ -795,13 +785,13 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Color(0xFF282828),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
             Icon(Icons.tips_and_updates, color: primaryColor),
             SizedBox(width: 10),
-            Text('Recording Tips', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text('Recording Tips', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
           ],
         ),
         content: Column(
@@ -831,7 +821,7 @@ class _UnitDetailsPageState extends State<UnitDetailsPage> {
         children: [
           Icon(icon, color: color, size: 22),
           SizedBox(width: 16),
-          Expanded(child: Text(text, style: TextStyle(color: Colors.white70, height: 1.4))),
+          Expanded(child: Text(text, style: TextStyle(color: Colors.grey[700], height: 1.4))),
         ],
       ),
     );

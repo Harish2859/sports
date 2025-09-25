@@ -221,24 +221,69 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           },
           child: _buildConditionalContent(isDarkMode),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 24, 12, 12),
+        Container(
+          margin: const EdgeInsets.fromLTRB(20, 24, 20, 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.withOpacity(0.2)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'Portfolio',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Portfolio',
+                    style: TextStyle(
+                      fontSize: 22, 
+                      fontWeight: FontWeight.bold, 
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    '${_combinedMedia.length} items',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-              IconButton(
-                icon: const Icon(Icons.add_circle_outline, color: Colors.deepPurpleAccent, size: 28),
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const UploadPage()),
-                  );
-                  setState(() {});
-                },
+              Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Colors.deepPurpleAccent, Colors.blueAccent],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.deepPurpleAccent.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.add, color: Colors.white, size: 24),
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const UploadPage()),
+                    );
+                    setState(() {});
+                  },
+                ),
               ),
             ],
           ),
@@ -251,18 +296,47 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
   
   Widget _buildMediaControls() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: Icon(Icons.grid_view_outlined, color: Colors.grey.shade700),
-            onPressed: () {},
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey.withOpacity(0.3)),
+                ),
+                child: Icon(Icons.grid_view_outlined, color: Colors.grey.shade700, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Grid View',
+                style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-          IconButton(
-            icon: Icon(Icons.sort, color: Colors.grey.shade700),
-            onPressed: () {},
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.withOpacity(0.3)),
+            ),
+            child: Icon(Icons.sort, color: Colors.grey.shade700, size: 20),
           ),
         ],
       ),
@@ -275,7 +349,17 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(50.0),
-          child: Text("No media yet. Tap '+' to add something!", style: TextStyle(color: Colors.grey[600])),
+          child: Column(
+            children: [
+              Icon(Icons.photo_library_outlined, size: 48, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                "No media yet. Tap '+' to add something!", 
+                style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -289,12 +373,16 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       {'crossAxis': 2, 'mainAxis': 1}, // Wide item
     ];
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12.0, 0, 12.0, 0),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16.0, 8, 16.0, 0),
+      decoration: BoxDecoration(
+        color: Colors.grey[50],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       child: StaggeredGrid.count(
         crossAxisCount: 3,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
         children: _combinedMedia.asMap().entries.map((entry) {
           int index = entry.key;
           Map<String, dynamic> media = entry.value;
@@ -310,7 +398,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  // ENHANCEMENT: The media item widget is redesigned for a cleaner look.
+  // ENHANCEMENT: The media item widget is redesigned for a cleaner look with better card edges.
   Widget _buildMediaItem(Map<String, dynamic> media) {
     final bool isVideo = media['type'] == 'video';
     final bool isGallery = media['isGallery'] == true;
@@ -326,88 +414,173 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       },
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20), // Increased border radius for a softer look
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.white.withOpacity(0.3),
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 1,
+            ),
+            BoxShadow(
+              color: Colors.white.withOpacity(0.1),
+              blurRadius: 6,
+              offset: const Offset(0, -2),
+              spreadRadius: 0,
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Image/Thumbnail background
-              Hero(
-                tag: media['id'],
-                child: media['isDummy']
-                    ? Image.asset(
-                        imagePath,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey[800],
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
-                        ),
-                      )
-                    : Image.file(
-                        File(imagePath),
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          color: Colors.grey[800],
-                          child: const Icon(Icons.broken_image, color: Colors.grey),
-                        ),
-                      ),
+          borderRadius: BorderRadius.circular(15),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.grey.withOpacity(0.2),
+                width: 0.5,
               ),
+            ),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Image/Thumbnail background
+                Hero(
+                  tag: media['id'],
+                  child: media['isDummy']
+                      ? Image.asset(
+                          imagePath,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[300],
+                            child: Icon(Icons.broken_image, color: Colors.grey[600], size: 32),
+                          ),
+                        )
+                      : Image.file(
+                          File(imagePath),
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: Colors.grey[300],
+                            child: Icon(Icons.broken_image, color: Colors.grey[600], size: 32),
+                          ),
+                        ),
+                ),
 
-              // Subtle gradient for better text readability, can be removed if not desired
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withOpacity(0.6),
-                    ],
+                // Enhanced gradient overlay for better visibility
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.4),
+                      ],
+                      stops: const [0.6, 1.0],
+                    ),
                   ),
                 ),
-              ),
 
-              // --- UI ENHANCEMENTS START HERE ---
+                // Centered play icon for videos with enhanced visibility
+                if (isVideo)
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.play_arrow, color: Colors.white, size: 28),
+                    ),
+                  ),
 
-              // Centered play icon for videos, as seen in the reference UI
-              if (isVideo)
-                Center(
+                // Top-right gallery indicator with better visibility
+                if (isGallery)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.collections_outlined, color: Colors.white, size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${media['imageCount'] ?? 1}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // Bottom overlay with likes count for better engagement visibility
+                Positioned(
+                  bottom: 8,
+                  left: 8,
+                  right: 8,
                   child: Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.6),
-                      shape: BoxShape.circle,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 0.5,
+                      ),
                     ),
-                    child: const Icon(Icons.play_arrow, color: Colors.white, size: 36),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.favorite, color: Colors.red, size: 12),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${media['likes'] ?? 0}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-
-              // Top-right icon for galleries, as seen in the reference UI
-              if (isGallery)
-                 Positioned(
-                   top: 12,
-                   right: 12,
-                   child: Container(
-                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                     decoration: BoxDecoration(
-                       color: Colors.black.withOpacity(0.6),
-                       borderRadius: BorderRadius.circular(10),
-                     ),
-                     child: Icon(Icons.collections_outlined, color: Colors.white, size: 16),
-                   ),
-                 ),
-
-              // --- UI ENHANCEMENTS END HERE ---
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -565,19 +738,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildSectionSelector() {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildSectionButton("XP", ProfileSection.XP),
-          _buildSectionButton("Activity", ProfileSection.Activity),
-        ],
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildSectionButton("XP", ProfileSection.XP),
+        _buildSectionButton("Activity", ProfileSection.Activity),
+      ],
     );
   }
 
@@ -588,16 +754,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: isSelected ? const LinearGradient(colors: [Colors.purpleAccent, Colors.blueAccent]) : null,
-          color: isSelected ? null : Colors.black.withOpacity(0.1),
-          border: isSelected ? null : Border.all(color: Colors.black.withOpacity(0.3)),
-        ),
         child: Text(
           title,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black,
+            color: isSelected ? Colors.deepPurpleAccent : Colors.black,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             fontSize: 14,
           ),

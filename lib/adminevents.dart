@@ -761,6 +761,7 @@ class _EventsListScreenState extends State<EventsListScreen> {
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
               'Findrly',

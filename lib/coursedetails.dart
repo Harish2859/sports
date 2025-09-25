@@ -7,6 +7,7 @@ import 'main_layout.dart';
 import 'gotocourse.dart';
 import 'course_data_manager.dart';
 import 'theme_provider.dart';
+import 'course_units_page.dart';
 
 // Comment class remains the same
 class Comment {
@@ -71,7 +72,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
     'Sessions': Icons.list_alt,
     'Reviews': Icons.reviews_outlined,
     'FAQ': Icons.quiz_outlined,
-    'Leaderboard': Icons.leaderboard_outlined,
   };
 
   // **NEW**: A list of placeholder images for the session cards.
@@ -280,8 +280,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
         return _buildReviewsSection(key: const ValueKey('reviews'));
       case 4:
         return _buildFAQSection(key: const ValueKey('faq'));
-      case 5:
-        return _buildLeaderboardSection(key: const ValueKey('leaderboard'));
       default:
         return const SizedBox.shrink(key: ValueKey('empty'));
     }
@@ -685,7 +683,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          GotoCoursePage(courseName: _course.title, courseId: _course.id),
+                          CourseUnitsPage(courseName: _course.title, courseId: _course.id),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         return FadeTransition(
                           opacity: animation,
