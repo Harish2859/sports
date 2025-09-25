@@ -142,161 +142,186 @@ class _CoursePageState extends State<CoursePage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final appState = Provider.of<AppState>(context);
+    final standardAssessment = _courses.firstWhere((course) => course.isHighlighted, orElse: () => _courses.first);
+    final otherCourses = _filteredCourses.where((course) => !course.isHighlighted).toList();
     
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text('Courses'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Column(
-        children: [
-          // Search and Filter Section
-          Container(
-            color: Colors.transparent,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Search Bar
-                TextField(
-                  controller: _searchController,
-                  onChanged: (value) => _filterCourses(),
-                  decoration: InputDecoration(
-                    hintText: 'Search courses, instructors, or categories...',
-                    prefixIcon: Icon(Icons.search),
-                    filled: true,
-                    fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                
-                // Category Filter
-                SizedBox(
-                  height: 40,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      final category = _categories[index];
-                      final isSelected = category == _selectedCategory;
-                      
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          selected: isSelected,
-                          label: Text(category,
-                            style: TextStyle(
-                              color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).textTheme.bodyLarge?.color,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            ),
-                          ),
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectedCategory = category;
-                            });
-                            _filterCourses();
-                          },
-                          selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
-                          checkmarkColor: Theme.of(context).colorScheme.primary,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+      body: CustomScrollView(
+        slivers: [
+          // App Bar
+          SliverAppBar(
+            title: Text('Courses'),
+            automaticallyImplyLeading: false,
+            floating: true,
+            snap: true,
+          ),
+          
+          // Standard Assessment (Fixed at top)
+          SliverToBoxAdapter(
+            child: Container(
+              margin: const EdgeInsets.all(16),
+              child: _buildCourseCard(standardAssessment),
             ),
           ),
           
-          // Course Results Count
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Text(
-              '${_filteredCourses.length} courses found',
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).textTheme.bodySmall?.color,
-                fontWeight: FontWeight.w500,
+          // Search and Filter Section (Sticky)
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _SearchHeaderDelegate(
+              child: Container(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Search Bar
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (value) => _filterCourses(),
+                      decoration: InputDecoration(
+                        hintText: 'Search courses, instructors, or categories...',
+                        prefixIcon: Icon(Icons.search),
+                        filled: true,
+                        fillColor: Theme.of(context).brightness == Brightness.dark ? Colors.grey[800] : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Category Filter
+                    SizedBox(
+                      height: 40,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final category = _categories[index];
+                          final isSelected = category == _selectedCategory;
+                          
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              selected: isSelected,
+                              label: Text(category,
+                                style: TextStyle(
+                                  color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).textTheme.bodyLarge?.color,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                ),
+                              ),
+                              onSelected: (selected) {
+                                setState(() {
+                                  _selectedCategory = category;
+                                });
+                                _filterCourses();
+                              },
+                              selectedColor: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                              checkmarkColor: Theme.of(context).colorScheme.primary,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           
-          // Course List
-          Expanded(
-            child: Stack(
-              children: [
-                ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _filteredCourses.length,
-                  itemBuilder: (context, index) {
-                    final course = _filteredCourses[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.0, 0.5),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _listAnimationController,
-                            curve: Interval(
-                              index * 0.1,
-                              (index * 0.1) + 0.3,
-                              curve: Curves.easeOut,
-                            ),
-                          ),
-                        ),
-                        child: FadeTransition(
-                          opacity: Tween<double>(
-                            begin: 0.0,
-                            end: 1.0,
-                          ).animate(
-                            CurvedAnimation(
-                              parent: _listAnimationController,
-                              curve: Interval(
-                                index * 0.1,
-                                (index * 0.1) + 0.3,
-                                curve: Curves.easeOut,
-                              ),
-                            ),
-                          ),
-                          child: _buildCourseCard(course),
-                        ),
-                      ),
-                    );
-                  },
+          // Course Results Count
+          SliverToBoxAdapter(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Text(
+                '${otherCourses.length} other courses found',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                  fontWeight: FontWeight.w500,
                 ),
-
-                // Floating Action Button
-                Positioned(
-                  bottom: 24,
-                  right: 24,
-                  child: FloatingActionButton.extended(
-                    onPressed: () {
-                      _showAddCourseDialog(context);
-                    },
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    elevation: 8,
-                    icon: const Icon(Icons.add, size: 20),
-                    label: const Text(
-                      'Add Course',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
+              ),
+            ),
+          ),
+          
+          // Other Course List (Can overlay above when scrolling)
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final course = otherCourses[index];
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.0, 0.5),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: _listAnimationController,
+                        curve: Interval(
+                          index * 0.1,
+                          (index * 0.1) + 0.3,
+                          curve: Curves.easeOut,
+                        ),
                       ),
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                    child: FadeTransition(
+                      opacity: Tween<double>(
+                        begin: 0.0,
+                        end: 1.0,
+                      ).animate(
+                        CurvedAnimation(
+                          parent: _listAnimationController,
+                          curve: Interval(
+                            index * 0.1,
+                            (index * 0.1) + 0.3,
+                            curve: Curves.easeOut,
+                          ),
+                        ),
+                      ),
+                      child: _buildCourseCard(course),
                     ),
                   ),
-                ),
-              ],
+                );
+              },
+              childCount: otherCourses.length,
+            ),
+          ),
+          
+          // Floating Action Button Space
+          SliverToBoxAdapter(
+            child: Container(
+              height: 100,
+              child: Stack(
+                children: [
+                  Positioned(
+                    bottom: 24,
+                    right: 24,
+                    child: FloatingActionButton.extended(
+                      onPressed: () {
+                        _showAddCourseDialog(context);
+                      },
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                      elevation: 8,
+                      icon: const Icon(Icons.add, size: 20),
+                      label: const Text(
+                        'Add Course',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -772,5 +797,27 @@ class _CoursePageState extends State<CoursePage> with TickerProviderStateMixin {
     _searchAnimationController.dispose();
     _listAnimationController.dispose();
     super.dispose();
+  }
+}
+
+class _SearchHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+  
+  _SearchHeaderDelegate({required this.child});
+  
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+  
+  @override
+  double get maxExtent => 140;
+  
+  @override
+  double get minExtent => 140;
+  
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return false;
   }
 }

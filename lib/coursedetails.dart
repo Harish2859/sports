@@ -67,11 +67,10 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
   
   final Map<String, IconData> _sectionTabs = {
     'About': Icons.info_outline,
-    'Prerequisites': Icons.check_circle_outline,
+    'Course Info': Icons.info_outlined,
     'Sessions': Icons.list_alt,
     'Reviews': Icons.reviews_outlined,
     'FAQ': Icons.quiz_outlined,
-    'Info': Icons.dataset_outlined,
     'Leaderboard': Icons.leaderboard_outlined,
   };
 
@@ -274,7 +273,7 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
       case 0:
         return _buildAboutSection(key: const ValueKey('about'));
       case 1:
-        return _buildPrerequisitesSection(key: const ValueKey('prereqs'));
+        return _buildCombinedInfoSection(key: const ValueKey('combined-info'));
       case 2:
         return _buildSessionsSection(key: const ValueKey('sessions'));
       case 3:
@@ -282,8 +281,6 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
       case 4:
         return _buildFAQSection(key: const ValueKey('faq'));
       case 5:
-        return _buildInfoSection(key: const ValueKey('info'));
-      case 6:
         return _buildLeaderboardSection(key: const ValueKey('leaderboard'));
       default:
         return const SizedBox.shrink(key: ValueKey('empty'));
@@ -583,19 +580,57 @@ class _CourseDetailsPageState extends State<CourseDetailsPage> with TickerProvid
     );
   }
 
-  Widget _buildInfoSection({Key? key}) {
+  Widget _buildCombinedInfoSection({Key? key}) {
     return Padding(
       key: key,
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Module Information', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+          const Text('Course Information', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
           const SizedBox(height: 16),
-          _buildInfoRow('Category', _course.category),
-          _buildInfoRow('Duration', _course.duration),
-          _buildInfoRow('Difficulty Level', _course.difficulty),
-          ..._courseManager.getCourseMetadata(_course.id).entries.map((entry) => _buildInfoRow(entry.key, entry.value)),
+          
+          // Prerequisites subsection
+          Row(
+            children: [
+              const Icon(Icons.check_circle_outline, size: 20, color: Color(0xFF10B981)),
+              const SizedBox(width: 8),
+              const Text('Prerequisites', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_course.prerequisites.isEmpty)
+            const Padding(
+              padding: EdgeInsets.only(left: 28, bottom: 16),
+              child: Text('• No prerequisites required', style: TextStyle(fontSize: 14)),
+            )
+          else
+            ..._course.prerequisites.map((prereq) => Padding(
+                  padding: const EdgeInsets.only(left: 28, bottom: 8),
+                  child: Text('• $prereq', style: const TextStyle(fontSize: 14)),
+                )),
+          const SizedBox(height: 16),
+          
+          // Module Information subsection
+          Row(
+            children: [
+              const Icon(Icons.dataset_outlined, size: 20, color: Color(0xFF2563EB)),
+              const SizedBox(width: 8),
+              const Text('Module Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.only(left: 28),
+            child: Column(
+              children: [
+                _buildInfoRow('Category', _course.category),
+                _buildInfoRow('Duration', _course.duration),
+                _buildInfoRow('Difficulty Level', _course.difficulty),
+                ..._courseManager.getCourseMetadata(_course.id).entries.map((entry) => _buildInfoRow(entry.key, entry.value)),
+              ],
+            ),
+          ),
           const SizedBox(height: 16),
         ],
       ),

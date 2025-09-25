@@ -44,11 +44,11 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
   int _currentTaskIndex = 0;
   DateTime _selectedDate = DateTime.now();
 
-  // Define a professional color palette
-  static const Color _backgroundColor = Color(0xFF0D1117); // GitHub Dark
-  static const Color _surfaceColor = Color(0xFF161B22);
-  static const Color _primaryColor = Color(0xFF58A6FF);
-  static const Color _accentColor = Color(0xFF3FB950); // Green for success
+  // Define a light theme color palette
+  static const Color _backgroundColor = Color(0xFFF8F9FA); // Light gray
+  static const Color _surfaceColor = Color(0xFFFFFFFF); // White
+  static const Color _primaryColor = Color(0xFF007BFF); // Blue
+  static const Color _accentColor = Color(0xFF28A745); // Green for success
 
   // Define date range for calendar
   final int _calendarDayRange = 30; // Show 15 days past, 15 days future
@@ -115,8 +115,8 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
       appBar: AppBar(
         backgroundColor: _backgroundColor,
         elevation: 0,
-        title: const Text('Daily Plan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        leading: const BackButton(color: Colors.white),
+        title: const Text('Daily Plan', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        leading: const BackButton(color: Colors.black),
       ),
       body: SafeArea(
         child: Column(
@@ -147,12 +147,12 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
             children: [
               const Text(
                 'Hello John!',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.white),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black),
               ),
               const SizedBox(height: 4),
               Text(
                 'You have a ${appState.streakCount} day streak 🔥',
-                style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.7)),
+                style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
             ],
           ),
@@ -178,7 +178,7 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
                     ),
                     Text(
                       '${(value * 100).toInt()}%',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
                   ],
                 );
@@ -227,7 +227,7 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                        color: Colors.white.withOpacity(isSelected ? 1.0 : 0.7),
+                        color: isSelected ? Colors.white : Colors.black54,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -236,7 +236,7 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: isSelected ? Colors.white : Colors.black,
                       ),
                     ),
                   ],
@@ -270,9 +270,9 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: isLocked ? _surfaceColor.withOpacity(0.5) : _surfaceColor,
+        color: isLocked ? Colors.grey.shade200 : _surfaceColor,
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.white.withOpacity(0.1))
+        border: Border.all(color: Colors.grey.shade300)
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(25),
@@ -287,7 +287,7 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
                   Icon(
                     isLocked ? Icons.lock_outline : (task.isCompleted ? Icons.check_circle : task.icon),
                     size: 40,
-                    color: isLocked ? Colors.white54 : (task.isCompleted ? _accentColor : _primaryColor),
+                    color: isLocked ? Colors.grey : (task.isCompleted ? _accentColor : _primaryColor),
                   ),
                   if (!isLocked)
                     Container(
@@ -309,31 +309,28 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
               const SizedBox(height: 20),
               Text(
                 task.name,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
               ),
               const SizedBox(height: 8),
               Text(
                 isLocked ? 'Complete the previous task to unlock.' : task.description,
-                style: TextStyle(fontSize: 16, color: Colors.white.withOpacity(0.7), height: 1.5),
+                style: TextStyle(fontSize: 16, color: Colors.black54, height: 1.5),
               ),
               const SizedBox(height: 20),
               if (!isLocked) ...[
-                _buildSection('Benefits', task.benefits, Icons.star_border, Colors.amber),
-                _buildSection('Do\'s', task.dos, Icons.check, Colors.green),
-                _buildSection('Don\'ts', task.donts, Icons.close, Colors.red),
-                _buildSection('Tips', task.tips, Icons.lightbulb_outline, Colors.orange),
+                _buildCombinedSection(task),
               ] else
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 30.0),
                     child: Column(
                       children: [
-                        Icon(Icons.lock, size: 60, color: Colors.white.withOpacity(0.3)),
+                        Icon(Icons.lock, size: 60, color: Colors.grey),
                         const SizedBox(height: 10),
                         Text(
                           'Task Locked',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 18, color: Colors.white.withOpacity(0.7), fontWeight: FontWeight.bold),
+                          style: TextStyle(fontSize: 18, color: Colors.black54, fontWeight: FontWeight.bold),
                         ),
                       ],
                     ),
@@ -346,17 +343,42 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
     );
   }
 
-  Widget _buildSection(String title, List<String> items, IconData icon, Color color) {
+  Widget _buildCombinedSection(DailyTask task) {
     return ExpansionTile(
       tilePadding: EdgeInsets.zero,
-      iconColor: color,
-      collapsedIconColor: color.withOpacity(0.7),
-      title: Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-      children: items.map((item) => ListTile(
-        contentPadding: const EdgeInsets.only(left: 4, bottom: 4),
-        leading: Icon(icon, size: 20, color: color),
-        title: Text(item, style: TextStyle(fontSize: 15, color: Colors.white.withOpacity(0.8), height: 1.4)),
-      )).toList(),
+      iconColor: _primaryColor,
+      collapsedIconColor: _primaryColor.withOpacity(0.7),
+      title: Text('Task Info', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+      children: [
+        _buildSubSection('Benefits', task.benefits, Icons.star_border, Colors.amber),
+        _buildSubSection('Do\'s', task.dos, Icons.check, Colors.green),
+        _buildSubSection('Don\'ts', task.donts, Icons.close, Colors.red),
+        _buildSubSection('Tips', task.tips, Icons.lightbulb_outline, Colors.orange),
+      ],
+    );
+  }
+
+  Widget _buildSubSection(String title, List<String> items, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 18, color: color),
+              const SizedBox(width: 8),
+              Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ...items.map((item) => Padding(
+            padding: const EdgeInsets.only(left: 26, bottom: 4),
+            child: Text('• $item', style: TextStyle(fontSize: 14, color: Colors.black87, height: 1.3)),
+          )).toList(),
+          const SizedBox(height: 8),
+        ],
+      ),
     );
   }
 
@@ -384,7 +406,7 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
               minimumSize: const Size(double.infinity, 55),
               backgroundColor: task.isCompleted ? _accentColor : _primaryColor,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              disabledBackgroundColor: Colors.grey.shade800,
+              disabledBackgroundColor: Colors.grey.shade300,
             ),
             child: Text(
               task.isCompleted ? 'Completed ✓' : (isLocked ? '🔒 Task Locked' : 'Mark as Complete'),
@@ -397,11 +419,11 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
             icon: const Icon(Icons.videocam_outlined, size: 22),
             label: const Text('Upload Performance Video'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: Colors.white,
-              side: BorderSide(color: Colors.white.withOpacity(0.3), width: 1.5),
+              foregroundColor: Colors.black,
+              side: BorderSide(color: Colors.grey.shade400, width: 1.5),
               minimumSize: const Size(double.infinity, 50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-              disabledForegroundColor: Colors.white30,
+              disabledForegroundColor: Colors.grey,
             ),
           ),
         ],
@@ -442,7 +464,7 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
         decoration: BoxDecoration(
           color: _surfaceColor,
           borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.grey.shade300),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -452,11 +474,11 @@ class _DailyTasksScreenState extends State<DailyTasksScreen> with TickerProvider
               children: [
                 Icon(icon, color: color, size: 20),
                 const SizedBox(width: 8),
-                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
               ],
             ),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 12, color: Colors.white.withOpacity(0.7))),
+            Text(label, style: TextStyle(fontSize: 12, color: Colors.black54)),
           ],
         ),
       ),

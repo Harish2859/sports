@@ -57,15 +57,15 @@ class _UploadPageState extends State<UploadPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.white),
+          icon: const Icon(Icons.close, color: Colors.black),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Create new content', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+        title: const Text('Create new content', style: TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold)),
         actions: [
           TextButton(
             onPressed: _shareContent,
@@ -90,22 +90,22 @@ class _UploadPageState extends State<UploadPage> {
                 height: 250,
                 width: double.infinity,
                 decoration: BoxDecoration(
-                  color: Colors.grey[850],
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey[800]!),
+                  border: Border.all(color: Colors.grey[300]!),
                 ),
                 child: _mediaFile != null
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: Image.file(_mediaFile!, fit: BoxFit.cover),
                       )
-                    : const Center(
+                    : Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.photo_library, color: Colors.grey, size: 50),
-                            SizedBox(height: 8),
-                            Text('Tap to select media', style: TextStyle(color: Colors.grey)),
+                            Icon(Icons.photo_library, color: Colors.grey[600], size: 50),
+                            const SizedBox(height: 8),
+                            Text('Tap to select media', style: TextStyle(color: Colors.grey[600])),
                           ],
                         ),
                       ),
@@ -116,14 +116,14 @@ class _UploadPageState extends State<UploadPage> {
             TextField(
               controller: _captionController,
               maxLines: 4,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.black),
               decoration: InputDecoration(
                 hintText: 'Write a caption...',
-                hintStyle: TextStyle(color: Colors.grey[600]),
+                hintStyle: TextStyle(color: Colors.grey[500]),
                 border: InputBorder.none,
               ),
             ),
-            const Divider(color: Colors.white24),
+            const Divider(color: Colors.grey),
 
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16.0),
@@ -139,24 +139,24 @@ class _UploadPageState extends State<UploadPage> {
                   });
                 },
                 style: SegmentedButton.styleFrom(
-                  backgroundColor: Colors.grey[850],
-                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.grey[200],
+                  foregroundColor: Colors.black,
                   selectedForegroundColor: Colors.white,
                   selectedBackgroundColor: Colors.deepPurpleAccent,
                 ),
               ),
             ),
-            const Divider(color: Colors.white24),
+            const Divider(color: Colors.grey),
             
             ListTile(
-              leading: const Icon(Icons.person_outline, color: Colors.white),
-              title: const Text('Tag People', style: TextStyle(color: Colors.white)),
+              leading: const Icon(Icons.person_outline, color: Colors.black),
+              title: const Text('Tag People', style: TextStyle(color: Colors.black)),
               trailing: const Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {},
             ),
             ListTile(
-              leading: const Icon(Icons.location_on_outlined, color: Colors.white),
-              title: const Text('Add Location', style: TextStyle(color: Colors.white)),
+              leading: const Icon(Icons.location_on_outlined, color: Colors.black),
+              title: const Text('Add Location', style: TextStyle(color: Colors.black)),
               trailing: const Icon(Icons.chevron_right, color: Colors.grey),
               onTap: () {},
             ),
