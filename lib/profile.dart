@@ -12,9 +12,9 @@ import 'performance_videos_manager.dart';
 import 'upload_page.dart';
 import 'post_manager.dart';
 import 'widgets/profile_post_section.dart';
-import 'achievement.dart';
 import 'profile_structure_screen.dart';
 import 'daily_tasks_screen.dart';
+import 'achievement.dart';
 
 
 enum ProfileSection { XP, Activity }
@@ -52,6 +52,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   final ScrollController _scrollController = ScrollController();
 
   ProfileSection _selectedSection = ProfileSection.Activity;
+  bool _isRPGMode = true;
 
   // A combined list to hold both posts and videos
   List<Map<String, dynamic>> _combinedMedia = [];
@@ -154,74 +155,10 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     final isDarkMode = themeProvider.themeMode == ThemeMode.dark;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF101010),
+      backgroundColor: _isRPGMode ? const Color(0xFF101010) : Colors.white,
       drawer: _buildDrawer(context),
 
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Stack(
-          children: [
-            _buildAnimatedGradientBackground(),
-            SafeArea(
-              child: SingleChildScrollView(
-                child: _buildProfileHeaderContent(isDarkMode),
-              ),
-            ),
-            NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                return false; // Allow background scrolling
-              },
-              child: DraggableScrollableSheet(
-                initialChildSize: 0.1,
-                minChildSize: 0.1,
-                maxChildSize: 0.95,
-                builder: (context, scrollController) {
-                  return ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-                          border: Border.all(color: Colors.white.withOpacity(0.1))
-                        ),
-                        child: Column(
-                          children: [
-                            GestureDetector(
-                              onTap: () {},
-                              child: _buildDragHandle(),
-                            ),
-                            Expanded(
-                              child: SingleChildScrollView(
-                                controller: scrollController,
-                                physics: const ClampingScrollPhysics(),
-                                child: _buildScrollableContent(isDarkMode),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            Positioned(
-              bottom: 100,
-              right: 20,
-              child: FloatingActionButton(
-                onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const DailyTasksScreen()),
-                ),
-                backgroundColor: Colors.deepPurpleAccent,
-                child: const Icon(Icons.task_alt, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
+      body: _isRPGMode ? _buildRPGProfile(isDarkMode) : _buildNormalProfile(isDarkMode),
     );
   }
 
@@ -314,7 +251,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
         Container(
           height: 400,
-          child: ProfilePostSection(),
+          child: ProfilePostSection(
+            onPostTap: _showPostDetail,
+          ),
         ),
         const SizedBox(height: 120),
         const SizedBox(height: 120), // Extra space for bottom navigation
@@ -659,7 +598,25 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   ),
                 ],
               ),
-              _buildGlassIconButton(Icons.more_vert, _showProfileMenu),
+              Row(
+                children: [
+                  _buildGlassIconButton(
+                    Icons.emoji_events,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AchievementsPage()),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildGlassIconButton(
+                    Icons.palette,
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfileStructureScreen()),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
           const SizedBox(height: 10),
@@ -753,7 +710,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatItem('17K', 'friends'),
               _buildStatItem('$followingCount', 'post'),
               if (!widget.isOwnProfile)
                 _buildProfileActionButton('Follow', null, isDarkMode),
@@ -772,13 +728,13 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withOpacity(0.3),
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white.withOpacity(0.2)),
+              border: Border.all(color: Colors.white.withOpacity(0.5)),
             ),
             child: IconButton(
               onPressed: onPressed,
-              icon: Icon(icon, color: Colors.black, size: 24),
+              icon: Icon(icon, color: Colors.black87, size: 24),
             ),
           ),
         ),
@@ -1115,7 +1071,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   Widget _buildStatItem(String count, String label) {
     return Column(
       children: [
-        Text(count, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black)),
+        Text(count, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black)),
         Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
       ],
     );
@@ -1296,13 +1252,6 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
           Expanded(child: _buildEnhancedStatCard('Tests', '5', Icons.quiz_outlined, Colors.blue)),
           const SizedBox(width: 12),
           Expanded(child: _buildEnhancedStatCard('Rating', '8.7/10', Icons.trending_up, Colors.green)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: GestureDetector(
-              onTap: () => _navigateToAchievements(),
-              child: _buildEnhancedStatCard('Badges', '1', Icons.emoji_events, Colors.amber),
-            ),
-          ),
         ],
       ),
     );
@@ -1310,58 +1259,58 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
   Widget _buildEnhancedStatCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.grey[800]!, Colors.grey[850]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.grey[800]!, Colors.grey[850]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.grey[700]!, width: 1),
         ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey[700]!, width: 1),
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              shape: BoxShape.circle,
-              border: Border.all(color: color.withOpacity(0.3), width: 1),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                shape: BoxShape.circle,
+                border: Border.all(color: color.withOpacity(0.3), width: 1),
+              ),
+              child: Icon(icon, color: color, size: 24),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-              shadows: [
-                Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 2),
-              ],
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+                shadows: [
+                  Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 2),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[400],
-              fontWeight: FontWeight.w500,
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[400],
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
   }
 
   Widget _buildModernStatCard(String title, String value, IconData icon, Color color) {
@@ -1458,22 +1407,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.palette),
-              title: const Text('Theme'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileStructureScreen()));
-              },
-            ),
-            ListTile(
               leading: const Icon(Icons.edit),
               title: const Text('Edit Profile'),
               onTap: () { Navigator.pop(context); _editProfile(); },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: const Icon(Icons.share),
@@ -1513,22 +1449,9 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
               mainAxisSize: MainAxisSize.min,
               children: [
                 ListTile(
-                  leading: const Icon(Icons.palette, color: Colors.white),
-                  title: const Text('Theme', style: TextStyle(color: Colors.white)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => const ProfileStructureScreen()));
-                  },
-                ),
-                ListTile(
                   leading: const Icon(Icons.edit, color: Colors.white),
                   title: const Text('Edit Profile', style: TextStyle(color: Colors.white)),
                   onTap: () { Navigator.pop(context); _editProfile(); },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.settings, color: Colors.white),
-                  title: const Text('Settings', style: TextStyle(color: Colors.white)),
-                  onTap: () => Navigator.pop(context),
                 ),
                 ListTile(
                   leading: const Icon(Icons.share, color: Colors.white),
@@ -1544,8 +1467,140 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   void _editProfile() => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Edit Profile clicked')));
-  void _navigateToAchievements() => Navigator.push(context, MaterialPageRoute(builder: (context) => AchievementsPage()));
+
   void _playVideo(PerformanceVideo video) => Navigator.push(context, MaterialPageRoute(builder: (context) => VideoPlayerScreen(videoPath: video.filePath, title: video.title)));
+  Widget _buildRPGProfile(bool isDarkMode) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Stack(
+        children: [
+          _buildAnimatedGradientBackground(),
+          SafeArea(
+            child: SingleChildScrollView(
+              child: _buildProfileHeaderContent(isDarkMode),
+            ),
+          ),
+          NotificationListener<ScrollNotification>(
+            onNotification: (notification) {
+              return false;
+            },
+            child: DraggableScrollableSheet(
+              initialChildSize: 0.6,
+              minChildSize: 0.1,
+              maxChildSize: 0.95,
+              builder: (context, scrollController) {
+                return ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                        border: Border.all(color: Colors.white.withOpacity(0.1))
+                      ),
+                      child: Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () {},
+                            child: _buildDragHandle(),
+                          ),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              controller: scrollController,
+                              physics: const ClampingScrollPhysics(),
+                              child: _buildScrollableContent(isDarkMode),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Positioned(
+            bottom: 100,
+            right: 20,
+            child: FloatingActionButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DailyTasksScreen()),
+              ),
+              backgroundColor: Colors.deepPurpleAccent,
+              child: const Icon(Icons.task_alt, color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNormalProfile(bool isDarkMode) {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildNormalProfileHeader(),
+          Container(
+            height: 400,
+            child: ProfilePostSection(
+              onPostTap: _showPostDetail,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNormalProfileHeader() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: Colors.grey[300],
+                child: Icon(Icons.person, size: 40, color: Colors.grey[600]),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'John Doe',
+                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Track & Field Athlete',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        _buildStatItem('17K', 'Friends'),
+                        const SizedBox(width: 20),
+                        _buildStatItem('387', 'Posts'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          const Text(
+            'Passionate athlete and fitness enthusiast 💪',
+            style: TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showPostDetail(Map<String, dynamic> post) {
     try {
       Navigator.of(context).push(
@@ -1646,9 +1701,9 @@ class _PostDetailOverlayState extends State<PostDetailOverlay> with SingleTicker
                                 radius: 20,
                                 backgroundColor: Colors.grey[300],
                                 backgroundImage: widget.userProfile['image'] != null
-                                    ? (widget.userProfile['isOwnProfile'] 
-                                        ? FileImage(File(widget.userProfile['image'])) 
-                                        : NetworkImage(widget.userProfile['image']) as ImageProvider)
+                                    ? ((widget.userProfile['isOwnProfile'] as bool) 
+                                        ? FileImage(File(widget.userProfile['image'] as String)) 
+                                        : NetworkImage(widget.userProfile['image'] as String) as ImageProvider)
                                     : null,
                                 child: widget.userProfile['image'] == null 
                                     ? Icon(Icons.person, color: Colors.grey[600]) 

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'recommended_courses.dart';
-import 'theme_provider.dart';
-import 'app_state.dart';
-
+import 'services/scheme_service.dart';
+import 'models/scheme_model.dart';
+import 'explore_results.dart';
 
 class ExplorePage extends StatefulWidget {
   @override
@@ -11,382 +9,267 @@ class ExplorePage extends StatefulWidget {
 }
 
 class _ExplorePageState extends State<ExplorePage> {
-  final _formKey = GlobalKey<FormState>();
-
-  // State variables from your original code
-  String? location;
-  int age = 25;
-  double weight = 70;
-  String? skillLevel = 'beginner';
-  int fitnessLevel = 5;
-  int weeklyAvailability = 5;
-  List<String> favoritesSports = ['Football', 'Tennis'];
-  String? trainingType = 'group';
-  String? dietPreference = 'none';
-  String? indoorOutdoor = 'both';
-  int budget = 150;
-
-  final List<String> sportsOptions = [
-    'Football', 'Basketball', 'Tennis', 'Swimming', 'Running', 'Cycling',
-    'Boxing', 'Yoga', 'Weightlifting', 'Martial Arts', 'Cricket', 'Baseball'
-  ];
+  final _searchController = TextEditingController();
+  String? _selectedSport;
+  String? _selectedType;
+  String? _selectedLocation;
+  int? _maxAge;
+  bool? _isForParaSport;
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final appState = Provider.of<AppState>(context);
-    
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // A slightly off-white background
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
         backgroundColor: const Color(0xFFF8F9FA),
         elevation: 0,
         centerTitle: true,
         title: const Text(
-          'Discover Your Sports Journey',
+          'Explore Sports Schemes',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
         ),
       ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                children: [
-
-                  // --- Section 1: Personal Information ---
-                  _buildSectionTitle(Icons.person_outline, 'Personal Details'),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    initialValue: "Malayambakkam, Tamil Nadu",
-                    decoration: _inputDecoration('Location', Icons.location_on_outlined),
-                    onSaved: (value) => location = value,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSliderRow(
-                    label: 'Age',
-                    value: age.toString(),
-                    slider: Slider(
-                      value: age.toDouble(),
-                      min: 12,
-                      max: 65,
-                      divisions: 53,
-                      onChanged: (value) => setState(() => age = value.round()),
-                    ),
-                  ),
-                  _buildSliderRow(
-                    label: 'Weight',
-                    value: '${weight.round()} kg',
-                    slider: Slider(
-                      value: weight,
-                      min: 30,
-                      max: 150,
-                      onChanged: (value) => setState(() => weight = value),
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // --- Section 2: Sports Capability ---
-                  _buildSectionTitle(Icons.fitness_center_outlined, 'Fitness & Skills'),
-                  const SizedBox(height: 16),
-                  _buildLabel('Skill Level'),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: ['beginner', 'intermediate', 'advanced'].map((level) => 
-                      _buildChoiceChip(
-                        label: level,
-                        isSelected: skillLevel == level,
-                        onTap: () => setState(() => skillLevel = level),
-                      )
-                    ).toList(),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSliderRow(
-                    label: 'Fitness Level',
-                    value: '$fitnessLevel / 10',
-                    slider: Slider(
-                      value: fitnessLevel.toDouble(),
-                      min: 1, max: 10, divisions: 9,
-                      onChanged: (value) => setState(() => fitnessLevel = value.round()),
-                    ),
-                  ),
-                  _buildSliderRow(
-                    label: 'Weekly Availability',
-                    value: '$weeklyAvailability hours',
-                    slider: Slider(
-                      value: weeklyAvailability.toDouble(),
-                      min: 1, max: 20, divisions: 19,
-                      onChanged: (value) => setState(() => weeklyAvailability = value.round()),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildLabel('Favorite Sports'),
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 10,
-                    children: sportsOptions.map((sport) => _buildFilterChip(
-                      label: sport,
-                      isSelected: favoritesSports.contains(sport),
-                      onSelected: (selected) {
-                        setState(() {
-                          if (selected) {
-                            favoritesSports.add(sport);
-                          } else {
-                            favoritesSports.remove(sport);
-                          }
-                        });
-                      },
-                    )).toList(),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // --- Section 3: Preferences ---
-                  _buildSectionTitle(Icons.tune_outlined, 'Preferences'),
-                  const SizedBox(height: 16),
-                   _buildLabel('Preferred Training Type'),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: ['individual', 'group', 'team'].map((type) => 
-                      _buildChoiceChip(
-                        label: type,
-                        isSelected: trainingType == type,
-                        onTap: () => setState(() => trainingType = type),
-                      )
-                    ).toList(),
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSliderRow(
-                    label: 'Monthly Budget',
-                    value: '\$${budget}',
-                    slider: Slider(
-                      value: budget.toDouble(),
-                      min: 50, max: 500, divisions: 45,
-                      onChanged: (value) => setState(() => budget = value.round()),
-                    ),
-                  ),
-                ],
-              ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                _buildSearchBar(),
+                const SizedBox(height: 20),
+                _buildFilters(),
+                const SizedBox(height: 30),
+                _buildFeaturedSchemes(),
+              ],
             ),
+          ),
+          _buildSearchButton(),
+        ],
+      ),
+    );
+  }
 
-            // --- Sticky Bottom Action Bar ---
-            _buildBottomActionBar(),
-          ],
+  Widget _buildSearchBar() {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: 'Search schemes, sports, locations...',
+        prefixIcon: const Icon(Icons.search, color: Colors.grey),
+        filled: true,
+        fillColor: Colors.white,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
         ),
       ),
     );
   }
 
-  // --- Reusable UI Helper Widgets ---
-
-  Widget _buildSectionTitle(IconData icon, String title) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.blueAccent, size: 24),
-        const SizedBox(width: 12),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-  
-  Widget _buildLabel(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
-      child: Text(
-        text,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-          color: Colors.black87
-        ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      hintText: label,
-      prefixIcon: Icon(icon, color: Colors.grey),
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.shade300),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
-      ),
-    );
-  }
-
-  Widget _buildSliderRow({
-    required String label,
-    required String value,
-    required Slider slider,
-  }) {
+  Widget _buildFilters() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const Text(
+          'Filters',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 16),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildLabel(label),
-            Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.blueAccent),
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: _selectedSport,
+                decoration: _filterDecoration('Sport'),
+                items: SchemeService.getSports()
+                    .map((sport) => DropdownMenuItem(value: sport, child: Text(sport)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedSport = value),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: DropdownButtonFormField<String>(
+                value: _selectedType,
+                decoration: _filterDecoration('Type'),
+                items: SchemeService.getTypes()
+                    .map((type) => DropdownMenuItem(value: type, child: Text(type)))
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedType = value),
+              ),
             ),
           ],
         ),
-        SliderTheme(
-          data: SliderTheme.of(context).copyWith(
-            trackHeight: 6,
-            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
-            overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
-          ),
-          child: slider,
-        )
+        const SizedBox(height: 16),
+        TextField(
+          decoration: _filterDecoration('Location'),
+          onChanged: (value) => _selectedLocation = value.isEmpty ? null : value,
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                decoration: _filterDecoration('Max Age'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) => _maxAge = int.tryParse(value),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: DropdownButtonFormField<bool>(
+                value: _isForParaSport,
+                decoration: _filterDecoration('Para Sport'),
+                items: const [
+                  DropdownMenuItem(value: null, child: Text('All')),
+                  DropdownMenuItem(value: true, child: Text('Para Sport')),
+                  DropdownMenuItem(value: false, child: Text('Regular')),
+                ],
+                onChanged: (value) => setState(() => _isForParaSport = value),
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _buildChoiceChip({
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.blueAccent : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: isSelected ? Colors.blueAccent : Colors.grey.shade300,
-              width: 1.5,
-            ),
-          ),
-          child: Text(
-            label[0].toUpperCase() + label.substring(1),
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+  Widget _buildFeaturedSchemes() {
+    final schemes = SchemeService.getAllSchemes().take(3).toList();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Featured Schemes',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-      ),
+        const SizedBox(height: 16),
+        ...schemes.map((scheme) => _buildSchemeCard(scheme)),
+      ],
     );
   }
 
-  Widget _buildFilterChip({
-    required String label,
-    required bool isSelected,
-    required Function(bool) onSelected,
-  }) {
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: onSelected,
-      backgroundColor: Colors.white,
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black87,
-        fontWeight: FontWeight.w600,
-      ),
-      selectedColor: Colors.blueAccent,
-      checkmarkColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: Colors.grey.shade300, width: 1),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    );
-  }
-
-  Widget _buildBottomActionBar() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          )
-        ],
-      ),
-      child: SafeArea(
-        child: Row(
+  Widget _buildSchemeCard(Scheme scheme) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _formKey.currentState!.save();
-                    _navigateToRecommendedCourses();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.blueAccent,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    scheme.title,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
-                child: const Text('Find My Course', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    scheme.type,
+                    style: TextStyle(color: Colors.blue.shade800, fontSize: 12),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 16),
-            TextButton(
-              onPressed: () {
-                _formKey.currentState!.save();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Preferences saved!')),
-                );
-              },
-              child: const Text('Save', style: TextStyle(fontSize: 16)),
-            )
+            const SizedBox(height: 8),
+            Text(
+              scheme.organization,
+              style: TextStyle(color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              scheme.description,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.location_on, size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 4),
+                Text(scheme.location, style: TextStyle(color: Colors.grey.shade600)),
+                const Spacer(),
+                Icon(Icons.sports, size: 16, color: Colors.grey.shade600),
+                const SizedBox(width: 4),
+                Text(scheme.sport, style: TextStyle(color: Colors.grey.shade600)),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _navigateToRecommendedCourses() {
-    final userPreferences = {
-      'location': location,
-      'age': age,
-      'weight': weight,
-      'skillLevel': skillLevel,
-      'fitnessLevel': fitnessLevel,
-      'weeklyAvailability': weeklyAvailability,
-      'favoritesSports': favoritesSports,
-      'trainingType': trainingType,
-      'dietPreference': dietPreference,
-      'indoorOutdoor': indoorOutdoor,
-      'budget': budget,
-    };
+  Widget _buildSearchButton() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _performSearch,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          child: const Text(
+            'Search Schemes',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _filterDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      filled: true,
+      fillColor: Colors.white,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade300),
+      ),
+    );
+  }
+
+  void _performSearch() {
+    final results = SchemeService.searchSchemes(
+      sport: _selectedSport,
+      location: _selectedLocation,
+      type: _selectedType,
+      maxAge: _maxAge,
+      isForParaSport: _isForParaSport,
+    );
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => RecommendedCoursesPage(userPreferences: userPreferences),
+        builder: (context) => ExploreResultsPage(
+          results: results,
+          searchQuery: _searchController.text,
+        ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }

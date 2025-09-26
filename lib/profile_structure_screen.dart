@@ -21,10 +21,8 @@ class ProfileStructureScreen extends StatefulWidget {
 class _ProfileStructureScreenState extends State<ProfileStructureScreen> with TickerProviderStateMixin {
   int currentPage = 0;
   bool showPostsSection = false;
-  final PageController _pageController = PageController(
-    initialPage: 0,
-    viewportFraction: 0.35,
-  );
+  late PageController _pageController;
+  late PageController _horizontalPageController;
   late AnimationController _breathingController;
   late Animation<double> _breathingAnimation;
   // ADDED: Animation controller for the profile ring
@@ -34,6 +32,14 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(
+      initialPage: 0,
+      viewportFraction: 0.35,
+    );
+    _horizontalPageController = PageController(
+      initialPage: 1,
+      viewportFraction: 0.33,
+    );
     _breathingController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
@@ -50,7 +56,6 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
     )..repeat();
   }
 
-  // MODIFIED: Data structure for the pages - Added ACHIEVEMENTS
   final List<Map<String, dynamic>> _pageData = [
     {
       'title': 'PROFILE',
@@ -86,32 +91,12 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
         'Win Rate': 78, // Changed to int for the chart
       }
     },
-    // ADDED: New section for achievements
-    {
-      'title': 'ACHIEVEMENTS',
-      'content': {
-        'About': 'Showcase your most impressive milestones.',
-        'Badges': [
-          {'name': '10-Day Streak', 'asset': 'assets/images/badge_streak.png'},
-          {'name': 'Perfect Week', 'asset': 'assets/images/badge_perfect_week.png'},
-          {'name': 'First Victory', 'asset': 'assets/images/badge_first_win.png'},
-        ]
-      }
-    },
-    {
-      'title': 'SETTINGS',
-      'content': {
-        'About': 'Manage your account and app settings.',
-        'Account': 'ty_mav',
-        'Privacy': 'Friends Only',
-        'Notifications': 'Enabled',
-      }
-    },
   ];
 
   @override
   void dispose() {
     _pageController.dispose();
+    _horizontalPageController.dispose();
     _breathingController.dispose();
     _ringController.dispose(); // ADDED: Dispose the new controller
     super.dispose();
@@ -124,7 +109,7 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
     final double sideCircleLarge = screenSize.width * 0.18;
 
     return Scaffold(
-      backgroundColor: kBackgroundColor,
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
         elevation: 0,
@@ -143,128 +128,9 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
           ),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.black,
-        selectedItemColor: kPrimaryColor,
-        unselectedItemColor: Colors.white54,
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 4,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.restaurant_outlined),
-            label: 'Nutrition',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fitness_center_outlined),
-            label: 'Fitness',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assessment_outlined),
-            label: 'Assessment',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        onTap: (index) {
-          // This is placeholder navigation. In a real app, use a router.
-          switch (index) {
-            case 0:
-            // Navigator.pushReplacementNamed(context, '/home');
-              break;
-            case 1:
-            // Navigator.pushReplacementNamed(context, '/nutrition');
-              break;
-            case 2:
-            // Navigator.pushReplacementNamed(context, '/fitness');
-              break;
-            case 3:
-            // Navigator.pushReplacementNamed(context, '/assessment');
-              break;
-            case 4:
-            // Already on profile
-              break;
-          }
-        },
-      ),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            ClipPath(
-              clipper: BackgroundClipper(),
-              child: Container(
-                height: screenSize.height * 0.55,
-                color: kPrimaryColor,
-              ),
-            ),
 
-            // MODIFIED: Wrapped profile picture with an animated ring
-            Positioned(
-              top: screenSize.height * 0.08 - 5,
-              left: (screenSize.width / 2) - (largeCircleDiameter / 2) + 25,
-              child: RotationTransition(
-                turns: _ringController,
-                child: Container(
-                  width: largeCircleDiameter + 10,
-                  height: largeCircleDiameter + 10,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: SweepGradient(
-                      center: FractionalOffset.center,
-                      colors: <Color>[
-                        kPrimaryColor.withOpacity(0.8),
-                        kPrimaryColor.withOpacity(0.2),
-                        kPrimaryColor.withOpacity(0.8),
-                      ],
-                      stops: const <double>[0.0, 0.5, 1.0],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            Positioned(
-              top: screenSize.height * 0.08,
-              left: (screenSize.width / 2) - (largeCircleDiameter / 2) + 30,
-              child: Container(
-                width: largeCircleDiameter,
-                height: largeCircleDiameter,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.25),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/images/Profile_picture.jpg',
-                    width: largeCircleDiameter,
-                    height: largeCircleDiameter,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        color: kCircleColor,
-                        child: Icon(
-                          Icons.person,
-                          size: largeCircleDiameter * 0.5,
-                          color: Colors.grey[600],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-
+      body: Stack(
+        children: [
             Positioned(
               top: 0,
               left: 0,
@@ -317,34 +183,14 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
               ),
             ),
             if (!showPostsSection)
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: GestureDetector(
-                  onTap: _showProfileOptions,
-                  child: Container(
-                    margin: const EdgeInsets.only(left: 30, bottom: 30),
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: kPrimaryColor.withOpacity(0.5), width: 1.5),
-                    ),
-                    child: const Icon(
-                      Icons.more_horiz,
-                      color: kPrimaryColor,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ),
-            if (!showPostsSection)
               Positioned(
-                top: screenSize.height * 0.35,
-                right: -25,
-                height: 280,
-                width: 120,
+                bottom: 80,
+                left: 0,
+                right: 0,
+                height: 80,
                 child: PageView.builder(
-                  controller: _pageController,
-                  scrollDirection: Axis.vertical,
+                  controller: _horizontalPageController,
+                  scrollDirection: Axis.horizontal,
                   onPageChanged: (index) {
                     setState(() {
                       currentPage = index;
@@ -353,11 +199,11 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
                   itemCount: _pageData.length,
                   itemBuilder: (context, index) {
                     return AnimatedBuilder(
-                      animation: _pageController,
+                      animation: _horizontalPageController,
                       builder: (context, child) {
                         double pageOffset = 0.0;
-                        if (_pageController.position.haveDimensions) {
-                          pageOffset = index - (_pageController.page ?? 0);
+                        if (_horizontalPageController.position.haveDimensions) {
+                          pageOffset = index - (_horizontalPageController.page ?? 0);
                         }
                         final double scale = (1 - (pageOffset.abs() * 0.6)).clamp(0.4, 1.0);
                         final double opacity = (1 - (pageOffset.abs() * 0.7)).clamp(0.0, 1.0);
@@ -368,55 +214,58 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
                 ),
               ),
             if (showPostsSection)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: screenSize.height * 0.6,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: kBackgroundColor,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  child: DefaultTabController(
-                    length: 2,
-                    child: Column(
-                      children: [
-                        Container(
-                          margin: const EdgeInsets.symmetric(vertical: 10),
-                          width: 40,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[600],
-                            borderRadius: BorderRadius.circular(2),
+              DraggableScrollableSheet(
+                initialChildSize: 0.5,
+                minChildSize: 0.3,
+                maxChildSize: 0.9,
+                builder: (context, scrollController) {
+                  return Container(
+                    decoration: const BoxDecoration(
+                      color: kBackgroundColor,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    child: DefaultTabController(
+                      length: 2,
+                      child: Column(
+                        children: [
+                          Container(
+                            margin: const EdgeInsets.symmetric(vertical: 10),
+                            width: 40,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[600],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
-                        ),
-                        const TabBar(
-                          labelColor: kPrimaryColor,
-                          unselectedLabelColor: Colors.grey,
-                          indicatorColor: kPrimaryColor,
-                          tabs: [
-                            Tab(text: 'Posts', icon: Icon(Icons.grid_on)),
-                            Tab(text: 'Performance', icon: Icon(Icons.play_circle_outline)),
-                          ],
-                        ),
-                        Expanded(
-                          child: TabBarView(
-                            children: [
-                              _buildPostsGrid(),
-                              _buildPerformanceList(),
+                          const TabBar(
+                            labelColor: kPrimaryColor,
+                            unselectedLabelColor: Colors.grey,
+                            indicatorColor: kPrimaryColor,
+                            tabs: [
+                              Tab(text: 'Posts', icon: Icon(Icons.grid_on)),
+                              Tab(text: 'Performance', icon: Icon(Icons.play_circle_outline)),
                             ],
                           ),
-                        ),
-                      ],
+                          Expanded(
+                            child: TabBarView(
+                              children: [
+                                _buildPostsGrid(),
+                                _buildPerformanceList(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             if (!showPostsSection)
               Positioned(
-                bottom: screenSize.height * 0.10,
-                left: 30,
+                top: screenSize.height * 0.15,
+                bottom: 120,
+                left: 0,
+                right: 0,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 400),
                   transitionBuilder: (Widget child, Animation<double> animation) {
@@ -434,10 +283,28 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
                   child: _buildPageContent(currentPage),
                 ),
               ),
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: GestureDetector(
+                onTap: _showProfileOptions,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Color(0xFF2C2C2C),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.more_vert,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
-      ),
-    );
+      );
   }
 
   void _showProfileOptions() {
@@ -484,7 +351,6 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
 
   //-- WIDGET BUILDER HELPERS --//
 
-  // MODIFIED: Added case for ACHIEVEMENTS
   Widget _buildPageContent(int index) {
     final data = _pageData[index];
     final title = data['title'] as String;
@@ -499,8 +365,6 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
         'ACTIVITY' => _buildActivityCard(content),
         'XP GAINED' => _buildXpCard(content),
         'STATS' => _buildStatsCard(content),
-        'ACHIEVEMENTS' => _buildAchievementsCard(content), // ADDED
-        'SETTINGS' => _buildSettingsCard(content),
         _ => const SizedBox.shrink(),
       },
     );
@@ -1029,315 +893,7 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
     return 'SILVER';
   }
 
-  // ADDED: Enhanced achievements section with progress and rarity
-  Widget _buildAchievementsCard(Map<String, dynamic> content) {
-    final List<Map<String, String>> badges = List.from(content['Badges']);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              'ACHIEVEMENTS',
-              style: TextStyle(
-                color: kPrimaryColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                letterSpacing: 2,
-              ),
-            ),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.yellow.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                '3/12',
-                style: TextStyle(
-                  color: Colors.yellow,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: badges.asMap().entries.map((entry) {
-            final badge = entry.value;
-            final rarity = _getBadgeRarity(entry.key);
-            return Column(
-              children: [
-                Stack(
-                  children: [
-                    AnimatedBuilder(
-                      animation: _breathingAnimation,
-                      builder: (context, child) {
-                        return Transform.scale(
-                          scale: _breathingAnimation.value,
-                          child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: rarity['color'].withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: rarity['color'].withOpacity(0.5),
-                                width: 1,
-                              ),
-                            ),
-                            child: Image.asset(
-                              badge['asset']!,
-                              width: 32,
-                              height: 32,
-                              errorBuilder: (context, err, stack) => Icon(
-                                Icons.military_tech,
-                                color: rarity['color'],
-                                size: 32,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: rarity['color'],
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  badge['name']!,
-                  style: const TextStyle(color: Colors.white70, fontSize: 9),
-                  textAlign: TextAlign.center,
-                ),
-                Text(
-                  rarity['name'],
-                  style: TextStyle(
-                    color: rarity['color'],
-                    fontSize: 8,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            );
-          }).toList(),
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildAchievementStat('Total', '3', Icons.emoji_events),
-            _buildAchievementStat('Rare', '1', Icons.diamond),
-            _buildAchievementStat('Recent', '2d', Icons.schedule),
-          ],
-        ),
-      ],
-    );
-  }
 
-  Widget _buildAchievementStat(String label, String value, IconData icon) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.white70, size: 14),
-        const SizedBox(height: 2),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 9,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Map<String, dynamic> _getBadgeRarity(int index) {
-    switch (index) {
-      case 0:
-        return {'name': 'COMMON', 'color': Colors.grey};
-      case 1:
-        return {'name': 'RARE', 'color': Colors.blue};
-      case 2:
-        return {'name': 'EPIC', 'color': Colors.purple};
-      default:
-        return {'name': 'COMMON', 'color': Colors.grey};
-    }
-  }
-
-  Widget _buildSettingsCard(Map<String, dynamic> content) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            const Text(
-              'SETTINGS',
-              style: TextStyle(
-                color: kPrimaryColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                letterSpacing: 2,
-              ),
-            ),
-            const Spacer(),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Synced',
-                    style: TextStyle(
-                      color: Colors.green,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            _buildSettingItem(icon: Icons.person_outline, label: 'Account', value: content['Account']),
-            _buildSettingItem(icon: Icons.lock_outline_rounded, label: 'Privacy', value: 'Friends'),
-            _buildSettingItem(icon: Icons.notifications_none_rounded, label: 'Notifications', value: 'On'),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildQuickSetting('Dark Mode', true, Icons.dark_mode),
-                  _buildQuickSetting('Auto Sync', true, Icons.sync),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildQuickSetting('Sound', false, Icons.volume_up),
-                  _buildQuickSetting('WiFi Only', true, Icons.wifi),
-                ],
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Icon(Icons.language, color: Colors.white70, size: 14),
-            const SizedBox(width: 6),
-            Text(
-              'Language: English',
-              style: TextStyle(color: Colors.white70, fontSize: 11),
-            ),
-            const Spacer(),
-            Text(
-              'v2.1.0',
-              style: TextStyle(color: Colors.white54, fontSize: 10),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSettingItem({required IconData icon, required String label, required String value}) {
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white70, size: 18),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            label,
-            style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 10),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickSetting(String label, bool isEnabled, IconData icon) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          icon,
-          color: isEnabled ? kPrimaryColor : Colors.white54,
-          size: 16,
-        ),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: TextStyle(
-            color: isEnabled ? Colors.white : Colors.white54,
-            fontSize: 11,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-            color: isEnabled ? kPrimaryColor : Colors.grey,
-            shape: BoxShape.circle,
-          ),
-        ),
-      ],
-    );
-  }
 
 
   Widget _buildStatItem({required IconData icon, required String label, required String value}) {
@@ -1395,7 +951,7 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
 
   Widget _buildPostsGrid() {
     return GridView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 20),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 8,
@@ -1406,8 +962,9 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> with Ti
       itemBuilder: (context, index) {
         return Container(
           decoration: BoxDecoration(
-            color: Colors.grey[800],
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey[600]!, width: 1),
           ),
           child: Stack(
             children: [

@@ -21,7 +21,9 @@ final List<Map<String, dynamic>> _mediaPosts = [
 ];
 
 class ProfilePostSection extends StatelessWidget {
-  const ProfilePostSection({super.key});
+  final Function(Map<String, dynamic>)? onPostTap;
+  
+  const ProfilePostSection({super.key, this.onPostTap});
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +43,8 @@ class ProfilePostSection extends StatelessWidget {
           Expanded(
             child: TabBarView(
               children: [
-                _buildInstagramGrid(),
-                _buildTwitterList(),
+                _buildInstagramGrid(context),
+                _buildTwitterList(context),
               ],
             ),
           ),
@@ -52,7 +54,7 @@ class ProfilePostSection extends StatelessWidget {
   }
 }
 
-Widget _buildInstagramGrid() {
+Widget _buildInstagramGrid(BuildContext context) {
   if (_mediaPosts.isEmpty) {
     return Center(child: Text("No posts yet."));
   }
@@ -77,19 +79,24 @@ Widget _buildInstagramGrid() {
       return StaggeredGridTile.count(
         crossAxisCellCount: tilePattern['crossAxis']!,
         mainAxisCellCount: tilePattern['mainAxis']!,
-        child: _buildInstagramGridItem(media),
+        child: _buildInstagramGridItem(media, context),
       );
     }).toList(),
   );
 }
 
-Widget _buildInstagramGridItem(Map<String, dynamic> media) {
+Widget _buildInstagramGridItem(Map<String, dynamic> media, BuildContext context) {
   final bool isVideo = media['type'] == 'video';
   final bool isGallery = media['isGallery'] == true;
   final String imagePath = isVideo ? media['thumbnailPath'] : media['imagePath'];
 
   return GestureDetector(
-    onTap: () {},
+    onTap: () {
+      final profilePostSection = context.findAncestorWidgetOfExactType<ProfilePostSection>();
+      if (profilePostSection?.onPostTap != null) {
+        profilePostSection!.onPostTap!(media);
+      }
+    },
     child: Hero(
       tag: 'post_${media['id']}',
       child: Container(
@@ -121,17 +128,25 @@ Widget _buildInstagramGridItem(Map<String, dynamic> media) {
   );
 }
 
-Widget _buildTwitterList() {
+Widget _buildTwitterList(BuildContext context) {
   return ListView.separated(
     itemCount: _mediaPosts.length,
     itemBuilder: (context, index) {
-      return _buildTwitterPostItem(_mediaPosts[index]);
+      return GestureDetector(
+        onTap: () {
+          final profilePostSection = context.findAncestorWidgetOfExactType<ProfilePostSection>();
+          if (profilePostSection?.onPostTap != null) {
+            profilePostSection!.onPostTap!(_mediaPosts[index]);
+          }
+        },
+        child: _buildTwitterPostItem(_mediaPosts[index], context),
+      );
     },
     separatorBuilder: (context, index) => Divider(height: 1, thickness: 1, color: Colors.grey[200]),
   );
 }
 
-Widget _buildTwitterPostItem(Map<String, dynamic> media) {
+Widget _buildTwitterPostItem(Map<String, dynamic> media, BuildContext context) {
   final bool isVideo = media['type'] == 'video';
   final String imagePath = isVideo ? media['thumbnailPath'] : media['imagePath'];
 
@@ -210,3 +225,4 @@ Widget _buildTweetAction(IconData icon, String text) {
     ],
   );
 }
+
