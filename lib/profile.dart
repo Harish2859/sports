@@ -11,6 +11,7 @@ import 'theme_provider.dart';
 import 'performance_videos_manager.dart';
 import 'upload_page.dart';
 import 'post_manager.dart';
+import 'widgets/profile_post_section.dart';
 import 'achievement.dart';
 import 'profile_structure_screen.dart';
 import 'daily_tasks_screen.dart';
@@ -288,8 +289,11 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ],
           ),
         ),
-        _buildMediaControls(),
-        _buildMediaGrid(),
+        Container(
+          height: 400,
+          child: ProfilePostSection(),
+        ),
+        const SizedBox(height: 120),
         const SizedBox(height: 120), // Extra space for bottom navigation
       ],
     );
