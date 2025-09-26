@@ -39,30 +39,108 @@ class GamificationScreen extends StatelessWidget {
   }
 
   Widget _buildLevelCard(int level, int totalXP) {
-    return Card(
-      elevation: 4,
+    const int xpPerLevel = 100;
+    final int currentLevelXP = totalXP % xpPerLevel;
+    final double progress = currentLevelXP / xpPerLevel;
+    final int xpToNextLevel = xpPerLevel - currentLevelXP;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.grey[800]!, Colors.grey[850]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey[700]!, width: 1),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                Icon(Icons.star, color: Colors.amber, size: 32),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.star_rounded, color: Colors.amber[400], size: 28),
+                ),
                 const SizedBox(width: 12),
                 Text(
                   'Level $level',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    shadows: [
+                      Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  'Total XP: $totalXP',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[300],
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text('Total XP: $totalXP', style: const TextStyle(fontSize: 16)),
-            const SizedBox(height: 8),
-            LinearProgressIndicator(
-              value: (totalXP % 100) / 100,
-              backgroundColor: Colors.grey[300],
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.amber),
+            const SizedBox(height: 16),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 20,
+                    backgroundColor: Colors.black.withOpacity(0.3),
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.amber[400]!),
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 2.0),
+                    child: Text(
+                      '$currentLevelXP / $xpPerLevel XP',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        shadows: [
+                          Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 2),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Text(
+                '$xpToNextLevel XP to next level',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey[400],
+                ),
+              ),
             ),
           ],
         ),

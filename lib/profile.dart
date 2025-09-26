@@ -874,11 +874,12 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
   }
 
   Widget _buildXPBar(bool isDarkMode) {
-    final int currentXP = _appState.totalXP;
-    final int currentLevel = (currentXP / 100).floor() + 1;
-    final int xpForCurrentLevel = (currentLevel - 1) * 100;
-    final int xpForNextLevel = currentLevel * 100;
-    final double progress = (currentXP - xpForCurrentLevel) / (xpForNextLevel - xpForCurrentLevel);
+    final int totalXP = _appState.totalXP;
+    final int level = (totalXP / 100).floor() + 1;
+    const int xpPerLevel = 100;
+    final int currentLevelXP = totalXP % xpPerLevel;
+    final double progress = currentLevelXP / xpPerLevel;
+    final int xpToNextLevel = xpPerLevel - currentLevelXP;
 
     String getBadgeImage(int level) => 'assets/images/champ.png';
     String getLevelName(int level) {
@@ -890,63 +891,119 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.grey[800]!, Colors.grey[850]!],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.5),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          border: Border.all(color: Colors.grey[700]!, width: 1),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              AnimatedBuilder(
-                animation: _breathingAnimation,
-                builder: (context, child) => Transform.scale(
-                  scale: _breathingAnimation.value,
-                  child: Image.asset(
-                    getBadgeImage(currentLevel),
-                    width: 60,
-                    height: 60,
-                    errorBuilder: (context, error, stackTrace) =>
-                      const Icon(Icons.emoji_events, color: Colors.deepPurple, size: 60),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 20),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
                 children: [
-                  Text(
-                    '${getLevelName(currentLevel)} Level $currentLevel',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
+                  AnimatedBuilder(
+                    animation: _breathingAnimation,
+                    builder: (context, child) => Transform.scale(
+                      scale: _breathingAnimation.value,
+                      child: Image.asset(
+                        'assets/images/champ.png',
+                        width: 50,
+                        height: 50,
+                        errorBuilder: (context, error, stackTrace) =>
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.emoji_events, color: Colors.amber[400], size: 28),
+                          ),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(width: 12),
                   Text(
-                    '$currentXP / $xpForNextLevel XP',
-                    style: const TextStyle(fontSize: 16, color: Colors.grey, fontWeight: FontWeight.w500),
+                    'Level $level',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      shadows: [
+                        Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 4),
+                      ],
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    'Total XP: $totalXP',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[300],
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Container(
-            height: 8,
-            decoration: BoxDecoration(
-              color: Colors.grey[300],
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 800),
-                width: MediaQuery.of(context).size.width * progress * 0.7,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  gradient: const LinearGradient(
-                    colors: [Colors.deepPurple, Colors.blue],
+              const SizedBox(height: 16),
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 20,
+                      backgroundColor: Colors.black.withOpacity(0.3),
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.amber[400]!),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2.0),
+                      child: Text(
+                        '$currentLevelXP / $xpPerLevel XP',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(color: Colors.black.withOpacity(0.8), blurRadius: 2),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  '$xpToNextLevel XP to next level',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.grey[400],
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -957,14 +1014,14 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(child: _buildSimpleStatCard('Tests', '5', Icons.quiz_outlined)),
+          Expanded(child: _buildEnhancedStatCard('Tests', '5', Icons.quiz_outlined, Colors.blue)),
           const SizedBox(width: 12),
-          Expanded(child: _buildSimpleStatCard('Rating', '8.7/10', Icons.trending_up)),
+          Expanded(child: _buildEnhancedStatCard('Rating', '8.7/10', Icons.trending_up, Colors.green)),
           const SizedBox(width: 12),
           Expanded(
             child: GestureDetector(
               onTap: () => _navigateToAchievements(),
-              child: _buildSimpleStatCard('Badges', '1', Icons.emoji_events),
+              child: _buildEnhancedStatCard('Badges', '1', Icons.emoji_events, Colors.amber),
             ),
           ),
         ],
@@ -972,26 +1029,56 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     );
   }
 
-  Widget _buildSimpleStatCard(String title, String value, IconData icon) {
+  Widget _buildEnhancedStatCard(String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[100],
+        gradient: LinearGradient(
+          colors: [Colors.grey[800]!, Colors.grey[850]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[300]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey[700]!, width: 1),
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.deepPurple, size: 32),
-          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              shape: BoxShape.circle,
+              border: Border.all(color: color.withOpacity(0.3), width: 1),
+            ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              shadows: [
+                Shadow(color: Colors.black.withOpacity(0.5), blurRadius: 2),
+              ],
+            ),
           ),
           const SizedBox(height: 4),
           Text(
             title,
-            style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[400],
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),
