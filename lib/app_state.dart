@@ -14,7 +14,7 @@ class AppState extends ChangeNotifier {
 
   final List<Course> _enrolledCourses = [];
   final List<Course> _favoriteCourses = [];
-  int _totalXP = 0; // Start with zero XP
+  int _totalXP = 150; // Start with 150 XP to unlock first 3 badges
 
   // User profile data
   String _userName = 'python';
