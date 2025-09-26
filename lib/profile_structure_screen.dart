@@ -18,14 +18,27 @@ class ProfileStructureScreen extends StatefulWidget {
   State<ProfileStructureScreen> createState() => _ProfileStructureScreenState();
 }
 
-class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
+class _ProfileStructureScreenState extends State<ProfileStructureScreen> with TickerProviderStateMixin {
   int currentPage = 0;
   bool showPostsSection = false;
   int _currentBadgeIndex = 0;
+  late AnimationController _breathingController;
+  late Animation<double> _breathingAnimation;
 
   @override
   void initState() {
     super.initState();
+    _breathingController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _breathingAnimation = Tween<double>(
+      begin: 0.95,
+      end: 1.05,
+    ).animate(CurvedAnimation(
+      parent: _breathingController,
+      curve: Curves.easeInOut,
+    ));
     _startBadgeLoop();
   }
 
@@ -125,6 +138,7 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
 
   @override
   void dispose() {
+    _breathingController.dispose();
     super.dispose();
   }
 
@@ -143,7 +157,6 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
-    final double sideCircleLarge = screenSize.width * 0.18;
 
     return Scaffold(
       backgroundColor: kBackgroundColor,
@@ -232,47 +245,7 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
                 ),
               ),
             ),
-            if (!showPostsSection)
-              Positioned(
-                bottom: 80,
-                left: 0,
-                right: 0,
-                height: 80,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(_pageData.length, (index) {
-                    final bool isActive = index == currentPage;
-                    return GestureDetector(
-                      onTap: () {
-                        if (index >= 0 && index < _pageData.length) {
-                          setState(() {
-                            currentPage = index;
-                          });
-                        }
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 8),
-                        width: sideCircleLarge,
-                        height: sideCircleLarge,
-                        decoration: BoxDecoration(
-                          color: kCircleColor,
-                          shape: BoxShape.circle,
-                          border: isActive ? Border.all(color: kPrimaryColor.withOpacity(0.8), width: 2) : null,
-                          boxShadow: isActive
-                              ? [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.15),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            ),
-                          ]
-                              : null,
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ),
+
             if (showPostsSection)
               DraggableScrollableSheet(
                 initialChildSize: 0.5,
@@ -322,23 +295,32 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
               ),
             if (!showPostsSection)
               Positioned(
-                top: screenSize.height * 0.08, // Moved card down
-                bottom: 180, // Adjusted bottom margin
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 400),
-                  transitionBuilder: (Widget child, Animation<double> animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.0, 0.5),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
+                top: screenSize.height * 0.08,
+                bottom: 80,
+                left: 0,
+                right: 0,
+                child: PageView.builder(
+                  itemCount: _pageData.length,
+                  controller: PageController(viewportFraction: 0.9),
+                  onPageChanged: (index) {
+                    setState(() {
+                      currentPage = index;
+                    });
+                  },
+                  itemBuilder: (context, index) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
+                      margin: EdgeInsets.symmetric(
+                        horizontal: index == currentPage ? 8 : 16,
+                        vertical: index == currentPage ? 0 : 20,
+                      ),
+                      child: Transform.scale(
+                        scale: index == currentPage ? 1.0 : 0.9,
+                        child: _buildPageContent(index),
                       ),
                     );
                   },
-                  child: _buildPageContent(currentPage),
                 ),
               ),
             Positioned(
@@ -665,16 +647,24 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
         child: Stack(
           children: [
             Positioned.fill(
-              child: Image.asset(
-                'assets/images/3d_human.png',
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: kCardBackgroundColor,
-                    child: Icon(
-                      Icons.person,
-                      color: kPrimaryColor.withOpacity(0.6),
-                      size: 180,
+              child: AnimatedBuilder(
+                animation: _breathingAnimation,
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _breathingAnimation.value,
+                    child: Image.asset(
+                      'assets/images/3d_human.png',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: kCardBackgroundColor,
+                          child: Icon(
+                            Icons.person,
+                            color: kPrimaryColor.withOpacity(0.6),
+                            size: 180,
+                          ),
+                        );
+                      },
                     ),
                   );
                 },
@@ -788,20 +778,20 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            height: 220,
-            width: 220,
+            height: 280,
+            width: 280,
             child: Stack(
               alignment: Alignment.center,
               children: [
                 SizedBox(
-                  width: 220,
-                  height: 220,
+                  width: 280,
+                  height: 280,
                   child: CustomPaint(
                     painter: ExperienceArcPainter(
                       progress: progress,
                       backgroundColor: kCircleColor,
                       progressColor: kPrimaryColor,
-                      strokeWidth: 15,
+                      strokeWidth: 18,
                     ),
                   ),
                 ),
@@ -824,43 +814,51 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: kPrimaryColor.withOpacity(0.5),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Image.asset(
-                        'assets/images/dimond.png',
-                        fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
+                    AnimatedBuilder(
+                      animation: _breathingAnimation,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: _breathingAnimation.value,
+                          child: Container(
+                            width: 110,
+                            height: 110,
                             decoration: BoxDecoration(
-                              color: kPrimaryColor.withOpacity(0.2),
                               shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: kPrimaryColor.withOpacity(0.5),
+                                  blurRadius: 30 * _breathingAnimation.value,
+                                  spreadRadius: 8 * _breathingAnimation.value,
+                                ),
+                              ],
                             ),
-                            child: Icon(
-                              Icons.diamond,
-                              color: kPrimaryColor,
-                              size: 40,
+                            child: Image.asset(
+                              'assets/images/dimond.png',
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    color: kPrimaryColor.withOpacity(0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.diamond,
+                                    color: kPrimaryColor,
+                                    size: 60,
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     Text(
                       currentXp.toString(),
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 32,
+                        fontSize: 40,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -868,7 +866,7 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
                       'XP',
                       style: TextStyle(
                         color: kPrimaryColor,
-                        fontSize: 14,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -1140,71 +1138,98 @@ class _ProfileStructureScreenState extends State<ProfileStructureScreen> {
           ),
           const SizedBox(height: 30),
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        kPrimaryColor.withOpacity(0.8),
-                        kPrimaryColor.withOpacity(0.3),
-                        Colors.transparent,
-                      ],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: kPrimaryColor.withOpacity(0.6),
-                        blurRadius: 30,
-                        spreadRadius: 5,
-                      ),
-                    ],
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 600),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0.3, 0.0),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOut,
+                    )),
+                    child: child,
                   ),
-                  child: Center(
-                    child: Image.asset(
-                      badges[_currentBadgeIndex]['image'] as String,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.star,
-                          color: Colors.white,
-                          size: 50,
-                        );
-                      },
-                    ),
+                );
+              },
+              child: Column(
+                key: ValueKey(_currentBadgeIndex),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedBuilder(
+                    animation: _breathingAnimation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _breathingAnimation.value,
+                        child: Container(
+                          width: 180,
+                          height: 180,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                kPrimaryColor.withOpacity(0.8),
+                                kPrimaryColor.withOpacity(0.3),
+                                Colors.transparent,
+                              ],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: kPrimaryColor.withOpacity(0.6),
+                                blurRadius: 50 * _breathingAnimation.value,
+                                spreadRadius: 12 * _breathingAnimation.value,
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Image.asset(
+                              badges[_currentBadgeIndex]['image'] as String,
+                              width: 120,
+                              height: 120,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.star,
+                                  color: Colors.white,
+                                  size: 90,
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  badges[_currentBadgeIndex]['name'] as String,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    badges[_currentBadgeIndex]['story'] as String,
-                    style: TextStyle(
-                      color: kSecondaryTextColor,
-                      fontSize: 12,
-                      height: 1.4,
+                  const SizedBox(height: 20),
+                  Text(
+                    badges[_currentBadgeIndex]['name'] as String,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      badges[_currentBadgeIndex]['story'] as String,
+                      style: TextStyle(
+                        color: kSecondaryTextColor,
+                        fontSize: 12,
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 20),
