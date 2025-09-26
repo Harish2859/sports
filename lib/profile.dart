@@ -156,46 +156,68 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
     return Scaffold(
       backgroundColor: const Color(0xFF101010),
       drawer: _buildDrawer(context),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const DailyTasksScreen()),
-        ),
-        backgroundColor: Colors.deepPurpleAccent,
-        child: const Icon(Icons.task_alt, color: Colors.white),
-      ),
+
       body: FadeTransition(
         opacity: _fadeAnimation,
         child: Stack(
           children: [
             _buildAnimatedGradientBackground(),
             SafeArea(
-              child: _buildProfileHeaderContent(isDarkMode),
+              child: SingleChildScrollView(
+                child: _buildProfileHeaderContent(isDarkMode),
+              ),
             ),
-            DraggableScrollableSheet(
-              initialChildSize: 0.6,
-              minChildSize: 0.6,
-              maxChildSize: 0.95,
-              builder: (context, scrollController) {
-                return ClipRRect(
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
-                        border: Border.all(color: Colors.white.withOpacity(0.1))
-                      ),
-                      child: SingleChildScrollView(
-                        controller: scrollController,
-                        physics: const ClampingScrollPhysics(),
-                        child: _buildScrollableContent(isDarkMode),
+            NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                return false; // Allow background scrolling
+              },
+              child: DraggableScrollableSheet(
+                initialChildSize: 0.1,
+                minChildSize: 0.1,
+                maxChildSize: 0.95,
+                builder: (context, scrollController) {
+                  return ClipRRect(
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                          border: Border.all(color: Colors.white.withOpacity(0.1))
+                        ),
+                        child: Column(
+                          children: [
+                            GestureDetector(
+                              onTap: () {},
+                              child: _buildDragHandle(),
+                            ),
+                            Expanded(
+                              child: SingleChildScrollView(
+                                controller: scrollController,
+                                physics: const ClampingScrollPhysics(),
+                                child: _buildScrollableContent(isDarkMode),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
+            ),
+            Positioned(
+              bottom: 100,
+              right: 20,
+              child: FloatingActionButton(
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const DailyTasksScreen()),
+                ),
+                backgroundColor: Colors.deepPurpleAccent,
+                child: const Icon(Icons.task_alt, color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -289,6 +311,7 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
             ],
           ),
         ),
+
         Container(
           height: 400,
           child: ProfilePostSection(),
@@ -671,40 +694,61 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
                   },
               ),
               const SizedBox(width: 15),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'John Doe',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'John Doe',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    '25 years old',
-                    style: TextStyle(
-                      color: Colors.black, 
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(Icons.cake, color: Colors.grey[600], size: 14),
+                        const SizedBox(width: 4),
+                        Text('25 years • Male', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.location_on, color: Colors.grey[600], size: 16),
-                      const SizedBox(width: 4),
-                      Text('New York, USA', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
-                    ],
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.location_on, color: Colors.grey[600], size: 14),
+                        const SizedBox(width: 4),
+                        Text('New York, USA', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.sports, color: Colors.grey[600], size: 14),
+                        const SizedBox(width: 4),
+                        Text('Track & Field Athlete', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(Icons.school, color: Colors.grey[600], size: 14),
+                        const SizedBox(width: 4),
+                        Text('State University', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
           const SizedBox(height: 15),
+          _buildSportsDetailsSection(),
+          const SizedBox(height: 15),
           _buildAboutSection(),
+          const SizedBox(height: 15),
+          _buildExperienceSection(),
           const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -813,6 +857,241 @@ class _ProfilePageState extends State<ProfilePage> with TickerProviderStateMixin
       ],
     );
   }
+
+  Widget _buildSportsDetailsSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.sports, color: Colors.blue[600], size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Athletic Profile',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDetailItem('Height', '6\'2"', Icons.height),
+              ),
+              Expanded(
+                child: _buildDetailItem('Weight', '180 lbs', Icons.monitor_weight),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDetailItem('Experience', '8 years', Icons.timeline),
+              ),
+              Expanded(
+                child: _buildDetailItem('Coach', 'Mike Johnson', Icons.person_outline),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildDetailItem('Best Event', 'Javelin Throw', Icons.sports_baseball),
+              ),
+              Expanded(
+                child: _buildDetailItem('PB Record', '65.2m', Icons.emoji_events),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailItem(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: Colors.grey[600]),
+          const SizedBox(width: 6),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExperienceSection() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.work_outline, color: Colors.blue[600], size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Experience',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildExperienceItem(
+            'Professional Athlete',
+            'State Athletics Team',
+            '2020 - Present',
+            'Competing in national and international track & field events. Specialized in javelin throw with multiple state records.',
+            Icons.emoji_events,
+          ),
+          const SizedBox(height: 12),
+          _buildExperienceItem(
+            'Assistant Coach',
+            'University Athletics Program',
+            '2019 - 2020',
+            'Mentored junior athletes in throwing techniques and strength training programs.',
+            Icons.sports,
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
+
+
+  Widget _buildExperienceItem(String title, String company, String duration, String description, IconData icon) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.blue[50],
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, size: 20, color: Colors.blue[600]),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              Text(
+                company,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.blue[600],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                duration,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[700],
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDragHandle() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: Container(
+          width: 40,
+          height: 4,
+          decoration: BoxDecoration(
+            color: Colors.grey[400],
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+      ),
+    );
+  }
+
+
 
   Widget _buildInfoChip(String text) {
     return Container(

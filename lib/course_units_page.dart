@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'dart:ui';
 import 'theme_provider.dart';
 import 'unit_details.dart';
+import 'course_data_manager.dart';
 
 class CourseUnitsPage extends StatefulWidget {
   final String courseName;
@@ -23,77 +24,19 @@ class _CourseUnitsPageState extends State<CourseUnitsPage>
   int currentSectionIndex = 0;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  final CourseDataManager _courseManager = CourseDataManager();
 
   // Section completion status
   Map<int, Map<int, bool>> unitCompletionStatus = {};
 
-  // Define 5 sections with 5 units each
-  final List<CourseSection> sections = [
-    CourseSection(
-      title: "Foundation Skills",
-      description: "Master the basic techniques and fundamentals",
-      color: Color(0xFF2563EB),
-      units: [
-        CourseUnit("Warm-Up Readiness", "Learn proper activation techniques", Icons.flash_on),
-        CourseUnit("Movement Efficiency", "Master fundamental movements", Icons.fitness_center),
-        CourseUnit("Form Consistency", "Perfect your technique", Icons.security),
-        CourseUnit("Progressive Load Response", "Understand load progression", Icons.trending_up),
-        CourseUnit("Recovery Capacity", "Optimize rest and nutrition", Icons.bedtime),
-      ],
-    ),
-    CourseSection(
-      title: "Intermediate Training",
-      description: "Build upon foundation with advanced techniques",
-      color: Color(0xFF10B981),
-      units: [
-        CourseUnit("Load Baseline Assessment", "Establish training baselines", Icons.assessment),
-        CourseUnit("Incremental Load Challenge", "Progressive overload principles", Icons.add_circle),
-        CourseUnit("Fatigue Resistance Test", "Build endurance capacity", Icons.battery_charging_full),
-        CourseUnit("Maximum Effort Evaluation", "Peak performance testing", Icons.speed),
-        CourseUnit("Load Recovery Monitoring", "Advanced recovery tracking", Icons.monitor_heart),
-      ],
-    ),
-    CourseSection(
-      title: "Advanced Performance",
-      description: "Elite-level training and performance optimization",
-      color: Color(0xFFF59E0B),
-      units: [
-        CourseUnit("Explosive Power Assessment", "Develop explosive strength", Icons.flash_auto),
-        CourseUnit("Dynamic Stability Test", "Advanced balance training", Icons.balance),
-        CourseUnit("Advanced Movement Analysis", "Biomechanical optimization", Icons.analytics),
-        CourseUnit("Strength Endurance Challenge", "Combined strength training", Icons.fitness_center),
-        CourseUnit("Peak Performance Benchmark", "Performance measurement", Icons.emoji_events),
-      ],
-    ),
-    CourseSection(
-      title: "Sport-Specific Training",
-      description: "Specialized training for competitive performance",
-      color: Color(0xFF8B5CF6),
-      units: [
-        CourseUnit("Sport-Specific Power Test", "Event-specific training", Icons.sports),
-        CourseUnit("Functional Strength Analysis", "Real-world applications", Icons.accessibility_new),
-        CourseUnit("Targeted Muscle Assessment", "Muscle-specific training", Icons.psychology),
-        CourseUnit("Personalized Load Adaptation", "Individual optimization", Icons.person),
-        CourseUnit("Specialized Recovery Strategy", "Advanced recovery methods", Icons.spa),
-      ],
-    ),
-    CourseSection(
-      title: "Competition Preparation",
-      description: "Final preparation for competitive events",
-      color: Color(0xFFEF4444),
-      units: [
-        CourseUnit("Competition Simulation", "Practice under pressure", Icons.timer),
-        CourseUnit("Mental Preparation", "Psychological readiness", Icons.psychology),
-        CourseUnit("Peak Conditioning", "Final conditioning phase", Icons.trending_up),
-        CourseUnit("Strategy Implementation", "Tactical preparation", Icons.sports_kabaddi),
-        CourseUnit("Performance Validation", "Final assessment", Icons.verified),
-      ],
-    ),
-  ];
+  // Define sections - will be populated based on course
+  List<CourseSection> sections = [];
+
 
   @override
   void initState() {
     super.initState();
+    _loadCourseSections();
     _initializeCompletionStatus();
     _animationController = AnimationController(
       duration: Duration(milliseconds: 600),
@@ -103,6 +46,67 @@ class _CourseUnitsPageState extends State<CourseUnitsPage>
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
     _animationController.forward();
+  }
+
+  void _loadCourseSections() {
+    final courseSections = _courseManager.getCourseSections(widget.courseId);
+    
+    if (widget.courseId == '3') {
+      // Strength Assessment - single section with all fitness tests
+      sections = courseSections.map((sectionData) => CourseSection(
+        title: sectionData.title,
+        description: sectionData.description,
+        color: Color(0xFF2563EB),
+        units: sectionData.units.map((unitData) => CourseUnit(
+          unitData.name,
+          unitData.description,
+          _getIconForTest(unitData.name),
+        )).toList(),
+      )).toList();
+    } else {
+      // Default sections for other courses
+      sections = [
+        CourseSection(
+          title: "Foundation Skills",
+          description: "Master the basic techniques and fundamentals",
+          color: Color(0xFF2563EB),
+          units: [
+            CourseUnit("Warm-Up Readiness", "Learn proper activation techniques", Icons.flash_on),
+            CourseUnit("Movement Efficiency", "Master fundamental movements", Icons.fitness_center),
+            CourseUnit("Form Consistency", "Perfect your technique", Icons.security),
+            CourseUnit("Progressive Load Response", "Understand load progression", Icons.trending_up),
+            CourseUnit("Recovery Capacity", "Optimize rest and nutrition", Icons.bedtime),
+          ],
+        ),
+      ];
+    }
+  }
+
+  IconData _getIconForTest(String testName) {
+    switch (testName.toLowerCase()) {
+      case 'height measurement':
+        return Icons.height;
+      case 'weight measurement':
+        return Icons.monitor_weight;
+      case 'sit and reach test':
+        return Icons.accessibility;
+      case 'standing vertical jump':
+        return Icons.keyboard_double_arrow_up;
+      case 'standing broad jump':
+        return Icons.keyboard_double_arrow_right;
+      case 'medicine ball throw':
+        return Icons.sports_baseball;
+      case '30m standing start sprint':
+        return Icons.speed;
+      case '4 x 10m shuttle run':
+        return Icons.shuffle;
+      case 'sit-ups test':
+        return Icons.fitness_center;
+      case 'endurance run test':
+        return Icons.directions_run;
+      default:
+        return Icons.assessment;
+    }
   }
 
   void _initializeCompletionStatus() {
@@ -537,7 +541,7 @@ class _CourseUnitsPageState extends State<CourseUnitsPage>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: isUnlocked ? () => _openUnit(unit, index) : null,
+          onTap: isUnlocked ? () => _openUnit(unit, index) : () => _showLockedUnitMessage(),
           borderRadius: BorderRadius.circular(20),
           child: Padding(
             padding: EdgeInsets.all(16),
@@ -667,6 +671,18 @@ class _CourseUnitsPageState extends State<CourseUnitsPage>
   }
 
   bool _isUnitUnlocked(int sectionIndex, int unitIndex) {
+    if (widget.courseId == '3') {
+      // Strength Assessment specific logic
+      // Height (index 0) and Weight (index 1) are always unlocked
+      if (unitIndex == 0 || unitIndex == 1) return true;
+      
+      // All other units unlock only after Height and Weight are completed
+      final heightCompleted = unitCompletionStatus[sectionIndex]?[0] == true;
+      final weightCompleted = unitCompletionStatus[sectionIndex]?[1] == true;
+      return heightCompleted && weightCompleted;
+    }
+    
+    // Default logic for other courses
     if (sectionIndex == 0 && unitIndex == 0) return true;
     if (unitIndex == 0) {
       return sectionIndex > 0 ? _isSectionCompleted(sectionIndex - 1) : true;
@@ -726,7 +742,21 @@ class _CourseUnitsPageState extends State<CourseUnitsPage>
     _animationController.forward();
   }
 
+  void _showLockedUnitMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Complete Height and Weight measurements first to unlock other tests!'),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   void _openUnit(CourseUnit unit, int unitIndex) async {
+    final courseSections = _courseManager.getCourseSections(widget.courseId);
+    final currentSectionData = courseSections[currentSectionIndex];
+    final unitData = currentSectionData.units[unitIndex];
+    
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
@@ -737,24 +767,9 @@ class _CourseUnitsPageState extends State<CourseUnitsPage>
           unitIndex: unitIndex,
           sectionIndex: currentSectionIndex,
           totalUnitsInSection: sections[currentSectionIndex].units.length,
-          objectives: [
-            "Master the fundamental techniques",
-            "Understand proper form and execution",
-            "Build strength and endurance",
-            "Develop muscle memory",
-          ],
-          dos: [
-            "Maintain proper posture throughout",
-            "Focus on controlled movements",
-            "Breathe naturally during exercises",
-            "Listen to your body",
-          ],
-          donts: [
-            "Don't rush through movements",
-            "Avoid holding your breath",
-            "Don't ignore pain signals",
-            "Don't skip warm-up",
-          ],
+          objectives: unitData.objectives,
+          dos: unitData.dos,
+          donts: unitData.donts,
         ),
       ),
     );
