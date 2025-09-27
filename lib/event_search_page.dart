@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'theme_provider.dart';
 import 'event.dart';
+import 'app_state.dart' as app_state;
 
 class EventSearchPage extends StatefulWidget {
   const EventSearchPage({super.key});
@@ -20,10 +21,20 @@ class _EventSearchPageState extends State<EventSearchPage> {
     super.initState();
     _allEvents = _getAllEvents();
     _filteredEvents = _allEvents;
+    app_state.AppState.instance.addListener(_onAppStateChanged);
+  }
+  
+  void _onAppStateChanged() {
+    if (mounted) {
+      setState(() {
+        _allEvents = _getAllEvents();
+        _filterEvents(_searchController.text);
+      });
+    }
   }
 
   List<Event> _getAllEvents() {
-    return [
+    List<Event> allEvents = [
       Event(
         id: '1',
         title: 'National Swimming Championship',
@@ -85,6 +96,26 @@ class _EventSearchPageState extends State<EventSearchPage> {
         description: 'The ultimate football showdown featuring the top 8 teams.',
       ),
     ];
+    
+    // Add admin-created events to search results
+    final adminEvents = app_state.AppState.instance.events;
+    for (final adminEvent in adminEvents) {
+      allEvents.add(Event(
+        id: adminEvent.id,
+        title: adminEvent.name,
+        sport: adminEvent.sportType,
+        date: '${adminEvent.date.year}-${adminEvent.date.month.toString().padLeft(2, '0')}-${adminEvent.date.day.toString().padLeft(2, '0')}',
+        time: adminEvent.time.format(context),
+        location: adminEvent.location,
+        gender: 'mixed',
+        image: adminEvent.bannerPath ?? 'assets/images/default_event.png',
+        registeredCount: 0,
+        requiredCertificate: adminEvent.requiredCertificate,
+        description: adminEvent.description ?? 'Join us for this exciting ${adminEvent.sportType} event at ${adminEvent.location}.',
+      ));
+    }
+    
+    return allEvents;
   }
 
   void _filterEvents(String query) {
@@ -429,6 +460,7 @@ class _EventSearchPageState extends State<EventSearchPage> {
 
   @override
   void dispose() {
+    app_state.AppState.instance.removeListener(_onAppStateChanged);
     _searchController.dispose();
     super.dispose();
   }

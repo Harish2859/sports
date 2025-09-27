@@ -738,7 +738,7 @@ class _VerificationPageState extends State<VerificationPage> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: Image.asset(
-                    'assets/images/card front.jpg',
+                    'assets/images/card front.png',
                     width: double.infinity,
                     height: 250,
                     fit: BoxFit.contain,
@@ -795,7 +795,7 @@ class _VerificationPageState extends State<VerificationPage> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: Image.asset(
-                'assets/images/card back.jpg',
+                'assets/images/card back.png',
                 width: double.infinity,
                 height: 250,
                 fit: BoxFit.contain,

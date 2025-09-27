@@ -360,7 +360,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 child: RichText(
                                   text: const TextSpan(
                                     style: TextStyle(
-                                      fontSize: 14, 
+                                      fontSize: 13, 
                                       color: Colors.white,
                                       fontWeight: FontWeight.w600,
                                       shadows: [

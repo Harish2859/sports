@@ -79,29 +79,9 @@ class _SportsEventPageState extends State<SportsEventPage>
   late Animation<double> _swipeAnimation;
   bool _isAnimating = false;
 
-  // Convert admin events to user event format
+  // Return only prebuilt events (admin events are only visible in search)
   List<Event> _getEventsFromAppState(BuildContext context) {
-    final adminEvents = app_state.AppState.instance.events;
-    
-    if (adminEvents.isNotEmpty) {
-      return adminEvents.map((adminEvent) {
-        return Event(
-          id: adminEvent.id,
-          title: adminEvent.name,
-          sport: adminEvent.sportType,
-          date: '${adminEvent.date.year}-${adminEvent.date.month.toString().padLeft(2, '0')}-${adminEvent.date.day.toString().padLeft(2, '0')}',
-          time: adminEvent.time.format(context),
-          location: adminEvent.location,
-          gender: 'mixed',
-          image: adminEvent.bannerPath ?? 'assets/images/default_event.png',
-          registeredCount: 0,
-          requiredCertificate: adminEvent.requiredCertificate,
-          description: adminEvent.description ?? 'Join us for this exciting ${adminEvent.sportType} event at ${adminEvent.location}. Whether you\'re a beginner or experienced athlete, this event welcomes all skill levels. Come and be part of an amazing sporting experience with fellow enthusiasts!',
-        );
-      }).toList();
-    }
-    
-    // Return prebuilt events if no admin events exist
+    // Return prebuilt events only
     return [
       Event(
         id: '1',
@@ -200,7 +180,9 @@ class _SportsEventPageState extends State<SportsEventPage>
   }
 
   void _onAppStateChanged() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   void _showRegistrationModal(Event event) {
