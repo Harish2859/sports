@@ -9,6 +9,7 @@ class AppConstants {
   // Asset paths
   static const String loginBackgroundImage = 'assets/images/login.jpg';
   static const String defaultProfileImage = 'assets/images/current_user.jpg';
+  static const String appLogo = 'assets/images/current_user.jpg';
   
   // Animation durations
   static const int defaultAnimationDuration = 300;

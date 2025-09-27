@@ -1,215 +1,161 @@
 import 'package:flutter/material.dart';
+import 'dart:math';
+import '../constants/app_constants.dart';
 
 class ModuleDetailPage extends StatefulWidget {
   final Map<String, dynamic> module;
-  
+
   const ModuleDetailPage({super.key, required this.module});
 
   @override
   State<ModuleDetailPage> createState() => _ModuleDetailPageState();
 }
 
-class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProviderStateMixin {
-  late TabController _tabController;
+class _ModuleDetailPageState extends State<ModuleDetailPage> {
   String _selectedFilter = 'All';
-  
+  String _selectedGender = 'Male';
+  late List<Map<String, dynamic>> _currentLeaders;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    // Initialize with the default leaderboard
+    _currentLeaders = _getMaleLeaders();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  // Method to update the leaderboard based on gender selection
+  void _updateLeaderboard(String? gender) {
+    if (gender == null) return;
+    setState(() {
+      _selectedGender = gender;
+      switch (gender) {
+        case 'Male':
+          _currentLeaders = _getMaleLeaders();
+          break;
+        case 'Female':
+          _currentLeaders = _getFemaleLeaders();
+          break;
+        case 'Trans':
+          _currentLeaders = _getTransLeaders();
+          break;
+      }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     return Scaffold(
-      backgroundColor: isDark ? Colors.grey[900] : Colors.grey[50],
-      appBar: AppBar(
-        title: Text(widget.module['title'] ?? 'Sports Module'),
-        backgroundColor: const Color(0xFF2E7D32),
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            onPressed: () => _showNotificationDialog(context),
+      backgroundColor: isDark ? const Color(0xFF121212) : const Color(0xFFF5F5F5),
+      // Using CustomScrollView for a more dynamic scrolling experience (Slivers)
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            pinned: true,
+            stretch: true,
+            expandedHeight: 250.0,
+            backgroundColor: Color(AppConstants.primaryColorValue),
+            foregroundColor: Colors.white,
+            elevation: 2,
+            title: Text(widget.module['title'] ?? 'Sports Module'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () => _showNotificationDialog(context),
+              ),
+              IconButton(
+                icon: const Icon(Icons.file_download_outlined),
+                onPressed: () => _exportReports(context),
+              ),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [StretchMode.zoomBackground],
+              background: _buildHeaderContent(context),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.file_download),
-            onPressed: () => _exportReports(context),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Swipeable Cards Section
-            SizedBox(
-              height: 240,
-              child: PageView(
-                children: [
-                  _buildImageCard(),
-                  _buildModuleHeader(context),
+          SliverPadding(
+            padding: const EdgeInsets.all(16.0),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate(
+                [
+                  _buildEnrollmentStats(context),
+                  const SizedBox(height: 20),
+                  _buildFilterBar(context),
+                  const SizedBox(height: 20),
+                  _buildLeaderboardSection(context),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
-            
-            // Enrollment Stats Card
-            _buildEnrollmentStats(context),
-            const SizedBox(height: 20),
-            
-            // Filter Bar
-            _buildFilterBar(context),
-            const SizedBox(height: 20),
-            
-            // Leaderboard Section
-            _buildLeaderboardSection(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildImageCard() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.green,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Image.asset(
-          widget.module['image'],
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: Colors.green,
-              child: const Icon(
-                Icons.sports,
-                color: Colors.white,
-                size: 60,
-              ),
-            );
-          },
-        ),
-      ),
     );
   }
 
-  Widget _buildModuleHeader(BuildContext context) {
+  // Combined header content for the SliverAppBar background
+  Widget _buildHeaderContent(BuildContext context) {
     final theme = Theme.of(context);
-    
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: const LinearGradient(
-            colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.sports_soccer,
-                    size: 32,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.module['title'] ?? 'Football Training',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Season 2024 - Advanced Level',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white.withOpacity(0.9),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildQuickStat('Enrollments', '156', Icons.people, Colors.white),
-                _buildQuickStat('Active Players', '142', Icons.sports, Colors.white),
-                _buildQuickStat('Sessions', '28', Icons.event, Colors.white),
-              ],
-            ),
-          ],
-        ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickStat(String label, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Column(
+      decoration: const BoxDecoration(),
+      child: Stack(
         children: [
-          Icon(icon, color: color.withOpacity(0.8), size: 20),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+          // Background Image
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              child: Image.asset(
+                widget.module['image'],
+                fit: BoxFit.cover,
+                color: Colors.black.withOpacity(0.4),
+                colorBlendMode: BlendMode.darken,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(color: Colors.black.withOpacity(0.4));
+                },
+              ),
             ),
           ),
-          Text(
-            label,
-            style: TextStyle(
-              color: color.withOpacity(0.9),
-              fontSize: 12,
+          // Gradient Overlay
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.transparent, Colors.black54],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
           ),
+          // Text Content
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.module['title'] ?? 'Football Training',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    shadows: [const Shadow(blurRadius: 8, color: Colors.black54)],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Season 2024 - Advanced Level',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                ),
+              ],
+            ),
+          )
         ],
       ),
     );
@@ -217,31 +163,22 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
 
   Widget _buildEnrollmentStats(BuildContext context) {
     final theme = Theme.of(context);
-    
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      shadowColor: Colors.black.withOpacity(0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Enrollment Distribution',
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.manage_accounts, size: 20),
-                  label: const Text('Manage'),
-                ),
-              ],
+            Text(
+              'Enrollment Distribution',
+              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildGenderStat('Male', '89', const Color(0xFF2196F3), 0.57),
                 _buildGenderStat('Female', '58', const Color(0xFFE91E63), 0.37),
@@ -255,73 +192,235 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
   }
 
   Widget _buildGenderStat(String gender, String count, Color color, double percentage) {
-    return Expanded(
-      child: Column(
-        children: [
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                height: 60,
-                width: 60,
-                child: CircularProgressIndicator(
-                  value: percentage,
-                  backgroundColor: color.withOpacity(0.2),
-                  valueColor: AlwaysStoppedAnimation<Color>(color),
-                  strokeWidth: 6,
-                ),
-              ),
-              Text(
-                count,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: color,
-                ),
-              ),
-            ],
+    return Column(
+      children: [
+        SizedBox(
+          height: 70,
+          width: 70,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: percentage),
+            duration: const Duration(milliseconds: 1200),
+            builder: (context, value, child) {
+              return Stack(
+                fit: StackFit.expand,
+                alignment: Alignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    value: value,
+                    backgroundColor: color.withOpacity(0.2),
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    strokeWidth: 8,
+                    strokeCap: StrokeCap.round,
+                  ),
+                  Center(
+                    child: Text(
+                      count,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: color,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 8),
-          Text(
-            gender,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          gender,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+      ],
     );
   }
 
   Widget _buildFilterBar(BuildContext context) {
     final filters = ['All', 'This Week', 'This Month', 'Top Performers'];
-    
-    return Card(
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Row(
+
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: filters.length,
+        itemBuilder: (context, index) {
+          final filter = filters[index];
+          return ChoiceChip(
+            label: Text(filter),
+            selected: _selectedFilter == filter,
+            onSelected: (selected) {
+              setState(() {
+                _selectedFilter = selected ? filter : 'All';
+              });
+            },
+            selectedColor: const Color(0xFF2E7D32),
+            labelStyle: TextStyle(
+              color: _selectedFilter == filter ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(
+                color: _selectedFilter == filter ? Colors.transparent : Colors.grey.shade300,
+              ),
+            ),
+            showCheckmark: false,
+            elevation: 2,
+            pressElevation: 5,
+          );
+        },
+        separatorBuilder: (context, index) => const SizedBox(width: 8),
+      ),
+    );
+  }
+
+  Widget _buildLeaderboardSection(BuildContext context) {
+    final theme = Theme.of(context);
+    final topThree = _currentLeaders.take(3).toList();
+    final others = _currentLeaders.skip(3).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // --- Leaderboard Header with Dropdown ---
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Icon(Icons.filter_list, color: Colors.grey),
-            const SizedBox(width: 8),
             Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: filters.map((filter) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: FilterChip(
-                      label: Text(filter),
-                      selected: _selectedFilter == filter,
-                      onSelected: (selected) {
-                        setState(() {
-                          _selectedFilter = selected ? filter : 'All';
-                        });
-                      },
-                      selectedColor: const Color(0xFF2E7D32).withOpacity(0.2),
-                      checkmarkColor: const Color(0xFF2E7D32),
-                    ),
-                  )).toList(),
+              child: Text(
+                'Performance Leaderboard',
+                style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(25.0),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: _selectedGender,
+                  icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF2E7D32)),
+                  items: ['Male', 'Female', 'Trans'].map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  onChanged: _updateLeaderboard,
                 ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        // --- AnimatedSwitcher for Smooth Transitions ---
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 500),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.2),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
+              ),
+            );
+          },
+          child: Column(
+            key: ValueKey<String>(_selectedGender), // Key to trigger animation
+            children: [
+              // --- Top 3 Performers (Horizontal Scroll) ---
+              SizedBox(
+                height: 180,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: topThree.length,
+                  itemBuilder: (context, index) {
+                    return _buildTopPlayerCard(topThree[index], index);
+                  },
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              // --- Rest of the Leaderboard (Vertical List) ---
+              Text(
+                'All Players',
+                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+              ListView.separated(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: others.length,
+                itemBuilder: (context, index) {
+                  return _buildLeaderboardListItem(others[index], index + 4);
+                },
+                separatorBuilder: (context, index) => const SizedBox(height: 12),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTopPlayerCard(Map<String, dynamic> leader, int index) {
+    final rank = index + 1;
+    final color = _getMedalColor(index);
+    final emoji = _getMedalEmoji(index);
+
+    return Container(
+      width: 150,
+      margin: const EdgeInsets.only(right: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.8), color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 28)),
+            const SizedBox(height: 8),
+            Text(
+              leader['name'],
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "${leader['score']} pts",
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.9),
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
               ),
             ),
           ],
@@ -330,42 +429,65 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
     );
   }
 
-  Widget _buildLeaderboardSection(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildLeaderboardListItem(Map<String, dynamic> leader, int rank) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Text(
-              'Leaderboard',
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+          Text(
+            '$rank',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey.shade600,
             ),
           ),
-          TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(text: 'Male'),
-              Tab(text: 'Female'),
-              Tab(text: 'Trans'),
-            ],
-            labelColor: const Color(0xFF2E7D32),
-            unselectedLabelColor: Colors.grey,
-            indicatorColor: const Color(0xFF2E7D32),
+          const SizedBox(width: 16),
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: _getRandomColor(leader['name']),
+            child: Text(
+              leader['name'][0],
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
           ),
-          SizedBox(
-            height: 300,
-            child: TabBarView(
-              controller: _tabController,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildLeaderboardList(_getMaleLeaders()),
-                _buildLeaderboardList(_getFemaleLeaders()),
-                _buildLeaderboardList(_getTransLeaders()),
+                Text(
+                  leader['name'],
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  leader['team'],
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                ),
               ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            '${leader['score']}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF2E7D32),
             ),
           ),
         ],
@@ -373,138 +495,54 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
     );
   }
 
-  Widget _buildLeaderboardList(List<Map<String, dynamic>> leaders) {
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: leaders.length,
-      itemBuilder: (context, index) {
-        final leader = leaders[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: index < 3 ? _getMedalColor(index).withOpacity(0.1) : null,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: index < 3 ? _getMedalColor(index) : Colors.grey.withOpacity(0.3),
-              width: index < 3 ? 2 : 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              // Rank
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: index < 3 ? _getMedalColor(index) : Colors.grey,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: index < 3
-                      ? Text(
-                          _getMedalEmoji(index),
-                          style: const TextStyle(fontSize: 20),
-                        )
-                      : Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              
-              // Avatar
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.grey[300],
-                child: Text(
-                  leader['name'][0],
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(width: 12),
-              
-              // Name and Team
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      leader['name'],
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      leader['team'],
-                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              
-              // Score
-              Column(
-                children: [
-                  Text(
-                    '${leader['score']}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Color(0xFF2E7D32),
-                    ),
-                  ),
-                  const Text(
-                    'points',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-
-
   Color _getMedalColor(int index) {
     switch (index) {
-      case 0: return const Color(0xFFFFD700); // Gold
-      case 1: return const Color(0xFFC0C0C0); // Silver
-      case 2: return const Color(0xFFCD7F32); // Bronze
-      default: return Colors.grey;
+      case 0:
+        return const Color(0xFFD4AF37); // Gold
+      case 1:
+        return const Color(0xFFB4B8B9); // Silver
+      case 2:
+        return const Color(0xFFA97142); // Bronze
+      default:
+        return Colors.grey;
     }
   }
 
   String _getMedalEmoji(int index) {
     switch (index) {
-      case 0: return '🥇';
-      case 1: return '🥈';
-      case 2: return '🥉';
-      default: return '';
+      case 0:
+        return '🥇';
+      case 1:
+        return '🥈';
+      case 2:
+        return '🥉';
+      default:
+        return '';
     }
+  }
+  
+  Color _getRandomColor(String seed) {
+    final random = Random(seed.hashCode);
+    return Color.fromARGB(
+      255,
+      random.nextInt(200),
+      random.nextInt(200),
+      random.nextInt(200),
+    );
   }
 
   void _showNotificationDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Send Notification'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Message',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-          ],
+        content: const TextField(
+          decoration: InputDecoration(
+            labelText: 'Message',
+            border: OutlineInputBorder(),
+          ),
+          maxLines: 3,
         ),
         actions: [
           TextButton(
@@ -528,6 +566,9 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
   void _exportReports(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => Container(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -564,7 +605,7 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
     );
   }
 
-  // Mock data methods
+  // --- Mock Data Methods ---
   List<Map<String, dynamic>> _getMaleLeaders() {
     return [
       {'name': 'Alex Johnson', 'team': 'Thunder Hawks', 'score': 2450},
@@ -572,6 +613,7 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
       {'name': 'David Chen', 'team': 'Fire Dragons', 'score': 2290},
       {'name': 'James Wilson', 'team': 'Storm Eagles', 'score': 2150},
       {'name': 'Ryan Martinez', 'team': 'Thunder Hawks', 'score': 2080},
+      {'name': 'Chris Lee', 'team': 'Fire Dragons', 'score': 1990},
     ];
   }
 
@@ -592,8 +634,7 @@ class _ModuleDetailPageState extends State<ModuleDetailPage> with TickerProvider
       {'name': 'Alex Rivera', 'team': 'Thunder Hawks', 'score': 2180},
       {'name': 'Jamie Parker', 'team': 'Lightning Bolts', 'score': 2090},
       {'name': 'Riley Cooper', 'team': 'Storm Eagles', 'score': 2010},
+      {'name': 'Drew Evans', 'team': 'Thunder Hawks', 'score': 1950},
     ];
   }
-
-
 }

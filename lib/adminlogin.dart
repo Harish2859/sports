@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'adminhome.dart';
+import 'constants/indian_states.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
@@ -250,7 +251,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                   width: double.infinity,
                                   height: 50,
                                   child: ElevatedButton(
-                                    onPressed: _isLoading ? null : _handleLogin,
+                                    onPressed: _handleLogin,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF2563EB),
                                       foregroundColor: Colors.white,
@@ -259,22 +260,13 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                                       ),
                                       elevation: 0,
                                     ),
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Login as Admin',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
+                                    child: const Text(
+                                      'Login as Admin',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 
@@ -385,32 +377,7 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
     );
   }
 
-  void _handleLogin() async {
-    if (_emailController.text.isEmpty || 
-        _passwordController.text.isEmpty || 
-        _adminCodeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all fields'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    // Add your authentication logic here
-    // For now, navigate to admin home page
+  void _handleLogin() {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const AdminHomePage()),
@@ -441,6 +408,7 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _adminCodeController = TextEditingController();
   final TextEditingController _departmentController = TextEditingController();
+  String? _selectedState;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   bool _isLoading = false;
@@ -702,6 +670,73 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
                                 
                                 const SizedBox(height: 16),
                                 
+                                // State Dropdown
+                                Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(16),
+                                    color: Colors.white.withOpacity(0.2),
+                                  ),
+                                  child: DropdownButtonFormField<String>(
+                                    value: _selectedState,
+                                    decoration: InputDecoration(
+                                      hintText: 'Select State',
+                                      hintStyle: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                        shadows: [
+                                          Shadow(
+                                            color: Colors.black,
+                                            offset: Offset(0, 1),
+                                            blurRadius: 2,
+                                          ),
+                                        ],
+                                      ),
+                                      prefixIcon: const Icon(Icons.location_on_outlined, color: Colors.white),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                        borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.transparent,
+                                    ),
+                                    dropdownColor: const Color(0xFF1F2937),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                                    isExpanded: true,
+                                    menuMaxHeight: 300,
+                                    items: IndianStates.states.map((String state) {
+                                      return DropdownMenuItem<String>(
+                                        value: state,
+                                        child: Text(
+                                          state,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    onChanged: (String? newValue) {
+                                      setState(() {
+                                        _selectedState = newValue;
+                                      });
+                                    },
+                                  ),
+                                ),
+                                
+                                const SizedBox(height: 16),
+                                
                                 // Password TextField
                                 TextField(
                                   controller: _passwordController,
@@ -851,7 +886,7 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
                                   width: double.infinity,
                                   height: 50,
                                   child: ElevatedButton(
-                                    onPressed: _isLoading ? null : _handleSignup,
+                                    onPressed: _handleSignup,
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF2563EB),
                                       foregroundColor: Colors.white,
@@ -860,22 +895,13 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
                                       ),
                                       elevation: 0,
                                     ),
-                                    child: _isLoading
-                                        ? const SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                            ),
-                                          )
-                                        : const Text(
-                                            'Sign Up',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
+                                    child: const Text(
+                                      'Sign Up',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 
@@ -944,64 +970,7 @@ class _AdminSignupScreenState extends State<AdminSignupScreen> {
     );
   }
 
-  void _handleSignup() async {
-    // Validation
-    if (_firstNameController.text.isEmpty ||
-        _lastNameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _departmentController.text.isEmpty ||
-        _passwordController.text.isEmpty ||
-        _confirmPasswordController.text.isEmpty ||
-        _adminCodeController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill in all fields'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if (_passwordController.text != _confirmPasswordController.text) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Passwords do not match'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    if (_passwordController.text.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Password must be at least 6 characters'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 2));
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    // Show success message and navigate back
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Admin account created successfully!'),
-        backgroundColor: Colors.green,
-      ),
-    );
-
-    // Navigate back to login screen
+  void _handleSignup() {
     Navigator.pop(context);
   }
 

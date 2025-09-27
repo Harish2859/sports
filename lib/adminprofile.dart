@@ -110,6 +110,47 @@ class _AdminProfilePageState extends State<AdminProfilePage> {
             ],
           ),
           
+          const SizedBox(height: 8),
+          
+          // State Info
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.location_on, color: Theme.of(context).textTheme.bodyMedium?.color, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                'Maharashtra, India',
+                style: TextStyle(
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 8),
+          
+          // Department Info
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Theme.of(context).primaryColor.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Text(
+              'Sports Department',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          
           const SizedBox(height: 12),
           
           // Bio

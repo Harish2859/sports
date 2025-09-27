@@ -105,7 +105,7 @@ class _EventSearchPageState extends State<EventSearchPage> {
         title: adminEvent.name,
         sport: adminEvent.sportType,
         date: '${adminEvent.date.year}-${adminEvent.date.month.toString().padLeft(2, '0')}-${adminEvent.date.day.toString().padLeft(2, '0')}',
-        time: adminEvent.time.format(context),
+        time: '${adminEvent.time.hour.toString().padLeft(2, '0')}:${adminEvent.time.minute.toString().padLeft(2, '0')}',
         location: adminEvent.location,
         gender: 'mixed',
         image: adminEvent.bannerPath ?? 'assets/images/default_event.png',

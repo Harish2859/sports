@@ -162,19 +162,18 @@ class _AdminCommunityPageState extends State<AdminCommunityPage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
+        backgroundColor: Theme.of(context).primaryColor,
         title: const Text(
           'Admin Communities',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 20,
-            color: Colors.black,
+            color: Colors.white,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.add, color: Colors.black54),
+            icon: const Icon(Icons.add, color: Colors.white),
             onPressed: () => _showCreateCommunityDialog(),
           ),
         ],

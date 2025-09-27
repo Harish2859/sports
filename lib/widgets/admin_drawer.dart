@@ -5,6 +5,7 @@ import '../screens/admin_home_screen.dart';
 import '../screens/admin_events_view_page.dart';
 import '../screens/admin_modules_page.dart';
 import '../screens/admin_dashboard.dart';
+import '../admin_event_management_page.dart';
 
 class AdminDrawer extends StatelessWidget {
   const AdminDrawer({super.key});

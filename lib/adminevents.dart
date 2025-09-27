@@ -482,7 +482,7 @@ class _AddEventScreenState extends State<AddEventScreen> {
     return GestureDetector(
       onTap: _pickImage,
       child: Container(
-        height: 80,
+        height: 100,
         width: double.infinity,
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,

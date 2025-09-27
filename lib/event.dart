@@ -764,9 +764,38 @@ class _RegistrationModalState extends State<RegistrationModal> {
                   ),
                 ],
               ),
-              if (widget.event.requiredCertificate != null) SizedBox(height: 16),
-              if (widget.event.requiredCertificate != null) _buildCertificateUpload(),
-              SizedBox(height: 24),
+              if (widget.event.requiredCertificate != null)
+                const SizedBox(height: 16),
+              if (widget.event.requiredCertificate != null)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning, color: Colors.orange, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'This event requires: ${widget.event.requiredCertificate}',
+                          style: TextStyle(
+                            color: Colors.orange[800],
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              if (widget.event.requiredCertificate != null)
+                const SizedBox(height: 16),
+              if (widget.event.requiredCertificate != null)
+                _buildCertificateUpload(),
+              const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
